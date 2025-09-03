@@ -1,0 +1,130 @@
+<template>
+    <div class="nav-bar" :class="{ phone: isMobile }">
+        <div class="nav-left">
+            <img class="logo-img" src="/logo.png" alt="AI 投資智聊 logo" @click="tapLogo" />
+            <SearchBar v-if="!isMobile"/>
+        </div>
+
+        <div class="nav-right">
+            <ChatBotButton design="small" />
+            <i v-if="!isMobile" class="user fa-solid fa-circle-user"></i>
+            <i v-else class="fa-solid fa-bars" @click="toggleMenu"></i>
+        </div>
+    </div>
+
+    <!-- 手機版選單 -->
+    <div v-if="expandMenu && isMobile" class="nav-bar-menu">
+        <div v-for="(value, key) in PageDict" :key="key" @click="asidePage(key)">
+            <div class="menu-item">{{ key }}</div>
+        </div>
+    </div>
+</template>
+
+<script setup>
+import SearchBar from '@/components/SearchBar.vue';
+import ChatBotButton from '@/components/Button/ChatBotButton.vue';
+import router from '@/router';
+import { useWindowSize } from '@vueuse/core';
+import { computed, ref } from 'vue';
+
+const { width } = useWindowSize();
+const isMobile = computed(() => width.value < 768);
+const expandMenu = ref(false);
+
+const PageDict = {
+    '股票速覽': 'stock-summary',
+    '分析儀表': 'stock-analysis',
+    '連動個股': 'stock-linked'
+};
+
+function tapLogo() {
+    router.push({ name: 'home' });
+}
+
+function toggleMenu() {
+    expandMenu.value = !expandMenu.value;
+}
+
+function asidePage(page) {
+    if (PageDict[page]) {
+        router.push({ name: PageDict[page] });
+        expandMenu.value = false;
+    }
+}
+</script>
+
+<style scoped>
+.nav-bar {
+    display: flex;
+    padding: 0 12px;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    height: 70px;
+}
+
+.nav-left {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+    flex: 2;
+}
+
+.nav-right {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+}
+
+.logo-img {
+    max-width: 70px;
+    border-radius: 10%;
+    aspect-ratio: 1/1;
+    transition: transform 0.3s ease;
+    height: fit-content;
+    cursor: pointer;
+}
+
+.user {
+    font-size: 50px;
+}
+
+/* 手機版樣式 */
+.nav-bar.phone {
+    padding: 20px 10px;
+    margin-bottom: 10px;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    background-color: rgba(255, 255, 255, 0.6);
+    backdrop-filter: blur(10px);
+    color: #2c3e50;
+}
+
+.nav-bar.phone .logo-img {
+    max-width: 55px;
+}
+
+.nav-bar.phone i {
+    font-size: 30px;
+}
+
+.nav-bar-menu {
+    position: absolute;
+    top: 70px;
+    right: 10px;
+    background-color: white;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    z-index: 1000;
+}
+
+.menu-item {
+    padding: 12px 16px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    cursor: pointer;
+}
+
+.menu-item:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+}
+</style>

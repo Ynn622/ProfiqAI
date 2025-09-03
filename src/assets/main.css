@@ -1,0 +1,80 @@
+@import './base.css';
+
+/* 自訂配色 */
+:root {
+  --bg: linear-gradient(180deg, #cfe1ea 0%, #dceaf1 100%);
+  --pill: #bbbbbc;
+  --text: #111;
+  --shadow: 0 8px 22px rgba(0, 0, 0, .12);
+  --shadowSmall: 0 4px 12px rgba(0, 0, 0, .12);
+  --lightBull: #ffb3b3;  /* 偏多：粉紅 */
+  --lightBear: #bdfcc0;  /* 偏空：淺綠 */
+  --darkBull: #ff3c3c;   /* 偏多：紅 */
+  --darkBear: #00c046;   /* 偏空：綠 */
+  --lightFlat: rgb(247, 255, 162);      /* 平盤：淺黃 */
+  --card: #fff;
+}
+
+/* 讓首頁能進行全寬/全高設計 */
+#app {
+  max-width: none;
+  margin: 0;
+  padding: 0;
+  font-weight: normal;
+}
+
+a,
+.green {
+  text-decoration: none;
+  color: hsla(160, 100%, 37%, 1);
+  transition: 0.4s;
+  padding: 3px;
+}
+
+@media (hover: hover) {
+  a:hover {
+    background-color: hsla(160, 100%, 37%, 0.2);
+  }
+}
+
+.screen {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  min-height: 100vh;
+  width: 100%;
+  overflow: hidden;
+  background: var(--bg);
+  padding: 10px;
+}
+
+.main-content {
+  flex: 1;
+  display: flex;
+  height: 100%;
+  gap: 7px;
+}
+
+/* 小圓角標籤 */
+.pill {
+  display: inline-block;
+  background: var(--pill);
+  border-radius: 14px;
+  padding: 10px 16px;
+  font-weight: 800;
+  box-shadow: var(--shadow);
+  font-size: 18px;
+}
+.pill.small {
+  padding: 5px 10px;
+  font-size: 16px;
+}
+
+@media (max-width: 768px) {
+  .screen {
+    padding: 0px;
+  }
+  .main-content {
+    margin: 10px;
+  }
+}
