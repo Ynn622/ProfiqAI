@@ -50,7 +50,7 @@ const props = defineProps({
   flex-direction: column;
   gap: 16px;
   margin: 10px 5px;
-  width: 86px;
+  width: 90px;
 }
 .btn {
   padding: 8px 12px;

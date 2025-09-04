@@ -56,7 +56,7 @@ function asidePage(page) {
 <style scoped>
 .nav-bar {
     display: flex;
-    padding: 0 12px;
+    padding: 0 16px;
     justify-content: space-between;
     align-items: center;
     gap: 10px;
