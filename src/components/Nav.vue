@@ -24,11 +24,10 @@
 import SearchBar from '@/components/SearchBar.vue';
 import ChatBotButton from '@/components/Button/ChatBotButton.vue';
 import router from '@/router';
-import { useWindowSize } from '@vueuse/core';
+import { useIsMobile } from '@/config/useIsMobile.js';
 import { computed, ref } from 'vue';
 
-const { width } = useWindowSize();
-const isMobile = computed(() => width.value < 768);
+const { width, isMobile } = useIsMobile();
 const expandMenu = ref(false);
 
 const PageDict = {

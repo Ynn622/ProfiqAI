@@ -1,18 +1,18 @@
 <template>
-    <div class="news-row">
+    <div class="news-row" @click="openLink(props.url)">
         <div class="news-info">
             <h2>{{ title }}</h2>
+            <span v-if="!isMobile"><i class="fa-solid fa-square-arrow-up-right" /> 鉅亨網 &nbsp;<i class="fa-solid fa-clock" /> {{ time }}</span>
         </div>
-
         <span>{{ content }}</span>
-
-        <div class="news-time">
-            <i class="fa-solid fa-square-arrow-up-right"/> 鉅亨網 &nbsp;<i class="fa-solid fa-clock" /> {{ time }}
-        </div>
+        <div class="news-time" v-if="isMobile"><i class="fa-solid fa-square-arrow-up-right" /> 鉅亨網 &nbsp;<i class="fa-solid fa-clock" />{{ time }}</div>
     </div>
 </template>
 
 <script setup>
+import { useIsMobile } from '@/config/useIsMobile.js';
+
+const { width, isMobile } = useIsMobile();
 const props = defineProps({
     title: {
         type: String,
@@ -25,11 +25,15 @@ const props = defineProps({
     content: {
         type: String,
         default: ''
+    },
+    url: {
+        type: String,
+        default: ''
     }
 });
 
+// 轉換時間戳為 YYYY-MM-DD HH:MM 格式
 const time = formatTime(props.timestamp*1000);
-
 function formatTime(timestamp) {
     const date = new Date(timestamp - 60 * 60 * 8 * 1000);
     const year = date.getFullYear();
@@ -38,6 +42,10 @@ function formatTime(timestamp) {
     const hours = String(date.getHours()).padStart(2, '0');
     const minutes = String(date.getMinutes()).padStart(2, '0');
     return `${year}-${month}-${day} ${hours}:${minutes}`;
+}
+
+function openLink(url) {
+    window.open(url, '_blank');
 }
 
 </script>
@@ -69,5 +77,6 @@ function formatTime(timestamp) {
 }
 .news-time {
     text-align: end;
+    font-size: 12px;
 }
 </style>

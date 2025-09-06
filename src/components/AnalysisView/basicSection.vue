@@ -6,12 +6,12 @@
                 <ProbCircle :isUp="true" :directionLabel="'偏多'" />
             </div>
             <div class="analysis-right">
-                <SquareData title="EPS" value="13.95" change="2.01" color="bg-red" />
-                <SquareData title="P/E Ratio" value="20倍" color="bg-green" />
-                <SquareData title="營收(YoY)" value="▲100%" color="bg-green" />
-                <SquareData title="股利" value="無發放" color="bg-green" />
-                <SquareData title="ROA" value="0.56%" color="bg-green" />
-                <SquareData title="ROE" value="3.14%" color="bg-red" />
+                <SquareData :title="'EPS'" :value="'13.95'" :change="2.01" :color="'bg-red'" />
+                <SquareData :title="'P/E Ratio'" :value="'20倍'" :color="'bg-green'" />
+                <SquareData :title="'營收(YoY)'" :value="'▲100%'" :color="'bg-green'" />
+                <SquareData :title="'股利'" :value="'無發放'" :color="'bg-green'" />
+                <SquareData :title="'ROA'" :value="'0.56%'" :color="'bg-green'" />
+                <SquareData :title="'ROE'" :value="'3.14%'" :color="'bg-red'" />
             </div>
         </div>
     </div>
