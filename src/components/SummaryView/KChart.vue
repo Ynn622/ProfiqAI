@@ -306,7 +306,49 @@ function buildOption() {
         tooltip: {
             trigger: 'axis',
             axisPointer: { type: 'cross' },
-            valueFormatter: v => (typeof v === 'number' ? v.toFixed(2) : v)
+            formatter: function(params) {
+                if (!params || !params.length) return ''
+                
+                const data = params[0]
+                const date = data.axisValue
+                let content = `<div style="margin-bottom: 8px; font-weight: bold;">${date}</div>`
+                
+                // 查找 K線數據
+                const candlestickData = params.find(p => p.seriesName === 'K線')
+                if (candlestickData && candlestickData.data) {
+                    const [dateIndex, open, close, low, high] = candlestickData.data
+                    const color = close > open ? '#d60000' : '#00aa55'
+                    content += `
+                        <div style="margin-bottom: 4px;">
+                            <span style="color: ${color};">●</span> 開盤: ${open.toFixed(2)}
+                        </div>
+                        <div style="margin-bottom: 4px;">
+                            <span style="color: ${color};">●</span> 收盤: ${close.toFixed(2)}
+                        </div>
+                        <div style="margin-bottom: 4px;">
+                            <span style="color: #8b5cf6;">●</span> 最高: ${high.toFixed(2)}
+                        </div>
+                        <div style="margin-bottom: 4px;">
+                            <span style="color: #5470c6;">●</span> 最低: ${low.toFixed(2)}
+                        </div>
+                        <hr style="background-color: #eee;"/>
+                    `
+                }
+                
+                // 顯示其他指標
+                params.forEach(param => {
+                    if (param.seriesName !== 'K線' && param.value != null) {
+                        const color = param.color || '#666'
+                        content += `
+                            <div style="margin-bottom: 4px;">
+                                <span style="color: ${color};">★</span> ${param.seriesName}: ${typeof param.value === 'number' ? param.value.toFixed(2) : param.value}
+                            </div>
+                        `
+                    }
+                })
+                
+                return content
+            }
         },
         legend: {
             type: 'scroll',
