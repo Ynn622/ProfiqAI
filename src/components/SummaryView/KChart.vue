@@ -58,7 +58,7 @@ const props = defineProps({
 
 const innerData = ref(null)
 const bottomMode = ref('volume')
-const overlayIndicator = ref('none') // none | MA | EMA | BOLL
+const overlayIndicator = ref('MA') // none | MA | EMA | BOLL
 const chartRef = ref(null)
 let chartInstance = null
 
@@ -263,6 +263,7 @@ function buildOption() {
         if(overlayIndicator.value === 'MA'){
             const periods = [5,10,20,60,120,240]
             periods.forEach((p, idx) => {
+                const isVisible = [5,10,20].includes(p) // 只有5、10、20預設顯示
                 overlay.push({
                     name: `MA${p}`,
                     type: 'line',
@@ -270,13 +271,15 @@ function buildOption() {
                     smooth: true,
                     showSymbol: false,
                     lineStyle: { width: 1, color: maColors[idx % maColors.length] },
-                    emphasis: { disabled: true }
+                    emphasis: { disabled: true },
+                    legendHoverLink: false
                 })
                 legendItems.push(`MA${p}`)
             })
         } else if(overlayIndicator.value === 'EMA'){
             const periods = [5,10,20,60,120,240]
             periods.forEach((p, idx) => {
+                const isVisible = [5,10,20].includes(p) // 只有5、10、20預設顯示
                 overlay.push({
                     name: `EMA${p}`,
                     type: 'line',
@@ -284,7 +287,8 @@ function buildOption() {
                     smooth: true,
                     showSymbol: false,
                     lineStyle: { width: 1, color: maColors[idx % maColors.length] },
-                    emphasis: { disabled: true }
+                    emphasis: { disabled: true },
+                    legendHoverLink: false
                 })
                 legendItems.push(`EMA${p}`)
             })
@@ -362,7 +366,23 @@ function buildOption() {
             itemHeight: 8,
             itemGap: 12,
             pageIconColor: '#ccc',
-            pageTextStyle: { color: '#ccc' }
+            pageTextStyle: { color: '#ccc' },
+            selected: (() => {
+                const selected = {}
+                legendItems.forEach(item => {
+                    if (overlayIndicator.value === 'MA' || overlayIndicator.value === 'EMA') {
+                        // 對於MA60、MA120、MA240或EMA60、EMA120、EMA240，預設隱藏
+                        if (item.match(/^(MA|EMA)(60|120|240)$/)) {
+                            selected[item] = false
+                        } else {
+                            selected[item] = true
+                        }
+                    } else {
+                        selected[item] = true
+                    }
+                })
+                return selected
+            })()
         },
         grid: [
             { left: 50, right: 20, top: 70, height: '56%' },
