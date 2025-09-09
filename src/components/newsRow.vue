@@ -10,9 +10,9 @@
 </template>
 
 <script setup>
-import { useIsMobile } from '@/config/useIsMobile.js';
+import { isMobileView } from '@/utils/userInterface.js';
 
-const { width, isMobile } = useIsMobile();
+const { width, isMobile } = isMobileView();
 const props = defineProps({
     title: {
         type: String,
