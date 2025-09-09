@@ -1,6 +1,9 @@
 <template>
     <div class="main-top">
-        <span class="stock-info" v-text="stockId"></span>
+        <!-- 股票代號 + 名稱 -->
+        <span class="stock-info">{{ stockId }} {{ stockName }}</span>
+
+        <!-- 價格與漲跌 -->
         <span class="stock-price">
             目前價格：{{ stockPrice }}
             <span class="stock-change" :class="{ up: stockChange.up, down: !stockChange.up }">
@@ -9,6 +12,8 @@
             </span>
         </span>
         <span></span>
+        
+        <!-- 自選按鈕 -->
         <button class="watchlist-btn" @click="addToWatchlist"><i class="fa-solid fa-plus" />自選</button>
     </div>
 </template>
@@ -16,6 +21,7 @@
 <script setup>
 defineProps({
     stockId: { type: String, required: true },
+    stockName: { type: String, default: '' },
     stockPrice: { type: Number, default: 0 },
     stockChange: {
         type: Object,
