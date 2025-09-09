@@ -1,5 +1,6 @@
 <template>
   <div class="screen">
+    <LoadingMask v-if="loading" />
     <Nav />
     <div class="main-content">
       <div>
@@ -34,6 +35,7 @@ import PriceBar from '@/components/PriceBar.vue';
 import KChart from '@/components//SummaryView/KChart.vue';
 import BacktestingDesc from '@/components//SummaryView/BacktestingDesc.vue';
 import AnalysisFactors from '@/components//SummaryView/AnalysisFactors.vue';
+import LoadingMask from '@/components/loadingMask.vue'; 
 
 import { API_BASE_URL } from '@/utils/apiConfig';
 import kDataJson from '@/data//2330_stock_data.json';
@@ -43,6 +45,7 @@ import { computed, watch } from 'vue';
 
 
 const route = useRoute();
+const loading = ref(false);
 
 const stockId = computed(() => route.params.stock);
 const stockPrice = ref(949);
@@ -55,6 +58,7 @@ async function fetchStockData(stockId) {
   const url = `${API_BASE_URL}/View/stockData?stock_id=${stockId}&start_date=${startDate}`;
 
   try {
+    loading.value = true;
     console.log("🔵 Fetching data for stock:", stockId);
     const res = await fetch(url, { method: "GET" });
     if (res.ok) {
@@ -73,6 +77,8 @@ async function fetchStockData(stockId) {
     console.error("🔴 Error fetching stock data:", err);
     // 你可以在這裡用 UI 呈現錯誤
     throw err;
+  } finally {
+    loading.value = false;
   }
 }
 
@@ -85,11 +91,9 @@ onMounted(() => {
 watch(
   () => route.params.stock,
   (newStock) => {
-    fetchStockData(newStock)
+    fetchStockData(newStock);
   }
 )
-
-
 </script>
 
 <style scoped>
