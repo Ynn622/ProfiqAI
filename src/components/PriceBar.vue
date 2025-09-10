@@ -6,28 +6,30 @@
         <!-- 價格與漲跌 -->
         <span class="stock-price">
             目前價格：{{ stockPrice }}
-            <span class="stock-change" :class="{ up: stockChange.up, down: !stockChange.up }">
-                {{ stockChange.up ? '+' : '-' }}{{ stockChange.value }}
-                ({{ stockChange.up ? '▲' : '▼' }}{{ stockChange.percent }}%)
+            <span class="stock-change" :class="{ up: stockPriceIsUp, down: !stockPriceIsUp }">
+                {{ stockPriceIsUp ? '+' : '' }}{{ stockChange.value }}
+                ({{ stockPriceIsUp ? '▲' : '▼' }}{{ stockChange.percent }}%)
             </span>
         </span>
         <span></span>
-        
+
         <!-- 自選按鈕 -->
         <button class="watchlist-btn" @click="addToWatchlist"><i class="fa-solid fa-plus" />自選</button>
     </div>
 </template>
 
 <script setup>
-defineProps({
+import { ref, computed } from 'vue';
+const props = defineProps({
     stockId: { type: String, required: true },
     stockName: { type: String, default: '' },
     stockPrice: { type: Number, default: 0 },
     stockChange: {
         type: Object,
-        default: () => ({ value: 0, percent: 0, up: true })
+        default: () => ({ value: 0, percent: 0 })
     }
 });
+const stockPriceIsUp = computed(() => props.stockChange.value >= 0);
 
 function addToWatchlist() {
     alert('已加入自選');

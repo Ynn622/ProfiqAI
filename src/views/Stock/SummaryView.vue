@@ -48,8 +48,8 @@ const route = useRoute();
 const loading = ref(false);
 
 const stockId = computed(() => route.params.stock);
-const stockPrice = ref(949);
-const stockChange = ref({ value: 31, percent: 3.38, up: false });
+const stockPrice = ref(0);
+const stockChange = ref({ value: 0, percent: 0 });
 const kData = ref(kDataJson)    // 導入的 K 線資料 (可日後改為 API 取得後再指派)
 const stockName = ref('');
 
@@ -67,7 +67,7 @@ async function fetchStockData(stockId) {
       stockName.value = response.stockName;
       stockPrice.value = response.data.OHLC.at(-1)[3];
       stockChange.value = {
-        value: response.data.OHLC.at(-1)[3] - response.data.OHLC.at(-2)[3],
+        value: (response.data.OHLC.at(-1)[3] - response.data.OHLC.at(-2)[3]).toFixed(2),
         percent: ((response.data.OHLC.at(-1)[3] - response.data.OHLC.at(-2)[3]) / response.data.OHLC.at(-2)[3] * 100).toFixed(2),
         up: response.data.OHLC.at(-1)[3] > response.data.OHLC.at(-2)[3]
       };
