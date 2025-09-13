@@ -5,10 +5,10 @@
 
         <!-- 價格與漲跌 -->
         <span class="stock-price">
-            目前價格：{{ stockPrice }}
-            <span class="stock-change" :class="{ up: stockPriceIsUp, down: !stockPriceIsUp }">
-                {{ stockPriceIsUp ? '+' : '' }}{{ stockChange.value }}
-                ({{ stockPriceIsUp ? '▲' : '▼' }}{{ stockChange.percent }}%)
+            目前價格：{{ stockPrice.price }}
+            <span class="stock-change" :class="{ up: stockPrice.trend, down: !stockPrice.trend }">
+                {{ stockPrice.trend ? '+' : '-' }}{{ stockPrice.change }}
+                ({{ stockPrice.trend ? '▲' : '▼' }}{{ stockPrice.pct }}%)
             </span>
         </span>
         <span></span>
@@ -19,17 +19,14 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
 const props = defineProps({
     stockId: { type: String, required: true },
     stockName: { type: String, default: '' },
-    stockPrice: { type: Number, default: 0 },
-    stockChange: {
+    stockPrice: {
         type: Object,
-        default: () => ({ value: 0, percent: 0 })
+        default: () => ({ price: 0, change: 0 ,pct: 0, trend: true })
     }
 });
-const stockPriceIsUp = computed(() => props.stockChange.value >= 0);
 
 function addToWatchlist() {
     alert('已加入自選');

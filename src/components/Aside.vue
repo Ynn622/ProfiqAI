@@ -32,7 +32,7 @@ function asidePage(page) {
     2: 'stock-analysis',
     3: 'stock-linked'
   };
-  console.log('選擇的頁面:', page);
+  logger.msg(`選擇的頁面: ${page}`);
   if (PageDict[page]) {
     router.push({ name: PageDict[page]});
   }

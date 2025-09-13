@@ -1,6 +1,6 @@
 <template>
     <div class="screen">
-    <Nav />
+        <Nav />
         <div class="chat-layout">
             <aside class="conversation-list" :class="{ open: sideOpen }">
                 <div class="list-header">
@@ -23,7 +23,7 @@
                     <button class="hamburger" @click="toggleSide" v-if="isMobile">
                         <i class="fa-solid fa-bars"></i>
                     </button>
-                    <div class="chat-title">AI智慧機器人</div>
+                    <div class="chat-title">AI智聊機器人</div>
                 </header>
                 <div class="messages" ref="msgContainer">
                     <div v-for="(m, i) in activeMessages" :key="i" :class="['msg-row', m.role]">
@@ -41,8 +41,13 @@
                     </div>
                 </div>
                 <form class="input-bar" @submit.prevent="send">
-                    <textarea v-model="userInput" placeholder="請輸入文字..." rows="1" @keydown.enter.exact.prevent="send"
-                        @input="autoResize"></textarea>
+                    <textarea v-model="userInput" :placeholder="loading ? '等待機器人回應中...' : '請輸入文字...'" 
+                        rows="1" 
+                        @keydown.enter.exact.prevent="handleEnterKey" 
+                        @input="autoResize" 
+                        @compositionstart="handleCompositionStart"
+                        @compositionend="handleCompositionEnd"
+                        :disabled="loading"></textarea>
                     <button type="submit" :disabled="!userInput.trim() || loading" class="send-btn"><i
                             class="fa-solid fa-paper-plane"></i></button>
                 </form>
@@ -54,49 +59,89 @@
 <script setup>
 import { ref, computed, onMounted, watch, nextTick } from 'vue';
 import Nav from '@/components/Nav.vue';
+import { API_BASE_URL } from '@/utils/apiConfig.js';
 
-import data from '@/data/sampleChat.json';
 const isMobile = ref(false);
 const sideOpen = ref(false);
-const conversations = ref(structuredClone(data.conversations));
+const conversations = ref([{
+    id: 'conv-' + Date.now(),
+    title: '新的會話',
+    messages: [{ role: 'bot', text: '您好！我是 AI 智慧機器人，請輸入您的問題。' }]
+}]);
 const activeId = ref(conversations.value[0]?.id || '');
 const userInput = ref('');
 const loading = ref(false);
 const msgContainer = ref(null);
+const isComposing = ref(false); // 追蹤中文輸入法狀態
 const activeMessages = computed(() => conversations.value.find(c => c.id === activeId.value)?.messages || []);
 
 
 function formatHTML(t) { 
-    return t.replace(/\n/g, '<br />'); 
+    return t.replace(/\n/g, '<br />');
 }
 
 function scrollBottom() {
     nextTick(() => { if (msgContainer.value) { msgContainer.value.scrollTop = msgContainer.value.scrollHeight; } });
 }
 watch(activeMessages, scrollBottom, { deep: true });
+
+function handleCompositionStart() {
+    isComposing.value = true;
+}
+
+function handleCompositionEnd() {
+    isComposing.value = false;
+}
+
+function handleEnterKey() {
+    // 如果正在使用中文輸入法選字，則不發送訊息
+    if (!loading.value && !isComposing.value) {
+        send();
+    }
+}
+
 function send() {
+    if (loading.value) return; // 防止在載入期間發送訊息
     const text = userInput.value.trim();
     if (!text) return;
     const convo = conversations.value.find(c => c.id === activeId.value);
     convo.messages.push({ role: 'user', text });
     userInput.value = '';
-    triggerBot(convo);
+    callChatBotAPI(text, convo);
     scrollBottom();
 }
-function triggerBot(convo) {
+
+async function callChatBotAPI(prompt, convo) {
     loading.value = true;
-    setTimeout(() => {
-        const reply = mockBotReply(convo.messages[convo.messages.length - 1].text);
-        convo.messages.push({ role: 'bot', text: reply });
+    try {
+        logger.func.start(callChatBotAPI, [prompt]);
+        const response = await fetch(`${API_BASE_URL}/chat/chatBot`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ question: prompt })
+        });
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        const botReply = data.response || '抱歉，我現在無法回答您的問題。';
+
+        convo.messages.push({ role: 'bot', text: botReply });
+        logger.func.success(callChatBotAPI, [prompt]);
+    } catch (error) {
+        logger.error('ChatBot API 錯誤:', error);
+        convo.messages.push({ 
+            role: 'bot', 
+            text: '抱歉，系統暫時無法連接，請稍後再試。' 
+        });
+    } finally {
         loading.value = false;
         scrollBottom();
-    }, 900);
-}
-function mockBotReply(prompt) {
-    if (/(大盤|加權|指數)/.test(prompt)) return '今日大盤維持震盪，電子權值走勢偏穩，金融小幅回檔，請留意量能是否續縮。';
-    if (/(族群|產業)/.test(prompt)) return '強勢族群：AI伺服器、航運、車用電子。弱勢：部分傳產塑化。';
-    if (/(指標|KD|MACD)/i.test(prompt)) return 'KD 黃金交叉：K由下往上穿越D，多頭轉強訊號；若同時低檔背離更佳。MACD 柱狀體翻正代表動能轉多。';
-    return '收到！目前為示範假資料，未連接真實 AI，稍後將提供更完整答案。';
+    }
 }
 function selectConversation(id) { activeId.value = id; if (isMobile.value) { sideOpen.value = false; } }
 function newConversation() {
@@ -139,7 +184,7 @@ onMounted(() => {
 .chat-layout {
     display: flex;
     flex: 1;
-    max-height: 100%;
+    max-height: calc(100vh - 120px);
     margin: 10px;
 }
 
@@ -408,6 +453,13 @@ onMounted(() => {
 .input-bar textarea:focus {
     border-color: #8d9bff;
     box-shadow: 0 0 0 3px rgba(120, 130, 255, .25);
+}
+
+.input-bar textarea:disabled {
+    background: #f5f5f7;
+    color: #999;
+    cursor: not-allowed;
+    border-color: #ddd;
 }
 
 .send-btn {

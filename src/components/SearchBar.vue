@@ -30,7 +30,7 @@ function searchStock() {
     alert('請輸入股票代碼!')
     return
   }
-  console.log('搜尋股票:', stockId.value)
+  logger.msg(`搜尋股票: ${stockId.value}`);
   router.push({ name: 'stock-summary', params: { stock: stockId.value } });
 }
 </script>

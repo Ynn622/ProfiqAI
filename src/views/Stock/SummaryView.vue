@@ -7,7 +7,7 @@
         <Aside :selected="1" />
       </div>
       <div class="content">
-        <PriceBar :stockId="stockId" :stockName="stockName" :stockPrice="stockPrice" :stockChange="stockChange" />
+        <PriceBar :stockId="stockId" :stockName="stockName" :stockPrice="stockPrice" />
         <div class="main-bottom">
           <KChart :k-data="kData" />
           <div class="other">
@@ -38,43 +38,75 @@ import AnalysisFactors from '@/components//SummaryView/AnalysisFactors.vue';
 import LoadingMask from '@/components/loadingMask.vue'; 
 
 import { API_BASE_URL } from '@/utils/apiConfig';
-import kDataJson from '@/data//2330_stock_data.json';
-import { ref, onMounted } from 'vue';
-import { useRoute } from 'vue-router';
-import { computed, watch } from 'vue';
+import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
+import { useRoute } from 'vue-router'
 
+let liveInfoInterval = null; // 保存 interval id
 
 const route = useRoute();
 const loading = ref(false);
-
+// PriceBar 資料
 const stockId = computed(() => route.params.stock);
-const stockPrice = ref(0);
-const stockChange = ref({ value: 0, percent: 0 });
-const kData = ref(kDataJson)    // 導入的 K 線資料 (可日後改為 API 取得後再指派)
 const stockName = ref('');
+const stockPrice = ref({ price: 0, change: 0, pct: 0, trend: true });
+// K 線資料
+const kData = ref([])
 
+/** 
+ * API: 取得即時股票資訊
+ */
+async function fetchLiveStockInfo(stockId) {
+  const url = `${API_BASE_URL}/View/liveStockInfo?stock_id=${stockId}`;
+
+  try {
+    
+    logger.func.start(fetchLiveStockInfo, [stockId]);
+    const res = await fetch(url, { method: "GET" });
+    if (!res.ok) {
+      throw new Error(`HTTP ${res.status} ${res.statusText}`);
+    }
+      const response = await res.json();
+
+      stockName.value = response.info.StockName;
+      stockPrice.value = {
+        price: response.info.Close,
+        change: response.info.Change,
+        pct: response.info.ChangePct,
+        trend: response.info.Trend
+      };
+      updateKData(kData.value, response.info);
+      logger.func.success(fetchLiveStockInfo,[stockId]);
+  } catch (err) {
+    logger.func.error(fetchLiveStockInfo,[stockId]);
+    // 你可以在這裡用 UI 呈現錯誤
+    throw err;
+  }
+}
+
+/** 
+ * API: 取得歷史股價資料 (K 線)
+ */
 async function fetchStockData(stockId) {
   const startDate = '2024-05-10';
   const url = `${API_BASE_URL}/View/stockData?stock_id=${stockId}&start_date=${startDate}`;
 
   try {
     loading.value = true;
-    console.log("🔵 Fetching data for stock:", stockId);
+    logger.func.start(fetchStockData, [stockId]);
     const res = await fetch(url, { method: "GET" });
-    if (res.ok) {
-      const response = await res.json();
+
+    if (!res.ok) {
+      throw new Error(`HTTP ${res.status} ${res.statusText}`);
+    }
+
+    const response = await res.json();
+
       kData.value = response.data;
       stockName.value = response.stockName;
-      stockPrice.value = response.data.OHLC.at(-1)[3];
-      stockChange.value = {
-        value: (response.data.OHLC.at(-1)[3] - response.data.OHLC.at(-2)[3]).toFixed(2),
-        percent: ((response.data.OHLC.at(-1)[3] - response.data.OHLC.at(-2)[3]) / response.data.OHLC.at(-2)[3] * 100).toFixed(2),
-        up: response.data.OHLC.at(-1)[3] > response.data.OHLC.at(-2)[3]
-      };
-      console.log("🟢 Fetched Stock Data Successfully");
-    }
+
+      logger.func.success(fetchStockData, [stockId]);
   } catch (err) {
-    console.error("🔴 Error fetching stock data:", err);
+    logger.func.error(fetchStockData, [stockId]);
     // 你可以在這裡用 UI 呈現錯誤
     throw err;
   } finally {
@@ -82,18 +114,78 @@ async function fetchStockData(stockId) {
   }
 }
 
+/** 
+ * 取得台灣股市開盤時間
+ */
+function isTaiwanMarketOpen() {
+  const now = new Date();
+
+  // 轉成台灣時間（UTC+8）
+  const taipeiTime = new Date(now.toLocaleString("en-US", { timeZone: "Asia/Taipei" }));
+  const week = taipeiTime.getDay(); // 0=Sunday, 1=Monday ... 6=Saturday
+  const hours = taipeiTime.getHours();
+  const minutes = taipeiTime.getMinutes();
+
+  // 只允許星期一到五
+  if (week < 1 || week > 5) { return false; }
+
+  // 判斷時間範圍 9:00 - 13:30
+  const timeInMinutes = hours * 60 + minutes;
+  const start = 9 * 60;        // 9:00 = 540 分鐘
+  const end = 13 * 60 + 30;    // 13:30 = 810 分鐘
+  return timeInMinutes >= start && timeInMinutes <= end;
+}
+
+// 更新最新 K 線資料
+function updateKData(rawData, newData) {
+  if (kData.value.length === 0) return
+
+  const dates = rawData.Date
+  const lastIndex = dates.length - 1
+
+  // 檢查最後一筆是不是同一天
+  if (lastIndex >= 0 && dates[lastIndex] === newData.Date) {
+    // 覆蓋最後一筆
+    rawData.OHLC[lastIndex] = [newData.Open, newData.High, newData.Low, newData.Close]
+    rawData.Volume[lastIndex] = newData.Volume
+  } else {
+    // 新增
+    rawData.Date.push(newData.Date)
+    rawData.OHLC.push([newData.Open, newData.High, newData.Low, newData.Close])
+    rawData.Volume.push(newData.Volume)
+  }
+}
+
 // 進入頁面時執行
 onMounted(() => {
   fetchStockData(stockId.value);
+  fetchLiveStockInfo(stockId.value);
+
+  // 每 10 秒更新一次
+  liveInfoInterval = setInterval(() => {
+    if (isTaiwanMarketOpen()) {
+      fetchLiveStockInfo(stockId.value);
+    }
+  }, 10000);
+});
+
+// 離開頁面清除 interval
+onUnmounted(() => {
+  if (liveInfoInterval) {
+    clearInterval(liveInfoInterval);
+    logger.msg(`清除 interval`);
+  }
 });
 
 // 監聽股票代碼變化
 watch(
   () => route.params.stock,
   (newStock) => {
+    logger.msg(`股票代碼變更: ${newStock}`);
     fetchStockData(newStock);
+    fetchLiveStockInfo(newStock);
   }
-)
+);
 </script>
 
 <style scoped>
