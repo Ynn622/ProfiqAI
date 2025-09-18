@@ -6,7 +6,7 @@
                 <ProbCircle :isUp="true" :directionLabel="'偏多'" />
             </div>
             <div class="analysis-right">
-                <SquareData title="MACD" value="11.72" change="2.01" color="bg-red" />
+                <SquareData title="MACD" value="11.72" :change="2.01" color="bg-red" />
                 <SquareData title="KD" value="高檔鈍化" color="bg-green" />
                 <SquareData title="RSI" value="死亡交叉" color="bg-green" />
                 <SquareData title="週線" value="接近股價" color="bg-yellow" />

@@ -1,11 +1,17 @@
 <template>
     <div class="news-row" @click="openLink(props.url)">
         <div class="news-info">
-            <h2>{{ title }}</h2>
-            <span v-if="!isMobile"><i class="fa-solid fa-square-arrow-up-right" /> 鉅亨網 &nbsp;<i class="fa-solid fa-clock" /> {{ time }}</span>
+            <span class="news-title">{{ title.replace(/<[^>]+>/g, '') }}</span>
+            <span v-if="!isMobile" class="news-meta">
+                <i class="fa-solid fa-square-arrow-up-right" /> 鉅亨網 &nbsp;
+                <i class="fa-solid fa-clock" /> {{ time }}
+            </span>
         </div>
         <span>{{ content }}</span>
-        <div class="news-time" v-if="isMobile"><i class="fa-solid fa-square-arrow-up-right" /> 鉅亨網 &nbsp;<i class="fa-solid fa-clock" />{{ time }}</div>
+        <div class="news-time" v-if="isMobile">
+            <i class="fa-solid fa-square-arrow-up-right" /> 鉅亨網 &nbsp;
+            <i class="fa-solid fa-clock" />{{ time }}
+        </div>
     </div>
 </template>
 
@@ -74,6 +80,18 @@ function openLink(url) {
     justify-content: space-between;
     align-items: center;
     margin-bottom: 6px;
+}
+
+.news-title {
+    font-size: 18px;
+    font-weight: 700;
+    flex: 1;
+}
+
+.news-meta {
+    width: 250px;
+    text-align: end;
+    align-self: start;
 }
 .news-time {
     text-align: end;

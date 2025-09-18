@@ -6,10 +6,7 @@
                 <Aside :selected="2" />
             </div>
             <div class="content">
-                <PriceBar 
-                    :stock-id="stockId" 
-                    @updateStockData="handleStockDataUpdate"
-                />
+                <PriceBar :stock-id="stockId" @updateStockData="handleStockDataUpdate" />
                 <div class="main-bottom">
                     <div class="analysis-detail">
                         <AnalysisDetail v-bind="technicalAnalysis" />
@@ -22,7 +19,7 @@
                     <a-segmented class="segment" v-model:value="value" :options="data" />&nbsp; 詳細資料
                 </div>
                 <div class="segment-section">
-                    <component :is="componentMap[value]" />
+                    <component :is="componentMap[value]" :stockId="stockId" :stockName="stockName" />
                 </div>
             </div>
         </div>
@@ -42,6 +39,7 @@ import technicSection from '@/components/AnalysisView/technicSection.vue';
 
 import { ref, onMounted, computed, reactive } from 'vue';
 import { useRoute } from 'vue-router';
+import { logger } from '@/utils/logger';
 
 const data = reactive(['基本', '技術', '消息', '籌碼']);
 const value = ref(data[0]);
@@ -57,12 +55,10 @@ const stockId = computed(() => route.params.stock);
 
 // 從 PriceBar 接收的資料
 const stockName = ref('');
-const stockPrice = ref({ price: 0, change: 0, pct: 0, trend: true });
 
 // 處理從 PriceBar 回傳的股票資料
 function handleStockDataUpdate(data) {
-  stockName.value = data.stockName;
-  stockPrice.value = data.stockPrice;
+  stockName.value = data.StockName;
 }
 
 // 各面分析 假資料
