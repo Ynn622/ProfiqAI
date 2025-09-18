@@ -16,6 +16,7 @@ const LOG_TYPES = {
     log: { icon: "⚪", tag: "Log" },
     warn: { icon: "🟡", tag: "Warn" },
     fatal: { icon: "🔴", tag: "Error" },
+    debug: { icon: "🟣", tag: "Debug" },
 };
 
 // 核心函數
@@ -49,6 +50,12 @@ export const logger = {
         if (!LOG_ENABLED) return;
         const { icon, tag } = LOG_TYPES.fatal;
         console.error(`${formatTime()} ${icon} [${tag}]`, ...args);
+    },
+
+    debug: (...args) => {
+        if (!LOG_ENABLED) return;
+        const { icon, tag } = LOG_TYPES.debug;
+        console.log(`${formatTime()} ${icon} [${tag}]`, ...args);
     },
 };
 

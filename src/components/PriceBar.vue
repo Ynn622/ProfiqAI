@@ -5,7 +5,7 @@
 
         <!-- 價格與漲跌 -->
         <span class="stock-price">
-            目前價格：{{ stockPrice.price }}
+            {{ isTaiwanMarketOpen() ? '目前價格' : '收盤價' }}：{{ stockPrice.price }}
             <span class="stock-change" :class="{ up: stockPrice.trend, down: !stockPrice.trend }">
                 {{ stockPrice.trend ? '+' : '-' }}{{ stockPrice.change }}
                 ({{ stockPrice.trend ? '▲' : '▼' }}{{ stockPrice.pct }}%)
@@ -19,18 +19,78 @@
 </template>
 
 <script setup>
+import { useStockData } from '@/utils/stockData';
+import { watch, onMounted, onUnmounted, computed } from 'vue';
+
 const props = defineProps({
-    stockId: { type: String, required: true },
-    stockName: { type: String, default: '' },
-    stockPrice: {
-        type: Object,
-        default: () => ({ price: 0, change: 0 ,pct: 0, trend: true })
-    }
+    stockId: { type: String, required: true }
 });
+
+const emit = defineEmits(['updateStockData']);
+
+// 使用全域股票資料管理
+const { 
+  currentStock, 
+  setCurrentStockId, 
+  fetchLiveStockInfo, 
+  isTaiwanMarketOpen 
+} = useStockData();
+
+let liveInfoInterval = null; // 保存 interval id
+
+// 計算屬性，從全域狀態取得資料
+const stockName = computed(() => currentStock.value?.stockName || '');
+const stockPrice = computed(() => currentStock.value?.stockPrice || { price: 0, change: 0, pct: 0, trend: true });
+
+// 執行股票資料更新
+async function updateStock() {
+  try {
+    const data = await fetchLiveStockInfo(props.stockId);
+    
+    // 透過 emit 回傳資料給父元件
+    emit('updateStockData', data.liveInfo);
+  } catch (err) {
+    logger.error('更新股票資料失敗:', err);
+  }
+}
 
 function addToWatchlist() {
     alert('已加入自選');
 }
+
+// 初始化和監聽邏輯
+onMounted(() => {
+  // 設定當前股票ID並立即更新資料
+  setCurrentStockId(props.stockId);
+  updateStock();
+
+  // 每 10 秒更新一次即時資料
+  liveInfoInterval = setInterval(() => {
+    if (isTaiwanMarketOpen()) {
+      updateStock();
+    }
+  }, 10000);
+});
+
+// 離開頁面清除 interval
+onUnmounted(() => {
+  if (liveInfoInterval) {
+    clearInterval(liveInfoInterval);
+    logger.msg('清除 interval');
+  }
+});
+
+// 監聽股票代碼變化
+watch(
+  () => props.stockId,
+  (newStockId) => {
+    if (newStockId) {
+      logger.msg(`股票代碼變更: ${newStockId}`);
+      setCurrentStockId(newStockId);
+      updateStock();
+    }
+  }
+);
 </script>
 
 <style scoped>

@@ -6,7 +6,10 @@
                 <Aside :selected="2" />
             </div>
             <div class="content">
-                <PriceBar :stock-id="stockId" :stock-price="stockPrice" :stock-change="stockChange" />
+                <PriceBar 
+                    :stock-id="stockId" 
+                    @updateStockData="handleStockDataUpdate"
+                />
                 <div class="main-bottom">
                     <div class="analysis-detail">
                         <AnalysisDetail v-bind="technicalAnalysis" />
@@ -51,8 +54,16 @@ const componentMap = {
 
 const route = useRoute();
 const stockId = computed(() => route.params.stock);
-const stockPrice = ref(949);
-const stockChange = ref({ value: 31, percent: 3.38, up: false });
+
+// 從 PriceBar 接收的資料
+const stockName = ref('');
+const stockPrice = ref({ price: 0, change: 0, pct: 0, trend: true });
+
+// 處理從 PriceBar 回傳的股票資料
+function handleStockDataUpdate(data) {
+  stockName.value = data.stockName;
+  stockPrice.value = data.stockPrice;
+}
 
 // 各面分析 假資料
 const basicAnalysis = ref({
