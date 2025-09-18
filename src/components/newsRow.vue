@@ -8,9 +8,9 @@
             </span>
         </div>
         <span>{{ content }}</span>
-        <div class="news-time" v-if="isMobile">
+        <div class="news-meta" v-if="isMobile">
             <i class="fa-solid fa-square-arrow-up-right" /> 鉅亨網 &nbsp;
-            <i class="fa-solid fa-clock" />{{ time }}
+            <i class="fa-solid fa-clock" /> {{ time }}
         </div>
     </div>
 </template>
@@ -93,8 +93,12 @@ function openLink(url) {
     text-align: end;
     align-self: start;
 }
-.news-time {
-    text-align: end;
-    font-size: 12px;
+
+@media (max-width: 768px) {
+    .news-meta {
+        font-size: 13px;
+        margin-top: 5px;
+        width: auto;
+    }
 }
 </style>

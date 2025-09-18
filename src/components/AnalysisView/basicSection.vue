@@ -55,4 +55,10 @@ const props = defineProps({
         flex-direction: column;
     }
 }
+@media (max-width: 480px) {
+    .analysis-right {
+        grid-template-columns: 2fr 2fr;
+        gap: 20px;
+    }
+}
 </style>

@@ -5,7 +5,7 @@
         </div>
         <div class="value-area">
             <span class="value">{{ value }}</span>
-            <span class="change" v-if="change!=0">{{ changeWay }}{{ change }}<span v-html="changeIcon"></span></span>
+            <span class="change" v-if="change!=0">{{ trend }}{{ change }}<span v-html="changeIcon"></span></span>
         </div>
     </div>
 </template>
@@ -31,7 +31,7 @@ const props = defineProps({
         default: ''
     }
 });
-var changeWay = props.change >= 0 ? '+' : '-';
+var trend = props.change >= 0 ? '+' : '-';
 var changeIcon = props.change >= 0 ? '<i class="fa-solid fa-arrow-trend-up"></i>' : '<i class="fa-solid fa-arrow-trend-down"></i>';
 
 </script>
@@ -74,5 +74,21 @@ var changeIcon = props.change >= 0 ? '<i class="fa-solid fa-arrow-trend-up"></i>
 }
 .bg-yellow {
     background-color: var(--lightFlat);
+}
+
+@media (max-width: 480px) {
+    .square-data-button {
+        width: 150px;
+        padding: 8px 16px;
+    }
+    .title {
+        font-size: 24px;
+    }
+    .value {
+        font-size: 20px;
+    }
+    .change {
+        font-size: 16px;
+    }
 }
 </style>

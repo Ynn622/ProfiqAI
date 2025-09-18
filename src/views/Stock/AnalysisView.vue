@@ -128,5 +128,8 @@ const chipAnalysis = ref({
         grid-template-columns: 1fr;
     }
     
+    .segment-section {
+        padding: 12px 22px;
+    }
 }
 </style>
