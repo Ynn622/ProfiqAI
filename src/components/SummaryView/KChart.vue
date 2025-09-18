@@ -494,7 +494,13 @@ const chartOption = computed(() => {
           `<div>最高：<span style="font-weight:600;color:#ff7f50;">${fmtPrice(high)}</span></div>`,
           `<div>最低：<span style="font-weight:600;color:#6bc1ff;">${fmtPrice(low)}</span></div>`,
           `<div><span style="font-weight:600;">${indicatorLine}</span></div><hr/>`,
-          `<div>成交量：<span style="font-weight:600;color:#ffd166;">${fmtNum(volume)}</span></div>`
+          (() => {
+            const bottomObj = (bottomChartData.value && bottomChartData.value[idx]) || null
+            const bottomRaw = bottomObj && typeof bottomObj === 'object' ? bottomObj.value : bottomObj
+            const label = BOTTOM_LABEL_MAP[bottomMode.value] || '下方'
+            const color = bottomMode.value === 'volume' ? '#ffd166' : (Number(bottomRaw) >= 0 ? '#d60000' : '#00aa55')
+            return `<div>${label}：<span style="font-weight:600;color:${color};">${fmtNum(bottomRaw)}</span></div>`
+          })()
         ].join('')
       }
     },
