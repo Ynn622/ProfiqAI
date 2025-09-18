@@ -2,16 +2,25 @@
 
 /* 自訂配色 */
 :root {
-  --bg: linear-gradient(180deg, #cfe1ea 0%, #dceaf1 100%);
+  /* 背景顏色 */
+  --bg-color: linear-gradient(180deg, #cfe1ea 0%, #dceaf1 100%);
+  
+  /* 股市 */
+  --lightBull: #ffb3b3;        /* 偏多：粉紅 */
+  --lightBull-hover: #ff8a8a;    /* 比粉紅深一點 */
+  --darkBull: #ff3c3c;         /* 偏多：紅 */
+  --darkBull-hover: #ff6a6a;     /* 紅色變亮一點 */
+  --lightBear: #bdfcc0;        /* 偏空：淺綠 */
+  --lightBear-hover: #92f29b;    /* 比淺綠深一點 */
+  --darkBear: #00c046;         /* 偏空：綠 */
+  --darkBear-hover: #26d264;     /* 綠色變亮一點 */
+  
+  --lightFlat: rgb(247, 255, 162);      /* 平盤：淺黃 */
+  
   --pill: #bbbbbc;
   --text: #111;
   --shadow: 0 8px 22px rgba(0, 0, 0, .12);
   --shadowSmall: 0 4px 12px rgba(0, 0, 0, .12);
-  --lightBull: #ffb3b3;  /* 偏多：粉紅 */
-  --lightBear: #bdfcc0;  /* 偏空：淺綠 */
-  --darkBull: #ff3c3c;   /* 偏多：紅 */
-  --darkBear: #00c046;   /* 偏空：綠 */
-  --lightFlat: rgb(247, 255, 162);      /* 平盤：淺黃 */
   --card: #fff;
 }
 
@@ -44,7 +53,7 @@ a,
   min-height: 100vh;
   width: 100%;
   overflow: hidden;
-  background: var(--bg);
+  background: var(--bg-color);
   padding: 10px;
 }
 

@@ -36,10 +36,22 @@ const props = defineProps({
 
 .prob-circle.up {
     background: var(--lightBull);
+    transition: background-color 0.3s ease-in-out;
+}
+
+.prob-circle.up:hover {
+    transition: background-color 0.3s ease-in-out;
+    background: var(--lightBull-hover);
 }
 
 .prob-circle.down {
+    transition: background-color 0.3s ease-in-out;
     background: var(--lightBear);
+}
+
+.prob-circle.down:hover {
+    transition: background-color 0.3s ease-in-out;
+    background: var(--lightBear-hover);
 }
 
 @media (max-width: 900px) {

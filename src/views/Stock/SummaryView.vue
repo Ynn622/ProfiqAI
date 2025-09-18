@@ -151,15 +151,6 @@ watch(
   font-size: 20px;
 }
 
-.stock-change {
-  color: red;
-  font-weight: bold;
-  font-size: 18px;
-}
-
-.stock-change.up { color: red; }
-.stock-change.down { color: green; }
-
 .stock-btn {
   padding: 5px 10px;
   font-size: 18px;
