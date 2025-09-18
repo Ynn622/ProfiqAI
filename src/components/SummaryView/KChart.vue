@@ -1,552 +1,549 @@
 <template>
-    <div class="kchart-wrapper">
-        <!-- 工具欄 -->
-        <div class="toolbar">
-            <label class="toolbar-item">
-                K線覆蓋：
-                <select v-model="overlayIndicator" class="select-input">
-                    <option value="none">無</option>
-                    <option value="MA">MA</option>
-                    <option value="EMA">EMA</option>
-                    <option value="BOLL">布林通道</option>
-                </select>
-            </label>
+  <div class="kchart-wrapper">
+    <!-- 工具欄 -->
+    <div class="toolbar">
+      <label class="toolbar-item">
+        K線覆蓋：
+        <select v-model="overlayIndicator" class="select-input">
+          <option value="none">無</option>
+          <option value="MA">MA</option>
+          <option value="EMA">EMA</option>
+          <option value="BOLL">布林通道</option>
+        </select>
+      </label>
 
-            <label class="toolbar-item">
-                下方顯示：
-                <select v-model="bottomMode" class="select-input">
-                    <optgroup label="量能">
-                        <option value="volume">成交量</option>
-                    </optgroup>
-                    <optgroup label="籌碼">
-                        <option value="foreign">外資</option>
-                        <option value="trust">投信</option>
-                        <option value="dealer">自營商</option>
-                        <option value="three">三大法人</option>
-                    </optgroup>
-                    <optgroup label="主力">
-                        <option value="major">主力買賣超</option>
-                    </optgroup>
-                </select>
-            </label>
-        </div>
-
-        <!-- 圖表容器 -->
-        <div v-if="hasValidData" ref="chartRef" class="kchart-container"></div>
-        <div v-else class="placeholder">
-            K 線資料異常！<br />請確認網路狀態，或稍後再試。
-        </div>
+      <label class="toolbar-item">
+        下方顯示：
+        <select v-model="bottomMode" class="select-input">
+          <optgroup label="量能">
+            <option value="volume">成交量</option>
+          </optgroup>
+          <optgroup label="籌碼">
+            <option value="foreign">外資</option>
+            <option value="trust">投信</option>
+            <option value="dealer">自營商</option>
+            <option value="three">三大法人</option>
+          </optgroup>
+          <optgroup label="主力">
+            <option value="major">主力買賣超</option>
+          </optgroup>
+        </select>
+      </label>
     </div>
+
+    <!-- 圖表容器 -->
+    <v-chart v-if="hasValidData" 
+      :option="chartOption" 
+      :autoresize="true"
+      class="kchart-container" />
+    <div v-else-if="props.loading" class="placeholder loading">
+      <div class="loading-spinner"></div>
+      載入中...
+    </div>
+    <div v-else-if="isEmptyData" class="placeholder empty">
+      等待資料載入...
+    </div>
+    <div v-else-if="showError" class="placeholder error">
+      K 線資料異常！<br />請確認網路狀態，或稍後再試。
+    </div>
+  </div>
 </template>
 
 <script setup>
-import { ref, onMounted, onBeforeUnmount, watch, computed } from 'vue'
-import { SMA, EMA, BollingerBands } from 'trading-signals'
-import * as echarts from 'echarts'
+import { ref, computed } from 'vue'
+import VChart from 'vue-echarts'
+import { use } from 'echarts/core'
+import { CanvasRenderer } from 'echarts/renderers'
+import { CandlestickChart, LineChart, BarChart } from 'echarts/charts'
+import {
+  TooltipComponent,
+  LegendComponent,
+  GridComponent,
+  DataZoomComponent,
+  AxisPointerComponent
+} from 'echarts/components'
+import { isMobileView } from '@/utils/userInterface.js';
 
-// ===== Props & Refs =====
+// 註冊 ECharts 組件
+use([
+  CanvasRenderer,
+  CandlestickChart,
+  LineChart,
+  BarChart,
+  TooltipComponent,
+  LegendComponent,
+  GridComponent,
+  DataZoomComponent,
+  AxisPointerComponent
+])
+
+const { width, isMobile } = isMobileView();
+
+// Props
 const props = defineProps({
-  kData: { 
-    type: Object, 
-    required: true 
+  kData: {
+    type: Object,
+    required: true
+  },
+  loading: {
+    type: Boolean,
+    default: false
   }
 })
 
 // 響應式資料
-const innerData = ref(null)
+const overlayIndicator = ref('MA')
 const bottomMode = ref('volume')
-const overlayIndicator = ref('MA') // none | MA | EMA | BOLL
-const chartRef = ref(null)
 
-// 圖表實例
-let chartInstance = null
-
-// ===== 常數定義 =====
+// 常數定義
 const BOTTOM_LABEL_MAP = {
   volume: '成交量',
   foreign: '外資',
-  trust: '投信',
+  trust: '投信', 
   dealer: '自營商',
   three: '三大法人',
   major: '主力買賣超'
 }
 
-const MA_COLORS = ['#f2c500', '#ff7f50', '#6bc1ff', '#91cc75', '#5470c6', '#ee6666']
-const MA_PERIODS = [5, 10, 20, 60, 120, 240]
-const DEFAULT_VISIBLE_PERIODS = [5, 10, 20]
+// 檢查是否為空資料（初始狀態）
+const isEmptyData = computed(() => {
+  return !props.kData || 
+         !props.kData.Date || 
+         !props.kData.OHLC || 
+         !props.kData.Volume ||
+         !Array.isArray(props.kData.Date) ||
+         !Array.isArray(props.kData.OHLC) ||
+         !Array.isArray(props.kData.Volume)
+})
 
-// ===== 工具函數 =====
-/**
- * 將數值轉換為數字或 null
- */
-function numberOrNull(value) {
-  const num = Number(value)
-  return Number.isFinite(num) ? num : null
-}
+// 檢查資料是否有效
+const hasValidData = computed(() => {
+  if (isEmptyData.value) return false
+  
+  return props.kData.Date.length > 0 && 
+         props.kData.OHLC.length > 0 && 
+         props.kData.Volume.length > 0
+})
 
-/**
- * 驗證資料格式是否有效
- */
-function validateData(data) {
-  if (!data || typeof data !== 'object') return false
-  
-  const { category, values, volumes } = data
-  if (!Array.isArray(category) || !Array.isArray(values) || !Array.isArray(volumes)) {
-    return false
-  }
-  
-  if (category.length !== values.length || values.length !== volumes.length) {
-    return false
-  }
-  
-  return values.every(row => 
-    Array.isArray(row) && 
-    row.length >= 4 && 
-    row.every(num => typeof num === 'number')
-  )
-}
+// 判斷是否顯示錯誤訊息（非載入中且資料無效）
+const showError = computed(() => {
+  return !props.loading && !isEmptyData.value && !hasValidData.value
+})
 
-/**
- * 將新版資料格式轉換為內部格式
- * 新版格式：{ Date, OHLC, Volume, Foreign, Dealer, Investor, MainForce }
- * 內部格式：{ category, values, volumes, chips... }
- */
-function parseNewFormatData(rawData) {
-  if (!rawData || typeof rawData !== 'object') return null
+// 處理資料格式
+const processedData = computed(() => {
+  if (!hasValidData.value) return null
   
-  const dates = Array.isArray(rawData.Date) ? rawData.Date : []
-  const ohlc = Array.isArray(rawData.OHLC) ? rawData.OHLC : []
-  const volumes = Array.isArray(rawData.Volume) ? rawData.Volume : []
-  const foreignArr = Array.isArray(rawData.Foreign) ? rawData.Foreign : []
-  const trustArr = Array.isArray(rawData.Dealer) ? rawData.Dealer : []
-  const dealerArr = Array.isArray(rawData.Investor) ? rawData.Investor : []
-  const majorArr = Array.isArray(rawData.MainForce) ? rawData.MainForce : []
-
-  const dataLength = Math.min(dates.length, ohlc.length, volumes.length)
+  const { 
+    Date: dates, 
+    OHLC: ohlc, 
+    Volume: volumes,
+    Foreign: foreign = [],
+    Dealer: dealer = [],
+    Investor: investor = [],
+    MainForce: mainForce = []
+  } = props.kData
+  
   const result = {
-    category: [],
-    values: [],
-    volumes: [],
-    chipsForeign: [],
-    chipsTrust: [],
-    chipsDealer: [],
-    chipsMajor: [],
-    chipsThree: []
+    dates: [],
+    candleData: [],
+    volumeData: [],
+    foreignData: [],
+    trustData: [],
+    dealerData: [],
+    majorData: [],
+    threeData: [],
+    closePrices: []
   }
-
+  
+  const dataLength = Math.min(dates.length, ohlc.length, volumes.length)
+  
   for (let i = 0; i < dataLength; i++) {
-    const date = dates[i]
-    const ohlcRow = ohlc[i]
-    
-    if (!Array.isArray(ohlcRow) || ohlcRow.length < 4) continue
-    
-    const [open, high, low, close] = ohlcRow.map(Number)
-    const volume = Number(volumes[i])
-    
-    if ([open, high, low, close, volume].some(num => Number.isNaN(num))) continue
-
-    // ECharts K線需要 [open, close, low, high] 格式
-    result.category.push(date)
-    result.values.push([open, close, low, high])
-    result.volumes.push(volume)
-
-    // 籌碼資料處理
-    const foreign = numberOrNull(foreignArr[i])
-    const trust = numberOrNull(trustArr[i])
-    const dealer = numberOrNull(dealerArr[i])
-    const major = numberOrNull(majorArr[i])
-
-    result.chipsForeign.push(foreign)
-    result.chipsTrust.push(trust)
-    result.chipsDealer.push(dealer)
-    result.chipsMajor.push(major)
-
-    // 計算三大法人總和
-    const validChips = [foreign, trust, dealer].filter(val => typeof val === 'number')
-    const threeSum = validChips.length > 0 
-      ? validChips.reduce((sum, val) => sum + val, 0) 
-      : null
-    result.chipsThree.push(threeSum)
-  }
-
-  return result
-}
-
-// ===== 計算屬性 =====
-// 監聽 props 變化並轉換資料格式
-watch(() => props.kData, (newData) => {
-  const parsedData = newData && typeof newData === 'object' 
-    ? parseNewFormatData(newData) 
-    : null
-  innerData.value = validateData(parsedData) ? parsedData : null
-}, { immediate: true })
-
-// 檢查是否有有效資料
-const hasValidData = computed(() => validateData(innerData.value))
-
-// 取得收盤價陣列
-const closePrices = computed(() => 
-  hasValidData.value 
-    ? innerData.value.values.map(row => row[1]) 
-    : []
-)
-
-// 取得底部圖表資料
-const bottomData = computed(() => {
-  if (!hasValidData.value) return []
-  
-  const data = innerData.value
-  const modeMap = {
-    volume: data.volumes,
-    foreign: data.chipsForeign,
-    trust: data.chipsTrust,
-    dealer: data.chipsDealer,
-    three: data.chipsThree,
-    major: data.chipsMajor
-  }
-  
-  return modeMap[bottomMode.value] || data.chipsMajor
-})
-
-// ===== 技術指標計算 =====
-/**
- * 計算技術指標
- * @param {string} type - 指標類型 (MA, EMA, BOLL)
- * @param {number} period - 週期
- * @param {number} multiplier - 布林通道倍數
- */
-function calculateIndicator(type, period, multiplier = 2) {
-  const prices = closePrices.value
-  if (!prices.length) {
-    return type === 'BOLL' 
-      ? { mid: [], upper: [], lower: [] } 
-      : []
-  }
-  
-  switch (type) {
-    case 'MA': {
-      const sma = new SMA(period)
-      return prices.map(price => {
-        const result = sma.update(price)
-        return result ? Number(result.toFixed(2)) : null
-      })
-    }
-    
-    case 'EMA': {
-      const ema = new EMA(period)
-      return prices.map(price => {
-        const result = ema.update(price)
-        return result ? Number(result.toFixed(2)) : null
-      })
-    }
-    
-    case 'BOLL': {
-      const bb = new BollingerBands(period, multiplier)
-      const result = { mid: [], upper: [], lower: [] }
+    if (Array.isArray(ohlc[i]) && ohlc[i].length >= 4) {
+      const [open, high, low, close] = ohlc[i]
+      const volume = volumes[i]
       
-      for (const price of prices) {
-        const bollResult = bb.update(price)
-        if (bollResult) {
-          result.mid.push(Number(bollResult.middle.toFixed(2)))
-          result.upper.push(Number(bollResult.upper.toFixed(2)))
-          result.lower.push(Number(bollResult.lower.toFixed(2)))
-        } else {
-          result.mid.push(null)
-          result.upper.push(null)
-          result.lower.push(null)
-        }
-      }
-      return result
-    }
-    
-    default:
-      return []
-  }
-}
-
-// 快取計算結果，避免重複計算
-const indicators = computed(() => {
-  if (!hasValidData.value) return {}
-  
-  const result = {}
-  
-  // MA 系列指標
-  result.MA = MA_PERIODS.reduce((acc, period) => {
-    acc[period] = calculateIndicator('MA', period)
-    return acc
-  }, {})
-  
-  // EMA 系列指標
-  result.EMA = MA_PERIODS.reduce((acc, period) => {
-    acc[period] = calculateIndicator('EMA', period)
-    return acc
-  }, {})
-  
-  // 布林通道
-  result.BOLL = calculateIndicator('BOLL', 22, 2)
-  
-  return result
-})
-
-// ===== 圖表配置 =====
-/**
- * 建構底部圖表系列資料
- */
-function buildBottomSeries() {
-  const isVolumeMode = bottomMode.value === 'volume'
-  const { values } = innerData.value
-  
-  if (isVolumeMode) {
-    // 成交量圖表
-    const volumeData = bottomData.value.map((volume, index) => {
-      const [open, close] = values[index]
-      return {
+      result.dates.push(dates[i])
+      result.candleData.push([open, close, low, high]) // ECharts 格式
+      result.closePrices.push(close)
+      
+      // 成交量資料
+      result.volumeData.push({
         value: volume,
         itemStyle: { 
           color: close > open ? '#d60000' : '#00aa55' 
         }
-      }
-    })
-    
-    return {
-      name: '成交量',
-      type: 'bar',
-      xAxisIndex: 1,
-      yAxisIndex: 1,
-      data: volumeData,
-      large: true
-    }
-  } else {
-    // 籌碼圖表
-    const chipsData = bottomData.value.map(value => 
-      value == null ? null : {
-        value,
-        itemStyle: { 
-          color: value >= 0 ? '#d60000' : '#00aa55' 
-        }
-      }
-    )
-    
-    return {
-      name: BOTTOM_LABEL_MAP[bottomMode.value] || '籌碼',
-      type: 'bar',
-      xAxisIndex: 1,
-      yAxisIndex: 1,
-      data: chipsData,
-      large: true
+      })
+      
+      // 籌碼面資料
+      const foreignVal = foreign[i] || 0
+      const dealerVal = dealer[i] || 0
+      const investorVal = investor[i] || 0
+      const majorVal = mainForce[i] || 0
+      
+      result.foreignData.push({
+        value: foreignVal,
+        itemStyle: { color: foreignVal >= 0 ? '#d60000' : '#00aa55' }
+      })
+      
+      result.trustData.push({
+        value: investorVal,
+        itemStyle: { color: investorVal >= 0 ? '#d60000' : '#00aa55' }
+      })
+      
+      result.dealerData.push({
+        value: dealerVal,
+        itemStyle: { color: dealerVal >= 0 ? '#d60000' : '#00aa55' }
+      })
+      
+      result.majorData.push({
+        value: majorVal,
+        itemStyle: { color: majorVal >= 0 ? '#d60000' : '#00aa55' }
+      })
+      
+      // 三大法人總和
+      const threeSum = foreignVal + dealerVal + investorVal
+      result.threeData.push({
+        value: threeSum,
+        itemStyle: { color: threeSum >= 0 ? '#d60000' : '#00aa55' }
+      })
     }
   }
+  
+  return result
+})
+
+// 簡單移動平均線計算
+const calculateMA = (data, period) => {
+  return data.map((_, index) => {
+    if (index < period - 1) return null
+    
+    const sum = data.slice(index - period + 1, index + 1).reduce((a, b) => a + b, 0)
+    return Number((sum / period).toFixed(2))
+  })
 }
 
-/**
- * 建構覆蓋指標系列資料
- */
-function buildOverlaySeries() {
-  const overlay = []
-  const legendItems = ['K線']
+// 指數移動平均線計算
+const calculateEMA = (data, period) => {
+  const multiplier = 2 / (period + 1)
+  return data.map((price, index) => {
+    if (index === 0) return price
+    if (index < period - 1) return null
+    
+    let ema = data.slice(0, period).reduce((a, b) => a + b, 0) / period
+    for (let i = period; i <= index; i++) {
+      ema = (data[i] - ema) * multiplier + ema
+    }
+    return Number(ema.toFixed(2))
+  })
+}
+
+// 布林通道計算
+const calculateBOLL = (data, period = 20, multiplier = 2) => {
+  const ma = calculateMA(data, period)
+  
+  return data.map((_, index) => {
+    if (index < period - 1) return { mid: null, upper: null, lower: null }
+    
+    const slice = data.slice(index - period + 1, index + 1)
+    const mean = slice.reduce((a, b) => a + b, 0) / period
+    const variance = slice.reduce((sum, val) => sum + Math.pow(val - mean, 2), 0) / period
+    const stdDev = Math.sqrt(variance)
+    
+    return {
+      mid: Number(mean.toFixed(2)),
+      upper: Number((mean + stdDev * multiplier).toFixed(2)),
+      lower: Number((mean - stdDev * multiplier).toFixed(2))
+    }
+  })
+}
+
+// 技術指標計算
+const indicators = computed(() => {
+  if (!processedData.value) return {}
+  
+  const { closePrices } = processedData.value
+  
+  return {
+    MA5: calculateMA(closePrices, 5),
+    MA10: calculateMA(closePrices, 10),
+    MA20: calculateMA(closePrices, 20),
+    MA60: calculateMA(closePrices, 60),
+    MA120: calculateMA(closePrices, 120),
+    MA240: calculateMA(closePrices, 240),
+    EMA5: calculateEMA(closePrices, 5),
+    EMA10: calculateEMA(closePrices, 10),
+    EMA20: calculateEMA(closePrices, 20),
+    EMA60: calculateEMA(closePrices, 60),
+    EMA120: calculateEMA(closePrices, 120),
+    EMA240: calculateEMA(closePrices, 240),
+    BOLL: calculateBOLL(closePrices, 20, 2)
+  }
+})
+
+// 取得底部圖表資料
+const bottomChartData = computed(() => {
+  if (!processedData.value) return []
+  
+  const dataMap = {
+    volume: processedData.value.volumeData,
+    foreign: processedData.value.foreignData,
+    trust: processedData.value.trustData,
+    dealer: processedData.value.dealerData,
+    three: processedData.value.threeData,
+    major: processedData.value.majorData
+  }
+  
+  return dataMap[bottomMode.value] || processedData.value.volumeData
+})
+
+// 圖表配置
+const chartOption = computed(() => {
+  if (!processedData.value) return {}
+  
+  const { dates, candleData, volumeData } = processedData.value
   const indicatorData = indicators.value
   
+  // 建構系列資料
+  const series = [
+    {
+      name: 'K線',
+      type: 'candlestick',
+      data: candleData,
+      itemStyle: {
+        color: '#d60000',
+        color0: '#00aa55',
+        borderColor: '#d60000',
+        borderColor0: '#00aa55'
+      }
+    }
+  ]
+  
+  // 圖例資料
+  const legendData = ['K線']
+  
+  // 添加技術指標
+  const legendSelected = {}
   if (overlayIndicator.value === 'MA') {
-    MA_PERIODS.forEach((period, index) => {
-      overlay.push({
+    const maColors = ['#f2c500', '#ff7f50', '#6bc1ff', '#91cc75', '#9a60b4', '#ea7ccc']
+    const maPeriods = [5, 10, 20, 60, 120, 240]
+    
+    maPeriods.forEach((period, index) => {
+      series.push({
         name: `MA${period}`,
         type: 'line',
-        data: indicatorData.MA?.[period] || [],
+        data: indicatorData[`MA${period}`],
         smooth: true,
         showSymbol: false,
         lineStyle: { 
           width: 1, 
-          color: MA_COLORS[index % MA_COLORS.length] 
-        },
-        emphasis: { disabled: true },
-        legendHoverLink: false
+          color: maColors[index] 
+        }
       })
-      legendItems.push(`MA${period}`)
+      legendData.push(`MA${period}`)
+      // 預設只顯示 5/10/20，其餘關閉，可透過圖例點擊開啟
+      legendSelected[`MA${period}`] = (period === 5 || period === 10 || period === 20)
     })
   } else if (overlayIndicator.value === 'EMA') {
-    MA_PERIODS.forEach((period, index) => {
-      overlay.push({
+    const emaColors = ['#f2c500', '#ff7f50', '#6bc1ff', '#91cc75', '#9a60b4', '#ea7ccc']
+    const emaPeriods = [5, 10, 20, 60, 120, 240]
+
+    emaPeriods.forEach((period, index) => {
+      series.push({
         name: `EMA${period}`,
         type: 'line',
-        data: indicatorData.EMA?.[period] || [],
+        data: indicatorData[`EMA${period}`],
         smooth: true,
         showSymbol: false,
-        lineStyle: { 
-          width: 1, 
-          color: MA_COLORS[index % MA_COLORS.length] 
-        },
-        emphasis: { disabled: true },
-        legendHoverLink: false
+        lineStyle: {
+          width: 1,
+          color: emaColors[index]
+        }
       })
-      legendItems.push(`EMA${period}`)
+      legendData.push(`EMA${period}`)
+      legendSelected[`EMA${period}`] = (period === 5 || period === 10 || period === 20)
     })
   } else if (overlayIndicator.value === 'BOLL') {
-    const bollData = indicatorData.BOLL || { mid: [], upper: [], lower: [] }
-    overlay.push(
+    const bollData = indicatorData.BOLL
+    
+    series.push(
       {
-        name: 'BOLL_MID',
+        name: 'BOLL中線',
         type: 'line',
-        data: bollData.mid,
+        data: bollData.map(item => item.mid),
         smooth: true,
         showSymbol: false,
-        lineStyle: { width: 1, color: '#f2c500' },
-        emphasis: { disabled: true }
+        lineStyle: { width: 1, color: '#f2c500' }
       },
       {
-        name: 'BOLL_UPPER',
+        name: 'BOLL上線',
         type: 'line',
-        data: bollData.upper,
+        data: bollData.map(item => item.upper),
         smooth: true,
         showSymbol: false,
-        lineStyle: { width: 1, color: '#6bc1ff' },
-        emphasis: { disabled: true }
+        lineStyle: { width: 1, color: '#ff7f50', type: 'dashed' }
       },
       {
-        name: 'BOLL_LOWER',
+        name: 'BOLL下線',
         type: 'line',
-        data: bollData.lower,
+        data: bollData.map(item => item.lower),
         smooth: true,
         showSymbol: false,
-        lineStyle: { width: 1, color: '#ee6666' },
-        emphasis: { disabled: true }
+        lineStyle: { width: 1, color: '#6bc1ff', type: 'dashed' }
       }
     )
-    legendItems.push('BOLL_MID', 'BOLL_UPPER', 'BOLL_LOWER')
+    legendData.push('BOLL中線', 'BOLL上線', 'BOLL下線')
   }
   
-  return { overlay, legendItems }
-}
-
-/**
- * 建構完整的圖表配置選項
- */
-function buildChartOption() {
-  if (!hasValidData.value) {
-    return { series: [] }
-  }
-
-  const { category, values } = innerData.value
-  const { overlay, legendItems } = buildOverlaySeries()
-  const bottomSeries = buildBottomSeries()
+  // 添加底部圖表
+  series.push({
+    name: BOTTOM_LABEL_MAP[bottomMode.value],
+    type: 'bar',
+    xAxisIndex: 1,
+    yAxisIndex: 1,
+    data: bottomChartData.value
+  })
+  legendData.push(BOTTOM_LABEL_MAP[bottomMode.value])
   
-  // 添加底部圖表標籤到圖例
-  legendItems.push(BOTTOM_LABEL_MAP[bottomMode.value] || '成交量')
-
   return {
-    animation: false,
-    backgroundColor: 'transparent',
+    animation: true,
+    backgroundColor: '#0f0c28',
     
-    // 工具提示配置
-    tooltip: {
-      trigger: 'axis',
-      axisPointer: { type: 'cross' },
-      formatter: function(params) {
-        if (!params || !params.length) return ''
-        
-        const data = params[0]
-        const date = data.axisValue
-        let content = `<div style="margin-bottom: 8px; font-weight: bold;">${date}</div>`
-        
-        // K線數據顯示
-        const candlestickData = params.find(p => p.seriesName === 'K線')
-        if (candlestickData && candlestickData.data) {
-          const [index, open, close, low, high] = candlestickData.data
-          const color = close > open ? '#d60000' : '#00aa55'
-          content += `
-            <div style="margin-bottom: 4px;">
-              <span style="color: ${color};">●</span> 開盤: ${open.toFixed(2)}
-            </div>
-            <div style="margin-bottom: 4px;">
-              <span style="color: ${color};">●</span> 收盤: ${close.toFixed(2)}
-            </div>
-            <div style="margin-bottom: 4px;">
-              <span style="color: #8b5cf6;">●</span> 最高: ${high.toFixed(2)}
-            </div>
-            <div style="margin-bottom: 4px;">
-              <span style="color: #5470c6;">●</span> 最低: ${low.toFixed(2)}
-            </div>
-            <hr style="background-color: #eee;"/>
-          `
-        }
-        
-        // 其他指標顯示
-        params.forEach(param => {
-          if (param.seriesName !== 'K線' && param.value != null) {
-            const color = param.color || '#666'
-            const value = typeof param.value === 'number' 
-              ? param.value.toFixed(2) 
-              : param.value
-            content += `
-              <div style="margin-bottom: 4px;">
-                <span style="color: ${color};">★</span> ${param.seriesName}: ${value}
-              </div>
-            `
-          }
-        })
-        
-        return content
-      }
+    // 全域座標指示器（同步上下兩個網格的 x 軸游標）
+    axisPointer: {
+      link: [
+        { xAxisIndex: [0, 1] }
+      ],
+      snap: true,
+      label: { show: true },
+      lineStyle: { color: '#aaa' },
+      crossStyle: { color: '#aaa' }
     },
     
     // 圖例配置
     legend: {
-      type: 'scroll',
-      data: legendItems,
-      top: 6,
-      left: 16,
-      right: 16,
-      orient: 'horizontal',
-      textStyle: { color: '#ccc' },
-      itemWidth: 14,
-      itemHeight: 8,
+      type: 'scroll',   // 可滾動
+      top: isMobile ? 5 : 10,
+      left: isMobile ? 15 : 30,
+      data: legendData,
+      textStyle: { color: '#fafafa' },
       itemGap: 12,
-      pageIconColor: '#ccc',
-      pageTextStyle: { color: '#ccc' },
-      selected: generateLegendSelection(legendItems)
+      selected: legendSelected
     },
     
-    // 網格配置
+    tooltip: {
+      trigger: 'axis',
+      axisPointer: {
+        type: 'cross'
+      },
+      backgroundColor: 'rgba(50, 50, 50, 0.9)',
+      borderColor: '#999',
+      textStyle: { color: '#fafafa' },
+      // 自訂游標資訊視窗內容
+      formatter: (params) => {
+        // params 為同一 x 軸對應的各 series 資訊
+        if (!params || !params.length) return ''
+        const idx = (params.find(p => p.seriesName === 'K線') || params[0]).dataIndex
+        const dateStr = dates[idx] ?? ''
+        const c = candleData[idx] || [] // [open, close, low, high]
+        const [open, close, low, high] = [c?.[0], c?.[1], c?.[2], c?.[3]]
+
+        const volObj = volumeData[idx]
+        const volume = typeof volObj === 'object' ? volObj.value : volObj
+
+        const fmtNum = (v) => (v === null || v === undefined || Number.isNaN(v) ? '—' : Number(v).toLocaleString('zh-TW'))
+        const fmtPrice = (v) => (v === null || v === undefined || Number.isNaN(v) ? '—' : Number(v).toFixed(2))
+
+        // 收集指標（目前覆蓋在 K 線上的線: MA/EMA/BOLL）並格式化為多行：5MA: xxx、10MA: xxx
+        const indicatorItems = []
+        params.forEach(p => {
+          if (p.seriesType !== 'line') return
+          const val = p.data
+          const show = (val === null || val === undefined) ? '—' : Number(val).toFixed(2)
+
+          // MAx -> xMA: value
+          if (/^MA\d+/.test(p.seriesName)) {
+            const period = Number(p.seriesName.replace('MA', ''))
+            indicatorItems.push({ label: `${period}MA: ${show}`, order: period })
+            return
+          }
+
+          // EMAx -> xEMA: value
+          if (/^EMA\d+/.test(p.seriesName)) {
+            const period = Number(p.seriesName.replace('EMA', ''))
+            indicatorItems.push({ label: `${period}EMA: ${show}`, order: period })
+            return
+          }
+
+          // BOLL上線/中線/下線 -> BOLL上/中/下: value
+          if (p.seriesName.startsWith('BOLL')) {
+            let pos = '中', ord = 2
+            if (p.seriesName.includes('上')) { pos = '上'; ord = 1 }
+            else if (p.seriesName.includes('下')) { pos = '下'; ord = 3 }
+            indicatorItems.push({ label: `BOLL${pos}: ${show}`, order: ord })
+          }
+        })
+        indicatorItems.sort((a, b) => a.order - b.order)
+        const indicatorLine = indicatorItems.length ? indicatorItems.map(i => i.label).join('<br/>') : '—'
+
+        // 組合 HTML 內容
+        return [
+          `<div style="font-weight:600;margin-bottom:4px;">${dateStr}</div>`,
+          `<div>開盤：<span style="font-weight:600;color:#ffd166;">${fmtPrice(open)}</span></div>`,
+          `<div>收盤：<span style="font-weight:600;color:#ffffff;">${fmtPrice(close)}</span></div>`,
+          `<div>最高：<span style="font-weight:600;color:#ff7f50;">${fmtPrice(high)}</span></div>`,
+          `<div>最低：<span style="font-weight:600;color:#6bc1ff;">${fmtPrice(low)}</span></div>`,
+          `<div><span style="font-weight:600;">${indicatorLine}</span></div><hr/>`,
+          `<div>成交量：<span style="font-weight:600;color:#ffd166;">${fmtNum(volume)}</span></div>`
+        ].join('')
+      }
+    },
+    
     grid: [
-      { left: 50, right: 20, top: 70, height: '56%' },
-      { left: 50, right: 20, top: '72%', height: '20%' }
+      {
+        left: isMobile ? '50px' : '60px',
+        right: isMobile ? '20px' : '30px',
+        top: '8%',
+        height: '64%'
+      },
+      {
+        left: isMobile ? '50px' : '60px',
+        right: isMobile ? '20px' : '30px',
+        top: '80%',
+        height: '12%'
+      }
     ],
     
-    // 軸指針聯動
-    axisPointer: { 
-      link: [{ xAxisIndex: [0, 1] }] 
-    },
-    
-    // X軸配置
     xAxis: [
       {
         type: 'category',
-        data: category,
-        boundaryGap: false,
+        data: dates,
+        gridIndex: 0,
+        axisPointer: { show: true },
         axisLine: { lineStyle: { color: '#999' } },
-        axisLabel: { color: '#666' },
-        min: 'dataMin',
-        max: 'dataMax'
+        splitLine: { show: false },
+        axisLabel: { color: '#666' }
       },
       {
         type: 'category',
         gridIndex: 1,
-        data: category,
-        boundaryGap: false,
-        axisTick: { show: false },
+        data: dates,
+        axisPointer: { show: true },
         axisLine: { lineStyle: { color: '#999' } },
-        axisLabel: { color: '#666' }
+        splitLine: { show: false },
+        axisLabel: { show: false }
       }
     ],
     
-    // Y軸配置
     yAxis: [
       {
         scale: true,
         axisLine: { lineStyle: { color: '#999' } },
-        splitLine: { lineStyle: { color: '#eee' } },
+        splitLine: { show: true, lineStyle: { color: '#2a2a2a' } },
         axisLabel: { color: '#666' }
       },
       {
+        scale: true,
         gridIndex: 1,
         axisLine: { lineStyle: { color: '#999' } },
         splitLine: { show: false },
@@ -554,111 +551,26 @@ function buildChartOption() {
       }
     ],
     
-    // 資料縮放配置
     dataZoom: [
-      { 
-        type: 'inside', 
-        xAxisIndex: [0, 1], 
-        start: 60, 
-        end: 100 
+      {
+        type: 'inside',
+        height: '4%',
+        xAxisIndex: [0, 1],
+        start: 60,
+        end: 100
       },
-      { 
-        type: 'slider', 
-        xAxisIndex: [0, 1], 
-        top: '95%', 
-        start: 60, 
-        end: 100 
+      {
+        type: 'slider',
+        height: '4%',
+        xAxisIndex: [0, 1],
+        top: '94%',
+        start: 60,
+        end: 100
       }
     ],
     
-    // 系列資料
-    series: [
-      {
-        name: 'K線',
-        type: 'candlestick',
-        data: values,
-        itemStyle: {
-          color: '#d60000',      // 上漲顏色
-          color0: '#00aa55',     // 下跌顏色
-          borderColor: '#d60000',
-          borderColor0: '#00aa55'
-        }
-      },
-      ...overlay,
-      bottomSeries
-    ]
+    series: series
   }
-}
-
-/**
- * 生成圖例選擇狀態
- */
-function generateLegendSelection(legendItems) {
-  const selected = {}
-  legendItems.forEach(item => {
-    // 對於長期移動平均線，預設隱藏
-    if (item.match(/^(MA|EMA)(60|120|240)$/)) {
-      selected[item] = false
-    } else {
-      selected[item] = true
-    }
-  })
-  return selected
-}
-
-// ===== 圖表管理 =====
-/**
- * 初始化圖表
- */
-function initChart() {
-  if (!chartRef.value) return
-  
-  chartInstance = echarts.init(chartRef.value)
-  chartInstance.setOption(buildChartOption())
-  window.addEventListener('resize', handleResize)
-}
-
-/**
- * 處理視窗大小調整
- */
-function handleResize() {
-  chartInstance?.resize()
-}
-
-/**
- * 更新圖表
- */
-function updateChart() {
-  if (!chartInstance) return
-  
-  try {
-    chartInstance.setOption(buildChartOption(), true)
-  } catch (error) {
-    logger.error('圖表更新錯誤:', error, innerData.value)
-  }
-}
-
-// ===== 生命週期與監聽器 =====
-// 監聽底部模式變化
-watch(() => bottomMode.value, updateChart)
-
-// 監聽覆蓋指標變化
-watch(() => overlayIndicator.value, updateChart)
-
-// 監聽資料變化
-watch(() => innerData.value, updateChart, { deep: true })
-
-// 組件掛載時初始化圖表
-onMounted(() => {
-  if (hasValidData.value) {
-    initChart()
-  }
-})
-
-// 組件卸載時清理資源
-onBeforeUnmount(() => {
-  window.removeEventListener('resize', handleResize)
-  chartInstance?.dispose()
 })
 </script>
 
@@ -782,10 +694,6 @@ onBeforeUnmount(() => {
   .select-input {
     min-width: 150px;
   }
-  
-  .kchart-container {
-    min-height: 400px;
-  }
 }
 
 @media (max-width: 480px) {
@@ -804,7 +712,6 @@ onBeforeUnmount(() => {
   }
   
   .kchart-container {
-    min-height: 350px;
     border-radius: 12px;
   }
 }
