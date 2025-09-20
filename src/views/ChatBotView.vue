@@ -23,7 +23,14 @@
                     <button class="hamburger" @click="toggleSide" v-if="isMobile">
                         <i class="fa-solid fa-bars"></i>
                     </button>
-                    <div class="chat-title">智聊機器人 <span style="color: gray; font-size: 15px;">(GPT-4.1-mini)</span></div>
+                    <div class="chat-title">
+                        智聊機器人
+                        <select v-model="modelSelected" class="model-selector">
+                            <option v-for="model in modelOptions" :key="model" :value="model">
+                                {{ model }}
+                            </option>
+                        </select>
+                    </div>
                 </header>
                 <div class="messages" ref="msgContainer">
                     <div v-for="(m, i) in activeMessages" :key="i" :class="['msg-row', m.role]">
@@ -67,7 +74,7 @@ const sideOpen = ref(false);
 const conversations = ref([{
     id: 'conv-' + Date.now(),
     title: '新的會話',
-    messages: [{ role: 'bot', text: '嗨～我是 **投資智聊**，您的 AI 投資夥伴。今天有想討論的股市問題嗎？' }]
+    messages: [{ role: 'bot', text: '嗨～我是**智聊機器人**，您的 AI 投資夥伴。今天有想討論的股市問題嗎？' }]
 }]);
 const activeId = ref(conversations.value[0]?.id || '');
 const userInput = ref('');
@@ -75,6 +82,10 @@ const loading = ref(false);
 const msgContainer = ref(null);
 const isComposing = ref(false); // 追蹤中文輸入法狀態
 const activeMessages = computed(() => conversations.value.find(c => c.id === activeId.value)?.messages || []);
+
+// 模型選擇
+const modelOptions = ['GPT-4.1-mini', 'GPT-4o-mini', 'GPT-5-mini']
+const modelSelected = ref('GPT-4.1-mini')
 
 function scrollBottom() {
     nextTick(() => { if (msgContainer.value) { msgContainer.value.scrollTop = msgContainer.value.scrollHeight; } });
@@ -103,20 +114,20 @@ function send() {
     const convo = conversations.value.find(c => c.id === activeId.value);
     convo.messages.push({ role: 'user', text });
     userInput.value = '';
-    callChatBotAPI(text, convo);
+    callChatBotAPI(text, modelSelected.value, convo);
     scrollBottom();
 }
 
-async function callChatBotAPI(prompt, convo) {
+async function callChatBotAPI(prompt, model, convo) {
     loading.value = true;
     try {
-        logger.func.start(callChatBotAPI, [prompt]);
+        logger.func.start(callChatBotAPI, [model, prompt]);
         const response = await fetch(`${API_BASE_URL}/chat/chatBot`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ question: prompt })
+            body: JSON.stringify({ question: prompt, model: model })
         });
         
         if (!response.ok) {
@@ -127,7 +138,7 @@ async function callChatBotAPI(prompt, convo) {
         const botReply = data.response || '抱歉，我現在無法回答您的問題。';
 
         convo.messages.push({ role: 'bot', text: botReply });
-        logger.func.success(callChatBotAPI, [prompt]);
+        logger.func.success(callChatBotAPI, [model, prompt]);
     } catch (error) {
         logger.error('ChatBot API 錯誤:', error);
         convo.messages.push({ 
@@ -292,9 +303,28 @@ onMounted(() => {
 }
 
 .chat-title {
+    display: flex;
+    gap: 5px;
     font-weight: 700;
     font-size: 18px;
     letter-spacing: .5px;
+    align-items: flex-end;  /* 垂直置底 */
+}
+
+.model-selector {
+    background: transparent;
+    border: none;
+    padding: 0;
+    font-weight: normal;
+    color: gray;
+    cursor: pointer;
+    outline: none;
+    padding: 3px 1px;
+}
+
+.model-selector:hover {
+    background: rgba(0, 0, 0, 0.05);
+    border-radius: 4px;
 }
 
 .hamburger {
