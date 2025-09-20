@@ -4,7 +4,7 @@
         <div class="chat-layout">
             <aside class="conversation-list" :class="{ open: sideOpen }">
                 <div class="list-header">
-                    <h3>AI智聊</h3>
+                    <h3>投資智聊 AI</h3>
                     <button class="close-btn" @click="toggleSide" aria-label="close" v-if="isMobile">×</button>
                 </div>
                 <ul>
@@ -23,17 +23,17 @@
                     <button class="hamburger" @click="toggleSide" v-if="isMobile">
                         <i class="fa-solid fa-bars"></i>
                     </button>
-                    <div class="chat-title">AI智聊機器人</div>
+                    <div class="chat-title">智聊機器人 <span style="color: gray; font-size: 15px;">(GPT-4.1-mini)</span></div>
                 </header>
                 <div class="messages" ref="msgContainer">
                     <div v-for="(m, i) in activeMessages" :key="i" :class="['msg-row', m.role]">
                         <div class="avatar" v-if="m.role === 'bot'">
                             <i class="fa-solid fa-robot"></i>
                         </div>
-                        <div class="bubble" v-html="formatHTML(m.text)"></div>
                         <div class="avatar user" v-if="m.role === 'user'">
                             <i class="fa-solid fa-user"></i>
                         </div>
+                        <div class="bubble" v-html="processMarkdown(m.text)"></div>
                     </div>
                     <div class="msg-row bot loading" v-if="loading">
                         <div class="avatar"><i class="fa-solid fa-robot"></i></div>
@@ -60,13 +60,14 @@
 import { ref, computed, onMounted, watch, nextTick } from 'vue';
 import Nav from '@/components/Nav.vue';
 import { API_BASE_URL } from '@/utils/apiConfig.js';
+import { processMarkdown } from '@/utils/markdownParser.js';
 
 const isMobile = ref(false);
 const sideOpen = ref(false);
 const conversations = ref([{
     id: 'conv-' + Date.now(),
     title: '新的會話',
-    messages: [{ role: 'bot', text: '您好！我是 AI 智慧機器人，請輸入您的問題。' }]
+    messages: [{ role: 'bot', text: '嗨～我是 **投資智聊**，您的 AI 投資夥伴。今天有想討論的股市問題嗎？' }]
 }]);
 const activeId = ref(conversations.value[0]?.id || '');
 const userInput = ref('');
@@ -74,11 +75,6 @@ const loading = ref(false);
 const msgContainer = ref(null);
 const isComposing = ref(false); // 追蹤中文輸入法狀態
 const activeMessages = computed(() => conversations.value.find(c => c.id === activeId.value)?.messages || []);
-
-
-function formatHTML(t) { 
-    return t.replace(/\n/g, '<br />');
-}
 
 function scrollBottom() {
     nextTick(() => { if (msgContainer.value) { msgContainer.value.scrollTop = msgContainer.value.scrollHeight; } });
@@ -355,9 +351,103 @@ onMounted(() => {
     line-height: 1.55;
     font-size: 15px;
     position: relative;
-    white-space: pre-wrap;
     word-break: break-word;
     box-shadow: 0 2px 6px rgba(0, 0, 0, .06);
+}
+
+/* Markdown 樣式 */
+:deep(.bubble h1),
+:deep(.bubble h2),
+:deep(.bubble h3),
+:deep(.bubble h4),
+:deep(.bubble h5),
+:deep(.bubble h6) {
+    line-height: 1.3;
+    margin: 12px 0 6px 0;
+    font-weight: 600;
+}
+
+:deep(.bubble h1:first-child),
+:deep(.bubble h2:first-child),
+:deep(.bubble h3:first-child),
+:deep(.bubble h4:first-child),
+:deep(.bubble h5:first-child),
+:deep(.bubble h6:first-child) {
+    margin-top: 0;
+}
+
+:deep(.bubble h1) {
+    font-size: 1.5em;
+}
+
+:deep(.bubble h2) {
+    font-size: 1.3em;
+}
+
+:deep(.bubble h3) {
+    font-size: 1.1em;
+}
+
+:deep(.bubble h4),
+:deep(.bubble h5),
+:deep(.bubble h6) {
+    font-size: 1em;
+}
+
+:deep(.bubble p) {
+    margin: 6px 0;
+}
+
+:deep(.bubble p:first-child) {
+    margin-top: 0;
+}
+
+:deep(.bubble p:last-child) {
+    margin-bottom: 0;
+}
+
+:deep(.bubble ul),
+:deep(.bubble ol) {
+    margin: 6px 0;
+    padding-left: 20px;
+}
+
+:deep(.bubble li) {
+    margin: 2px 0;
+}
+:deep(.bubble .table-container) {
+    overflow-x: auto;
+    margin: 8px 0;
+    border-radius: 4px;
+    border: 1px solid #ddd;
+    width: 100%;
+}
+
+:deep(.bubble table) {
+    border-collapse: collapse;
+    width: 100%;
+    min-width: 300px;  /* 確保表格有最小寬度 */
+}
+
+:deep(.bubble th),
+:deep(.bubble td) {
+    border: 1px solid #ddd;
+    padding: 8px 12px;
+    text-align: left;
+    white-space: nowrap; /* 防止表格內容換行 */
+}
+
+:deep(.bubble th) {
+    background-color: rgba(0, 0, 0, 0.05);
+    font-weight: 600;
+    position: sticky;
+    top: 0; /* 讓表頭固定 */
+}
+
+:deep(.bubble hr) {
+    border: none;
+    border-top: 1px solid #ccc;
+    margin: 12px 0;
 }
 
 .msg-row.user .bubble {
@@ -551,6 +641,70 @@ onMounted(() => {
 
     .input-bar {
         padding: 14px 10px 18px;
+    }
+
+    /* 手機版表格優化 */
+    :deep(.bubble .table-container) {
+        overflow-x: auto;
+        max-width: calc(100vw - 130px); /* 確保不會超出視窗寬度 */
+        border-radius: 8px;
+        -webkit-overflow-scrolling: touch; /* iOS 平滑滾動 */
+    }
+
+    :deep(.bubble table) {
+        min-width: 200px; /* 減少最小寬度適應手機 */
+        font-size: 14px; /* 稍微縮小字體 */
+    }
+
+    :deep(.bubble th),
+    :deep(.bubble td) {
+        font-size: 13px; /* 手機版使用較小字體 */
+        white-space: normal; /* 允許文字換行 */
+        word-break: break-word; /* 長詞自動換行 */
+        min-width: 60px; /* 設定最小欄位寬度 */
+    }
+
+    :deep(.bubble th) {
+        font-size: 14px;
+        font-weight: 600;
+    }
+}
+
+/* 更小的手機屏幕（如iPhone SE） */
+@media (max-width: 480px) {
+    :deep(.bubble .table-container) {
+        max-width: calc(100vw - 130px);
+    }
+
+    :deep(.bubble table) {
+        min-width: 260px;
+        font-size: 13px;
+    }
+
+    :deep(.bubble th),
+    :deep(.bubble td) {
+        padding: 4px 6px;
+        font-size: 12px;
+        min-width: 50px;
+    }
+
+    :deep(.bubble th) {
+        font-size: 13px;
+    }
+
+    /* 讓表格標題更緊湊 */
+    :deep(.bubble .table-container::before) {
+        font-size: 11px;
+        padding: 3px 6px;
+    }
+
+    /* 為表格添加滾動提示 */
+    :deep(.bubble .table-container::before) {
+        content: "👈 左右滑動查看更多";
+        display: block;
+        color: #666;
+        font-size: 12px;
+        padding: 4px 8px;
     }
 }
 </style>
