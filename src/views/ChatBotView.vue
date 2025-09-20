@@ -48,7 +48,7 @@
                     </div>
                 </div>
                 <form class="input-bar" @submit.prevent="send">
-                    <textarea v-model="userInput" :placeholder="loading ? '等待機器人回應中...' : '請輸入文字...'" 
+                    <textarea ref="textareaRef" v-model="userInput" :placeholder="loading ? '等待機器人回應中...' : '請輸入文字...'" 
                         rows="1" 
                         @keydown.enter.exact.prevent="handleEnterKey" 
                         @input="autoResize" 
@@ -80,6 +80,7 @@ const activeId = ref(conversations.value[0]?.id || '');
 const userInput = ref('');
 const loading = ref(false);
 const msgContainer = ref(null);
+const textareaRef = ref(null);
 const isComposing = ref(false); // 追蹤中文輸入法狀態
 const activeMessages = computed(() => conversations.value.find(c => c.id === activeId.value)?.messages || []);
 
@@ -114,6 +115,10 @@ function send() {
     const convo = conversations.value.find(c => c.id === activeId.value);
     convo.messages.push({ role: 'user', text });
     userInput.value = '';
+    
+    // 重設輸入框高度
+    resetTextareaHeight();
+    
     callChatBotAPI(text, modelSelected.value, convo);
     scrollBottom();
 }
@@ -173,6 +178,15 @@ function autoResize(e) {
     const el = e.target;
     el.style.height = 'auto';
     el.style.height = Math.min(el.scrollHeight, 160) + 'px';
+}
+
+function resetTextareaHeight() {
+    nextTick(() => {
+        if (textareaRef.value) {
+            textareaRef.value.style.height = 'auto';
+            textareaRef.value.style.height = ''; // 重設為初始高度
+        }
+    });
 }
 
 
@@ -562,7 +576,7 @@ onMounted(() => {
     border-radius: 14px;
     padding: 12px 14px;
     font-family: inherit;
-    font-size: 15px;
+    font-size: 16px;
     background: #fff;
     outline: none;
     line-height: 1.5;
