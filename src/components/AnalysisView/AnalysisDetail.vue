@@ -21,7 +21,7 @@ const props = defineProps({
     },
     description: {
         type: String,
-        default: '從近期的股價走勢來看，台積電在2025年2月9日的收盤價1125元後，稍微回落至1110元（2月10日），反映出市場對於加徵關稅的不安情緒。目前的5MA和10MA顯示短期的均線支撐相當接近，若能穩住在此區域，則可能形成盤整或反彈機會。'
+        default: ''
     },
     direction: {
         type: Number,
@@ -58,6 +58,7 @@ const directionLabel = computed(() => {
     font-size: 18px;
     font-weight: 600;
     white-space: pre-wrap;
+    text-indent: 2em;
 }
 
 @media (max-width: 500px) {
