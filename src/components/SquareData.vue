@@ -4,14 +4,14 @@
             <span class="title">{{ title }}</span>
         </div>
         <div class="value-area">
-            <span class="value">{{ value }}</span>
+            <span class="value">{{ formatValue(value) }}{{ valueSuffix }}</span>
             <span class="change" v-if="change!=0">{{ trend }}{{ change }}<span v-html="changeIcon"></span></span>
         </div>
     </div>
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 
 const props = defineProps({
     title: { 
@@ -19,6 +19,10 @@ const props = defineProps({
         default: '' 
     },
     value: { 
+        type: [String, Number],
+        default: '' 
+    },
+    valueSuffix: { 
         type: String, 
         default: '' 
     },
@@ -31,8 +35,17 @@ const props = defineProps({
         default: ''
     }
 });
-var trend = props.change >= 0 ? '+' : '-';
-var changeIcon = props.change >= 0 ? '<i class="fa-solid fa-arrow-trend-up"></i>' : '<i class="fa-solid fa-arrow-trend-down"></i>';
+const trend = computed(() => (props.change > 0 ? '+' : ''))
+const changeIcon = computed(() => {
+    if (props.change > 0) return '<i class="fa-solid fa-arrow-trend-up"></i>'
+    if (props.change < 0) return '<i class="fa-solid fa-arrow-trend-down"></i>'
+    return ''
+})
+
+function formatValue(val) {
+    if (val === null || val === undefined) return ''
+    return `${val}`
+}
 
 </script>
 
@@ -57,7 +70,7 @@ var changeIcon = props.change >= 0 ? '<i class="fa-solid fa-arrow-trend-up"></i>
 }
 
 .value {
-    font-weight: 900;
+    font-weight: 700;
     font-size: 24px;
 }
 
@@ -74,6 +87,9 @@ var changeIcon = props.change >= 0 ? '<i class="fa-solid fa-arrow-trend-up"></i>
 }
 .bg-yellow {
     background-color: var(--lightFlat);
+}
+.bg-gray {
+    background-color: var(--gray);
 }
 
 @media (max-width: 480px) {

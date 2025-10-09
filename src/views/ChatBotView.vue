@@ -161,7 +161,8 @@ function newConversation() {
     conversations.value.unshift({
         id,
         title: '新的會話',
-        messages: [{ role: 'bot', text: '您好！這是新的會話，請輸入您的問題。' }]
+        messages: [{
+            role: 'bot', text: '嗨～我是**智聊機器人**，您的 AI 投資夥伴。今天有想討論的股市問題嗎？' }]
     });
     activeId.value = id;
 }

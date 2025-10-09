@@ -17,6 +17,8 @@
   --lightFlat: #f7ffa2;        /* 平盤：淺黃 */
   --lightFlat-hover: #f0f777;    /* 淺黃深一點 */
   
+  --gray: #bbbbbc;          /* 沒資料：灰 */
+
   --pill: #bbbbbc;
   --text: #111;
   --shadow: 0 8px 22px rgba(0, 0, 0, .12);
