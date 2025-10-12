@@ -5,24 +5,31 @@
   /* 背景顏色 */
   --bg-color: linear-gradient(180deg, #cfe1ea 0%, #dceaf1 100%);
   
-  /* 股市 */
-  --lightBull: #ffb3b3;        /* 偏多：粉紅 */
-  --lightBull-hover: #ff8a8a;    /* 比粉紅深一點 */
-  --darkBull: #ff3c3c;         /* 偏多：紅 */
-  --darkBull-hover: #ff6a6a;     /* 紅色變亮一點 */
-  --lightBear: #bdfcc0;        /* 偏空：淺綠 */
-  --lightBear-hover: #92f29b;    /* 比淺綠深一點 */
-  --darkBear: #00c046;         /* 偏空：綠 */
-  --darkBear-hover: #26d264;     /* 綠色變亮一點 */
-  --lightFlat: #f7ffa2;        /* 平盤：淺黃 */
-  --lightFlat-hover: #f0f777;    /* 淺黃深一點 */
-  
-  --gray: #bbbbbc;          /* 沒資料：灰 */
+ /* 股市 */
+  --lightBull: #ffb3b3;          /* 偏多：粉紅 */
+  --lightBull-hover: #ff8a8a;      /* 比粉紅深一點 */
+  --darkBull: #ff6f6f;           /* 偏多：紅 */
+  --darkBull-hover: #fb5858;       /* 紅色變亮一點 */
+
+  --lightBear: #bdfcc0;          /* 偏空：淺綠 */
+  --lightBear-hover: #92f29b;      /* 比淺綠深一點 */
+  --darkBear: #00c046;           /* 偏空：綠 */
+  --darkBear-hover: #26d264;       /* 綠色變亮一點 */
+
+  --lightFlat: #f7ffa2;          /* 平盤：淺黃 */
+  --lightFlat-hover: #f0fa63;      /* 淺黃深一點 */
+
+  --gray: #bbbbbc;              /* 沒資料：灰 */
+  --gray-hover: #9e9ea0;          /* 灰色深一點 */
 
   --pill: #bbbbbc;
   --text: #111;
+
   --shadow: 0 8px 22px rgba(0, 0, 0, .12);
-  --shadowSmall: 0 4px 12px rgba(0, 0, 0, .12);
+  --shadow-hover: 0 12px 32px rgba(0, 0, 0, .12);
+
+  --shadow-small: 0 4px 12px rgba(0, 0, 0, .12);
+  --shadow-small-hover: 0 5px 16px rgba(0, 0, 0, .14);
   --card: #fff;
 }
 

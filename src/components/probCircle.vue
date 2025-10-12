@@ -26,31 +26,31 @@ const props = defineProps({
     display: grid;
     place-items: center;
     margin: 10px 20px;
+    transition: background-color 0.3s ease-in-out;
+}
+.prob-circle:hover {
+    box-shadow: var(--shadow-hover);
 }
 
 .prob-text {
-    font-size: clamp(20px, 6vw, 32px);
-    font-weight: 900;
+    font-size: clamp(20px, 2.5vw, 30px);
+    font-weight: 800;
     padding: 25px;
 }
 
 .prob-circle.up {
     background: var(--lightBull);
-    transition: background-color 0.3s ease-in-out;
 }
 
 .prob-circle.up:hover {
-    transition: background-color 0.3s ease-in-out;
     background: var(--lightBull-hover);
 }
 
 .prob-circle.down {
-    transition: background-color 0.3s ease-in-out;
     background: var(--lightBear);
 }
 
 .prob-circle.down:hover {
-    transition: background-color 0.3s ease-in-out;
     background: var(--lightBear-hover);
 }
 

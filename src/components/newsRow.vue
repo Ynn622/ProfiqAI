@@ -62,10 +62,10 @@ function openLink(url) {
     margin-bottom: 10px;
     border-bottom: 1px solid #eee;
     background: #ececec;
-    box-shadow: var(--shadowSmall);
+    box-shadow: var(--shadow-small);
     cursor: pointer;
     border-radius: 10px;
-    transition: background 0.3s ease;
+    transition: background-color 0.3s ease;
 }
 .news-row:hover {
     background: #dcdcdc;

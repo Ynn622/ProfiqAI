@@ -9,27 +9,28 @@
                 <SquareData title="EPS" 
                             :value="basicData?.eps?.toFixed(2)" 
                             :change="basicData?.epsGap"
-                            :color="getColorByValue(basicData?.epsGap)" />
+                            :color="getColorByValue('eps', basicData?.eps)" />
                 <SquareData :title="'P/E Ratio'" 
                             :value="basicData?.PE_ratio"
                             :valueSuffix="' 倍'"
-                            :color="getColorByValue(basicData?.PE_ratio)" />
+                            :color="getColorByValue('pe', basicData?.PE_ratio)" />
                 <SquareData :title="'營收 (YoY)'" 
                             :value="basicData?.MoM"
+                            :valuePrefix="(basicData?.MoM > 0) ? '+' : ''"
                             :valueSuffix="' %'"
-                            :color="getColorByValue(basicData?.MoM)" />
+                            :color="getColorByValue('mom', basicData?.MoM)" />
                 <SquareData :title="'現金股利'" 
                             :value="basicData?.stockSplits" 
                             :valueSuffix="' 元'"
-                            :color="getColorByValue(basicData?.stockSplits)" />
+                            :color="getColorByValue('dividend', basicData?.stockSplits)" />
                 <SquareData :title="'ROA'" 
                             :value="basicData?.ROA"
                             :valueSuffix="' %'"
-                            :color="getColorByValue(basicData?.ROA)" />
+                            :color="getColorByValue('roa', basicData?.ROA)" />
                 <SquareData :title="'ROE'" 
                             :value="basicData?.ROE"
                             :valueSuffix="' %'"
-                            :color="getColorByValue(basicData?.ROE)" />
+                            :color="getColorByValue('roe', basicData?.ROE)" />
             </div>
         </div>
     </div>
