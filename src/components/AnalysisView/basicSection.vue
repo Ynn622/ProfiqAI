@@ -39,7 +39,7 @@
 <script setup>
 // 組件
 import SquareData from '../SquareData.vue';
-import ProbCircle from '../probCircle.vue';
+import ProbCircle from '../Common/probCircle.vue';
 
 // 工具 & 套件
 import { ref, onMounted, computed } from 'vue';

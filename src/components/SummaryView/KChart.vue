@@ -44,6 +44,7 @@
 </template>
 
 <script setup>
+// 工具 & 套件
 import { ref, computed } from 'vue'
 import VChart from 'vue-echarts'
 import { use } from 'echarts/core'
@@ -71,8 +72,6 @@ use([
   AxisPointerComponent
 ])
 
-const { width, isMobile } = isMobileView();
-
 // Props
 const props = defineProps({
   kData: {
@@ -84,6 +83,8 @@ const props = defineProps({
     default: false
   }
 })
+
+const { width, isMobile } = isMobileView();
 
 // 響應式資料
 const overlayIndicator = ref('MA')

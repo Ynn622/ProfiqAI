@@ -19,14 +19,18 @@
 </template>
 
 <script setup>
+// 工具 & 套件
 import { useStockData } from '@/utils/stockData';
 import { watch, onMounted, onUnmounted, computed } from 'vue';
 
+// Props
 const props = defineProps({
     stockId: { type: String, required: true }
 });
 
+// Emits
 const emit = defineEmits(['updateStockData']);
+
 
 // 使用全域股票資料管理
 const { 

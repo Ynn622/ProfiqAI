@@ -18,8 +18,10 @@
 </template>
 
 <script setup>
+// 組件
 import SquareData from '../SquareData.vue';
-import ProbCircle from '../probCircle.vue';
+import ProbCircle from '../Common/probCircle.vue';
+
 </script>
 
 <style scoped>

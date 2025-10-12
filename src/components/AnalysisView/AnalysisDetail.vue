@@ -12,8 +12,13 @@
 </template>
 
 <script setup>
+// 組件
+import ProbCircle from '../Common/probCircle.vue';
+
+// 工具 & 套件
 import { computed } from 'vue';
-import ProbCircle from '../probCircle.vue';
+
+// Props
 const props = defineProps({
     factor: {
         type: String,

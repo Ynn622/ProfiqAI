@@ -15,15 +15,18 @@
 </template>
 
 <script setup>
+// 工具 & 套件
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 
-const router = useRouter();
-const stockId = ref('');
-
+// Props
 const props = defineProps({
   design: { type: String, default: '' },
 })
+
+
+const router = useRouter();
+const stockId = ref('');
 
 function searchStock() {
   if (!stockId.value) {

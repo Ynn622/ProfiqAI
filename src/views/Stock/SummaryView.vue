@@ -29,15 +29,16 @@
 
 <script setup>
 // 組件
-import Aside from '@/components/Aside.vue';
-import Nav from '@/components/Nav.vue';
+import Aside from '@/components/Common/Aside.vue';
+import Nav from '@/components/Common/Nav.vue';
 import RiseProbability from '@/components//SummaryView/RiseProbability.vue';
-import PriceBar from '@/components/PriceBar.vue';
+import PriceBar from '@/components/Common/PriceBar.vue';
 import KChart from '@/components//SummaryView/KChart.vue';
 import BacktestingDesc from '@/components//SummaryView/BacktestingDesc.vue';
 import AnalysisFactors from '@/components//SummaryView/AnalysisFactors.vue';
-import LoadingMask from '@/components/loadingMask.vue'; 
+import LoadingMask from '@/components/Common/loadingMask.vue'; 
 
+// 工具 & 套件
 import { API_BASE_URL } from '@/utils/apiConfig';
 import { logger } from '@/utils/logger';
 import { ref, computed, watch, onMounted } from 'vue';

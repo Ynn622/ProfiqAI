@@ -64,10 +64,14 @@
 </template>
 
 <script setup>
+// 組件
+import Nav from '@/components/Common/Nav.vue';
+
+// 工具 & 套件
 import { ref, computed, onMounted, watch, nextTick } from 'vue';
-import Nav from '@/components/Nav.vue';
 import { API_BASE_URL } from '@/utils/apiConfig.js';
 import { processMarkdown } from '@/utils/markdownParser.js';
+
 
 const isMobile = ref(false);
 const sideOpen = ref(false);

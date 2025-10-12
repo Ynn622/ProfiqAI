@@ -8,8 +8,10 @@
 </template>
 
 <script setup>
+// 工具 & 套件
 import { computed } from 'vue';
 
+// Props
 const props = defineProps({
     factor: {
         type: String,
@@ -20,6 +22,7 @@ const props = defineProps({
         default: 0
     }
 });
+
 
 const directionLabel = computed(() => {
     if (props.direction > 0) return '偏多';

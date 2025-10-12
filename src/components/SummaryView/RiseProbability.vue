@@ -8,11 +8,14 @@
 </template>
 
 <script setup>
+// 工具 & 套件
 import { computed } from 'vue'
 
+// Props
 const props = defineProps({
     probability: { type: Number, required: true, default: 50 }
 })
+
 
 // 計算屬性，機率大於 50% 就上漲
 const isUp = computed(() => props.probability > 50)

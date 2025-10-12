@@ -44,7 +44,7 @@
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import chatBotBtn from '@/components/Button/ChatBotButton.vue';
-import SearchBar from '@/components/SearchBar.vue'
+import SearchBar from '@/components/Common/SearchBar.vue'
 
 const stockId = ref('');
 const router = useRouter();

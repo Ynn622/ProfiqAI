@@ -16,9 +16,15 @@
 </template>
 
 <script setup>
+// 工具 & 套件
 import { useRouter } from 'vue-router';
 import { useWindowSize } from '@vueuse/core';
 import { computed, ref } from 'vue';
+
+// Props
+const props = defineProps({
+  selected: { type: Number, default: 1 },
+});
 
 const { width } = useWindowSize();
 const isMobile = computed(() => width.value < 768);
@@ -38,10 +44,6 @@ function asidePage(page) {
   }
 }
 
-
-const props = defineProps({
-  selected: { type: Number, default: 1 },
-});
 </script>
 
 <style scoped>

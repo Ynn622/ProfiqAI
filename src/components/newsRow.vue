@@ -16,9 +16,10 @@
 </template>
 
 <script setup>
+// 工具 & 套件
 import { isMobileView } from '@/utils/userInterface.js';
 
-const { width, isMobile } = isMobileView();
+// Props
 const props = defineProps({
     title: {
         type: String,
@@ -37,6 +38,9 @@ const props = defineProps({
         default: ''
     }
 });
+
+const { width, isMobile } = isMobileView();
+
 
 // 轉換時間戳為 YYYY-MM-DD HH:MM 格式
 const time = formatTime(props.timestamp*1000);

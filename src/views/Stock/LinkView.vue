@@ -12,8 +12,8 @@
 
 <script setup>
 import { ref, onMounted } from 'vue';
-import Aside from '@/components/Aside.vue';
-import Nav from '@/components/Nav.vue';
+import Aside from '@/components/Common/Aside.vue';
+import Nav from '@/components/Common/Nav.vue';
 
 </script>
 

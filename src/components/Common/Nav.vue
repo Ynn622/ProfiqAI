@@ -21,11 +21,14 @@
 </template>
 
 <script setup>
-import SearchBar from '@/components/SearchBar.vue';
+// 組件
+import SearchBar from '@/components/Common/SearchBar.vue';
 import ChatBotButton from '@/components/Button/ChatBotButton.vue';
+
+// 工具 & 套件
 import router from '@/router';
 import { isMobileView } from '@/utils/userInterface.js';
-import { computed, ref } from 'vue';
+import { ref } from 'vue';
 
 const { width, isMobile } = isMobileView();
 const expandMenu = ref(false);

@@ -5,6 +5,7 @@
 </template>
 
 <script setup>
+// Props
 const props = defineProps({
     isUp: {
         type: Boolean,

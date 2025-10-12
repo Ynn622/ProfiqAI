@@ -11,8 +11,10 @@
 </template>
 
 <script setup>
+// 工具 & 套件
 import { ref, computed } from 'vue';
 
+// Props
 const props = defineProps({
     title: { 
         type: String, 
@@ -39,6 +41,8 @@ const props = defineProps({
         default: ''
     }
 });
+
+
 const trend = computed(() => (props.change > 0 ? '+' : ''))
 const changeIcon = computed(() => {
     if (props.change > 0) return '<i class="fa-solid fa-arrow-trend-up"></i>'

@@ -21,14 +21,19 @@
 </template>
 
 <script setup>
+// 組件
 import NewsRow from '../newsRow.vue';
-import ProbCircle from '../probCircle.vue';
+import ProbCircle from '../Common/probCircle.vue';
+
+// 工具 & 套件
 import { ref, onMounted } from 'vue';
 
+// Props
 const props = defineProps({
     stockId: { type: String, required: true },
     stockName: { type: String, required: true }
 });
+
 
 const loading = ref(false);
 const newsDataList = ref([]);

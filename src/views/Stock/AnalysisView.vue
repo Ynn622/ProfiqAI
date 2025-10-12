@@ -33,16 +33,17 @@
 
 <script setup>
 // 組件
-import Aside from '@/components/Aside.vue';
-import Nav from '@/components/Nav.vue';
-import PriceBar from '@/components/PriceBar.vue';
-import LoadingMask from '@/components/loadingMask.vue';
+import Aside from '@/components/Common/Aside.vue';
+import Nav from '@/components/Common/Nav.vue';
+import PriceBar from '@/components/Common/PriceBar.vue';
+import LoadingMask from '@/components/Common/loadingMask.vue';
 import AnalysisDetail from '@/components/AnalysisView/AnalysisDetail.vue';
 import basicSection from '@/components/AnalysisView/basicSection.vue';
 import chipSection from '@/components/AnalysisView/chipSection.vue';
 import newsSection from '@/components/AnalysisView/newsSection.vue';
 import technicSection from '@/components/AnalysisView/technicSection.vue';
 
+// 工具 & 套件
 import { ref, onMounted, computed } from 'vue';
 import { useRoute } from 'vue-router';
 
