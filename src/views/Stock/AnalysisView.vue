@@ -1,5 +1,7 @@
 <template>
     <div class="screen">
+        <!-- 載入中 spinner -->
+        <LoadingMask v-if="loading" />
         <Nav />
         <div class="main-content">
             <div>
@@ -16,10 +18,13 @@
                     </div>
                 </div>
                 <div class="segment">
-                    <a-segmented class="segment" v-model:value="value" :options="data" />&nbsp; 詳細資料
+                    <a-segmented class="segment" v-model:value="segmentValue" :options="segmentOptions" />&nbsp; 詳細資料
                 </div>
                 <div class="segment-section">
-                    <component :is="componentMap[value]" :stockId="stockId" :stockName="stockName" />
+                    <keep-alive>
+                        <component :is="componentMap[segmentValue]" :stockId="stockId" :stockName="stockName" 
+                                    @loading-start="onLoadingStart" @loading-end="onLoadingEnd"/>
+                    </keep-alive>
                 </div>
             </div>
         </div>
@@ -31,17 +36,25 @@
 import Aside from '@/components/Aside.vue';
 import Nav from '@/components/Nav.vue';
 import PriceBar from '@/components/PriceBar.vue';
+import LoadingMask from '@/components/loadingMask.vue';
 import AnalysisDetail from '@/components/AnalysisView/AnalysisDetail.vue';
 import basicSection from '@/components/AnalysisView/basicSection.vue';
 import chipSection from '@/components/AnalysisView/chipSection.vue';
 import newsSection from '@/components/AnalysisView/newsSection.vue';
 import technicSection from '@/components/AnalysisView/technicSection.vue';
 
-import { ref, onMounted, computed, reactive } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import { useRoute } from 'vue-router';
 
-const data = reactive(['基本', '技術', '消息', '籌碼']);
-const value = ref(data[0]);
+// 取得路由參數
+const route = useRoute();
+const stockId = computed(() => route.params.stock);
+
+// segment 選擇器
+const segmentOptions = ['基本', '技術', '消息', '籌碼'];
+// segment 目前選擇值 (預設為第一個)
+const segmentValue = ref(segmentOptions[0]);
+// segment 對應的組件
 const componentMap = {
     '基本': basicSection,
     '技術': technicSection,
@@ -49,18 +62,13 @@ const componentMap = {
     '籌碼': chipSection,
 };
 
-const route = useRoute();
-const stockId = computed(() => route.params.stock);
+// 載入中
+const loading = ref(false)
 
 // 從 PriceBar 接收的資料
 const stockName = ref('');
 
-// 處理從 PriceBar 回傳的股票資料
-function handleStockDataUpdate(data) {
-  stockName.value = data.StockName;
-}
-
-// 各面分析 假資料
+// 各面分析 模擬資料
 const basicAnalysis = ref({
     factor: '基本',
     direction: 1,
@@ -81,6 +89,14 @@ const chipAnalysis = ref({
     direction: 1,
     description: '在籌碼面方面，外資持股比例為73.45%，投信持股比例為1.86％，自營商持股比例為6.52%。\n值得注意的是，外資持股比例在近期有所下降，顯示外資對台積電的持股態度趨於保守。'
 });
+
+// Emits: 處理從 PriceBar 回傳的股票資料
+function handleStockDataUpdate(data) {
+    stockName.value = data.StockName;
+}
+// Emits: 載入中狀態傳遞給子組件
+function onLoadingStart() { loading.value = true }
+function onLoadingEnd() { loading.value = false }
 
 </script>
 

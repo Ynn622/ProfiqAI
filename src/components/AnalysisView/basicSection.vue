@@ -36,11 +36,22 @@
 </template>
 
 <script setup>
+// 組件
 import SquareData from '../SquareData.vue';
 import ProbCircle from '../probCircle.vue';
+
+// 工具 & 套件
 import { ref, onMounted, computed } from 'vue';
 import { API_BASE_URL } from '@/utils/apiConfig.js';
 import { getColorByValue } from '@/utils/colorHelper.js';
+
+// Props
+const props = defineProps({
+    stockId: { type: String, required: true },
+    stockName: { type: String, required: true }
+});
+// Emits
+const emit = defineEmits(['loading-start', 'loading-end'])
 
 const loading = ref(false);
 const basicDataList = ref({
@@ -70,13 +81,8 @@ const basicDataList = ref({
         "eps": []
     }
 });
-
 const basicData = computed(() => basicDataList.value.basicData);
 
-const props = defineProps({
-    stockId: { type: String, required: true },
-    stockName: { type: String, required: true }
-});
 
 async function callBasicSectionAPI(stockId) {
     loading.value = true;
@@ -102,8 +108,10 @@ async function callBasicSectionAPI(stockId) {
     }
 }
 
-onMounted(() => {
-    callBasicSectionAPI(props.stockId);
+onMounted(async () => {
+    emit('loading-start') // 通知父組件：開始載入
+    await callBasicSectionAPI(props.stockId);
+    emit('loading-end')   // 通知父組件：結束載入
 });
 
 </script>

@@ -1,5 +1,6 @@
 <template>
   <div class="screen">
+    <!-- 載入中 spinner -->
     <LoadingMask v-if="loading" />
     <Nav />
     <div class="main-content">
@@ -7,10 +8,7 @@
         <Aside :selected="1" />
       </div>
       <div class="content">
-        <PriceBar 
-          :stockId="stockId" 
-          @updateStockData="handleStockDataUpdate"
-        />
+        <PriceBar :stockId="stockId" @updateStockData="handleStockDataUpdate"/>
         <div class="main-bottom">
           <KChart :k-data="kData" :loading="loading" />
           <div class="other">
