@@ -86,7 +86,6 @@ const basicData = computed(() => basicDataList.value.basicData);
 
 
 async function callBasicSectionAPI(stockId) {
-    loading.value = true;
     try {
         logger.func.start(callBasicSectionAPI, [stockId]);
         const response = await fetch(`${API_BASE_URL}/View/basicStockInfo?stockID=${stockId}`, {
@@ -104,8 +103,6 @@ async function callBasicSectionAPI(stockId) {
         logger.func.success(callBasicSectionAPI, [stockId]);
     } catch (error) {
         logger.func.error(callBasicSectionAPI, error);
-    } finally {
-        loading.value = false;
     }
 }
 
