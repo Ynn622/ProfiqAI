@@ -32,19 +32,13 @@
     </div>
 
     <!-- 圖表容器 -->
-    <v-chart v-if="hasValidData" 
-      :option="chartOption" 
-      :autoresize="true"
-      class="kchart-container" />
+    <v-chart v-if="hasValidData" :option="chartOption" :autoresize="true" class="kchart-container" />
     <div v-else-if="props.loading" class="placeholder loading">
-      <div class="loading-spinner"></div>
-      載入中...
-    </div>
-    <div v-else-if="isEmptyData" class="placeholder empty">
       等待資料載入...
     </div>
-    <div v-else-if="showError" class="placeholder error">
-      K 線資料異常！<br />請確認網路狀態，或稍後再試。
+    <div v-else class="placeholder error">
+      K 線資料異常！
+      <br />請確認網路狀態，或稍後再試。
     </div>
   </div>
 </template>
@@ -123,11 +117,6 @@ const hasValidData = computed(() => {
   return props.kData.Date.length > 0 && 
          props.kData.OHLC.length > 0 && 
          props.kData.Volume.length > 0
-})
-
-// 判斷是否顯示錯誤訊息（非載入中且資料無效）
-const showError = computed(() => {
-  return !props.loading && !isEmptyData.value && !hasValidData.value
 })
 
 // 處理資料格式
@@ -664,7 +653,7 @@ const chartOption = computed(() => {
   min-height: 480px;
   width: 100%;
   background-color: #0f0c28;
-  border-radius: 15px;
+  border-radius: 10px;
   overflow: hidden;
 }
 
@@ -715,10 +704,6 @@ const chartOption = computed(() => {
     font-size: 13px;
     padding: 6px 10px;
     padding-right: 28px;
-  }
-  
-  .kchart-container {
-    border-radius: 12px;
   }
 }
 </style>

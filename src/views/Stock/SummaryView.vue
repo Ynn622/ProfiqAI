@@ -12,7 +12,7 @@
           @updateStockData="handleStockDataUpdate"
         />
         <div class="main-bottom">
-          <KChart :k-data="kData" />
+          <KChart :k-data="kData" :loading="loading" />
           <div class="other">
             <RiseProbability :probability="51" />
             <BacktestingDesc />

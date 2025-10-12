@@ -1,6 +1,6 @@
 // API 配置文件
 
-// 切換 API 環境
+// 切換 API 環境   [ true 為正式環境，false 為地端測試環境 ]
 const PROD = true;
 
 // 獲取 API 基礎 URL
