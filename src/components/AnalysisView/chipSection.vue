@@ -46,7 +46,7 @@ const chipData = ref(null);
  * API: 取得籌碼資料 (三大法人、主力、融資、融券)
  */
 async function callChipAPI(stockId) {
-    const url = `${API_BASE_URL}/View/getChipData?stockID=${stockId}`;
+    const url = `${API_BASE_URL}/View/section/chipInfo?stockID=${stockId}`;
 
     try {
         logger.func.start(callChipAPI, [stockId]);
@@ -71,7 +71,6 @@ async function callChipAPI(stockId) {
         logger.func.success(callChipAPI, [stockId]);
     } catch (err) {
         logger.func.error(callChipAPI, [stockId]);
-        console.error('取得股票資料失敗:', err);
     }
 }
 

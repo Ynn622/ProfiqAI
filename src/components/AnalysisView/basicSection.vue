@@ -88,7 +88,7 @@ const basicData = computed(() => basicDataList.value.basicData);
 async function callBasicSectionAPI(stockId) {
     try {
         logger.func.start(callBasicSectionAPI, [stockId]);
-        const response = await fetch(`${API_BASE_URL}/View/basicStockInfo?stockID=${stockId}`, {
+        const response = await fetch(`${API_BASE_URL}/View/section/basicInfo?stockID=${stockId}`, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',

@@ -149,7 +149,7 @@ async function callChatBotAPI(prompt, model, convo) {
         convo.messages.push({ role: 'bot', text: botReply });
         logger.func.success(callChatBotAPI, [model, prompt]);
     } catch (error) {
-        logger.error('ChatBot API 錯誤:', error);
+        logger.func.error(callChatBotAPI, [model, prompt]);
         convo.messages.push({ 
             role: 'bot', 
             text: '抱歉，系統暫時無法連接，請稍後再試。' 

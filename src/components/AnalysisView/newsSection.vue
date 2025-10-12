@@ -35,12 +35,10 @@ const props = defineProps({
 });
 
 
-const loading = ref(false);
 const newsDataList = ref([]);
 
 async function callAnueNewsAPI(page = 1) {
     logger.debug(props.stockName);
-    loading.value = true;
     try {
         logger.func.start(callAnueNewsAPI, [page]);
         const response = await fetch(`https://ess.api.cnyes.com/ess/api/v1/news/keyword?q=${props.stockName}&limit=20&page=${page}`, {
@@ -64,9 +62,7 @@ async function callAnueNewsAPI(page = 1) {
         }));
         logger.func.success(callAnueNewsAPI, [page]);
     } catch (error) {
-        logger.error('ChatBot API 錯誤:', error);
-    } finally {
-        loading.value = false;
+        logger.func.error(callAnueNewsAPI, [page]);
     }
 }
 
