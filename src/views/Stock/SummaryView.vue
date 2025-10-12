@@ -67,8 +67,7 @@ function handleStockDataUpdate(data) {
  * API: 取得歷史股價資料 (K 線)
  */
 async function fetchStockData(stockId) {
-  const startDate = '2024-05-10';
-  const url = `${API_BASE_URL}/View/stockData?stock_id=${stockId}&start_date=${startDate}`;
+  const url = `${API_BASE_URL}/View/stockData?stock_id=${stockId}`;
 
   try {
     loading.value = true;
