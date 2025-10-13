@@ -71,6 +71,7 @@ async function callChipAPI(stockId) {
         logger.func.success(callChipAPI, [stockId]);
     } catch (err) {
         logger.func.error(callChipAPI, [stockId]);
+        logger.error('籌碼面分析 API 錯誤:', err);
     }
 }
 

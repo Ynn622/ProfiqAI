@@ -63,6 +63,7 @@ async function callAnueNewsAPI(page = 1) {
         logger.func.success(callAnueNewsAPI, [page]);
     } catch (error) {
         logger.func.error(callAnueNewsAPI, [page]);
+        logger.error('個股新聞 API 錯誤:', error);
     }
 }
 

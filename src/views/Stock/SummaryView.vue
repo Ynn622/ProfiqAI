@@ -90,8 +90,7 @@ async function fetchStockData(stockId) {
     logger.func.success(fetchStockData, [stockId]);
   } catch (err) {
     logger.func.error(fetchStockData, [stockId]);
-    console.error('取得股票資料失敗:', err);
-    throw err;
+    logger.error('取得股票資料錯誤:', err);
   } finally {
     loading.value = false;
   }

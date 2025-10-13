@@ -102,7 +102,8 @@ async function callBasicSectionAPI(stockId) {
 
         logger.func.success(callBasicSectionAPI, [stockId]);
     } catch (error) {
-        logger.func.error(callBasicSectionAPI, error);
+        logger.func.error(callBasicSectionAPI, [stockId]);
+        logger.error('基本面分析 API 錯誤:', error);
     }
 }
 

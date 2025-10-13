@@ -93,8 +93,7 @@ export function useStockData() {
       };
     } catch (err) {
       logger.func.error(fetchLiveStockInfo, [stockId]);
-      console.error('取得即時股票資訊失敗:', err);
-      throw err;
+      logger.error('取得即時股票資訊錯誤:', err);
     } finally {
       setLoading(stockId, false);
     }

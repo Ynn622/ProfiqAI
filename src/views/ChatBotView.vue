@@ -71,6 +71,7 @@ import Nav from '@/components/Common/Nav.vue';
 import { ref, computed, onMounted, watch, nextTick } from 'vue';
 import { API_BASE_URL } from '@/utils/apiConfig.js';
 import { processMarkdown } from '@/utils/markdownParser.js';
+import { logger } from '@/utils/logger';
 
 
 const isMobile = ref(false);
@@ -150,6 +151,7 @@ async function callChatBotAPI(prompt, model, convo) {
         logger.func.success(callChatBotAPI, [model, prompt]);
     } catch (error) {
         logger.func.error(callChatBotAPI, [model, prompt]);
+        logger.error('ChatBot API 錯誤:', error);
         convo.messages.push({ 
             role: 'bot', 
             text: '抱歉，系統暫時無法連接，請稍後再試。' 
