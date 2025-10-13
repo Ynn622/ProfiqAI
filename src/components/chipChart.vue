@@ -1,7 +1,8 @@
 <template>
     <div class="chip-chart-container">
         <v-chart v-if="chartOption" class="chart" :option="chartOption" autoresize />
-        <div v-else class="loading">載入中...</div>
+        <div v-if="loading" class="loading">載入中...</div>
+        <div v-else class="no-data">籌碼圖表資料異常，請稍後再試！</div>
     </div>
 </template>
 
@@ -35,7 +36,8 @@ use([
 // Props
 const props = defineProps({
     chipData: { type: Object, default: null },
-    segmentValue: { type: String, default: '三大法人' }
+    segmentValue: { type: String, default: '三大法人' },
+    loading: { type: Boolean, default: false }
 });
 
 // 數據映射配置
@@ -113,6 +115,14 @@ const chartOption = computed(() => {
                 params.forEach(param => {
                     const value = param.value;
                     const color = param.color;
+                    
+                    // 檢查 value 是否為 null 或 undefined
+                    if (value === null || value === undefined) {
+                        result += `<span style="display:inline-block;margin-right:5px;border-radius:10px;width:10px;height:10px;background-color:${color};"></span>`;
+                        result += `${param.seriesName}: --<br/>`;
+                        return; // 跳過後續處理
+                    }
+                    
                     result += `<span style="display:inline-block;margin-right:5px;border-radius:10px;width:10px;height:10px;background-color:${color};"></span>`;
                     result += `${param.seriesName}: ${value > 0 ? '+' : ''}${value.toLocaleString()}<br/>`;
                     
@@ -156,6 +166,10 @@ const chartOption = computed(() => {
             type: 'value',
             axisLabel: {
                 formatter: function(value) {
+                    // 檢查 value 是否為 null 或 undefined
+                    if (value === null || value === undefined) {
+                        return '--';
+                    }
                     return value.toLocaleString();
                 }
             }
@@ -188,5 +202,14 @@ watch([() => props.chipData, () => props.segmentValue], () => {
     align-items: center;
     height: 100%;
     color: #666;
+}
+
+.no-data {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    color: #999;
+    font-size: 16px;
 }
 </style>

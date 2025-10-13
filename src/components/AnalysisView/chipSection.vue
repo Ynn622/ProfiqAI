@@ -8,8 +8,8 @@
             <div class="analysis-right">
                 <div class="segment">
                     <a-segmented class="segment" v-model:value="segmentValue" :options="segmentOptions" />
-                    <ChipChart :chipData="chipData" :segmentValue="segmentValue" />
-                    <ChipTable :chipData="chipData" :segmentValue="segmentValue" />
+                    <ChipChart :chipData="chipData" :segmentValue="segmentValue" :loading="loading" />
+                    <ChipTable :chipData="chipData" :segmentValue="segmentValue" :loading="loading" />
                 </div>
             </div>
         </div>
@@ -32,8 +32,9 @@ const props = defineProps({
     stockName: { type: String, required: true }
 });
 // Emits
-const emit = defineEmits(['loading-start', 'loading-end'])
+const emit = defineEmits(['loading-start', 'loading-end']);
 
+const loading = ref(false);
 
 // segment 選擇器
 const segmentOptions = ['三大法人', '主力', '融資＆融券'];
@@ -77,7 +78,9 @@ async function callChipAPI(stockId) {
 
 onMounted(async () => {
     emit('loading-start') // 通知父組件：開始載入
+    loading.value = true;
     await callChipAPI(props.stockId);
+    loading.value = false;
     emit('loading-end')   // 通知父組件：結束載入
 });
 

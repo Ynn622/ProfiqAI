@@ -1,31 +1,26 @@
 <template>
     <div class="chip-table-container">
         <div v-if="tableData && tableData.length > 0" class="table-wrapper">
-            <a-table 
-                :columns="columns" 
-                :data-source="tableData" 
-                :pagination="false"
-                :scroll="{ x: 'max-content' }"
-                size="small"
-                bordered
-            >
+            <a-table :columns="columns" :data-source="tableData" :pagination="false" :scroll="{ x: 'max-content' }"
+                size="small" bordered>
                 <template #headerCell="{ column }">
                     <span :class="['table-header', column.dataIndex === 'total' ? 'total-header' : '']">
                         {{ column.title }}
                     </span>
                 </template>
                 <template #bodyCell="{ column, record }">
-                    <span v-if="column.dataIndex !== 'date'" 
-                          :class="[getValueClass(record[column.dataIndex]), column.dataIndex === 'total' ? 'total-value' : '']">
+                    <span v-if="column.dataIndex !== 'date'"
+                        :class="[getValueClass(record[column.dataIndex]), column.dataIndex === 'total' ? 'total-value' : '']">
                         {{ formatValue(record[column.dataIndex]) }}
                     </span>
                     <span v-else>{{ record[column.dataIndex] }}</span>
                 </template>
             </a-table>
         </div>
-        <div v-else class="loading">
+        <div v-if="loading" class="loading">
             載入中...
         </div>
+        <div v-else class="no-data">籌碼表格資料異常，請稍後再試！</div>
     </div>
 </template>
 
@@ -35,7 +30,8 @@ import { computed } from 'vue';
 // Props
 const props = defineProps({
     chipData: { type: Object, default: null },
-    segmentValue: { type: String, default: '三大法人' }
+    segmentValue: { type: String, default: '三大法人' },
+    loading: { type: Boolean, default: false }
 });
 
 // 數據映射配置
@@ -202,5 +198,14 @@ function getValueClass(value) {
 
 :deep(.ant-table-tbody > tr > td) {
     border-bottom: 1px solid #f1f5f9;
+}
+
+.no-data {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    color: #999;
+    font-size: 16px;
 }
 </style>
