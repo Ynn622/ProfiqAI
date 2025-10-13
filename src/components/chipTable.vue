@@ -1,7 +1,7 @@
 <template>
     <div class="chip-table-container">
         <div v-if="tableData && tableData.length > 0" class="table-wrapper">
-            <a-table :columns="columns" :data-source="tableData" :pagination="false" :scroll="{ x: 'max-content' }"
+            <a-table :columns="columns" :data-source="tableData" :pagination="false" 
                 size="small" bordered>
                 <template #headerCell="{ column }">
                     <span :class="['table-header', column.dataIndex === 'total' ? 'total-header' : '']">
@@ -17,7 +17,7 @@
                 </template>
             </a-table>
         </div>
-        <div v-if="loading" class="loading">
+        <div v-else-if="loading" class="loading">
             載入中...
         </div>
         <div v-else class="no-data">籌碼表格資料異常，請稍後再試！</div>
@@ -46,7 +46,7 @@ const dataMapping = {
     },
     '融資＆融券': {
         keys: ['MarginBuy', 'MarginSell', 'MarginRatio'],
-        labels: ['融資買入', '融資賣出', '融資比率']
+        labels: ['融資買入', '融券賣出', '券資比％']
     }
 };
 
@@ -139,6 +139,7 @@ function getValueClass(value) {
     border-radius: 8px;
     overflow: hidden;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    overflow-x: auto;
 }
 
 .table-header {
@@ -190,6 +191,7 @@ function getValueClass(value) {
     background-color: #f8fafc;
     border-bottom: 2px solid #e2e8f0;
     font-weight: 600;
+    white-space: nowrap;  /* 防止標題換行 */
 }
 
 :deep(.ant-table-tbody > tr:hover > td) {
