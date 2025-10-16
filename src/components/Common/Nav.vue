@@ -36,7 +36,7 @@ const expandMenu = ref(false);
 const PageDict = {
     '股票速覽': 'stock-summary',
     '分析儀表': 'stock-analysis',
-    '連動個股': 'stock-linked'
+    '新聞股雲': 'stock-linked'
 };
 
 function tapLogo() {

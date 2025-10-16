@@ -28,8 +28,8 @@
           <span>分析儀表</span>
         </div>
         <div class="function-item">
-          <i class="fa-solid fa-link"></i>
-          <span>連動個股</span>
+          <i class="fa-solid fa-cloud"></i>
+          <span>新聞股雲</span>
         </div>
       </div>
 

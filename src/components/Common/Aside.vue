@@ -1,18 +1,18 @@
 <template>
-    <div class="aside" v-if="!isMobile">
-        <div class="function-item" :class="{ selected: selected === 1 }" @click="asidePage(1)">
-          <i class="fa-solid fa-chart-column"></i>
-          <span>股票速覽</span>
-        </div>
-        <div class="function-item" :class="{ selected: selected === 2 }" @click="asidePage(2)">
-          <i class="fa-solid fa-gauge"></i>
-          <span>分析儀表</span>
-        </div>
-        <div class="function-item" :class="{ selected: selected === 3 }" @click="asidePage(3)">
-          <i class="fa-solid fa-link"></i>
-          <span>連動個股</span>
-        </div>
+  <div class="aside" v-if="!isMobile">
+    <div class="function-item" :class="{ selected: selected === 1 }" @click="asidePage(1)">
+      <i class="fa-solid fa-chart-column"></i>
+      <span>股票速覽</span>
     </div>
+    <div class="function-item" :class="{ selected: selected === 2 }" @click="asidePage(2)">
+      <i class="fa-solid fa-gauge"></i>
+      <span>分析儀表</span>
+    </div>
+    <div class="function-item" :class="{ selected: selected === 3 }" @click="asidePage(3)">
+      <i class="fa-solid fa-cloud"></i>
+      <span>新聞股雲</span>
+    </div>
+  </div>
 </template>
 
 <script setup>
