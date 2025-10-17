@@ -1,5 +1,5 @@
 <template>
-    <b>最後更新時間：{{ getCurrentHourString() }} （整點更新）</b>
+    <b>最後更新時間：{{ updateTime }} （整點更新）</b>
     <div ref="wordCloudContainer" class="word-cloud-container"></div>
 </template>
 
@@ -23,6 +23,7 @@ const { width, isMobile } = isMobileView();
 const wordCounts = ref(null);
 const wordCloudContainer = ref(null);
 let chartInstance = null;
+const updateTime = ref('loading...');
 
 /**
  * 獲取當前整點時間字串 (格式: 2025-10-10 10:00)
@@ -210,6 +211,8 @@ onMounted(async () => {
                 logger.debug('從 localStorage 載入文字雲資料');
             }
         }
+        // 更新顯示的時間
+        updateTime.value = getCurrentHourString();
         
         // 等待 DOM 渲染完成
         await nextTick();
