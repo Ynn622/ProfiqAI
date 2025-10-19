@@ -8,8 +8,10 @@
 import { ref, onMounted, nextTick, onUnmounted } from 'vue';
 import { API_BASE_URL } from '@/utils/apiConfig.js';
 import { isMobileView } from '@/utils/userInterface.js';
+import { getCurrentHourString, saveToLocalStorage, shouldCallAPI } from '@/utils/localStorageTool.js';
 import * as echarts from 'echarts';
 import 'echarts-wordcloud';
+import { logger } from '@/utils/logger';
 
 // Props
 const props = defineProps({
@@ -23,56 +25,8 @@ const { width, isMobile } = isMobileView();
 const wordCounts = ref(null);
 const wordCloudContainer = ref(null);
 let chartInstance = null;
-const updateTime = ref('loading...');
-
-/**
- * 獲取當前整點時間字串 (格式: 2025-10-10 10:00)
- */
-function getCurrentHourString() {
-    const now = new Date();
-    const year = now.getFullYear();
-    const month = String(now.getMonth() + 1).padStart(2, '0');
-    const day = String(now.getDate()).padStart(2, '0');
-    const hour = String(now.getHours()).padStart(2, '0');
-    
-    return `${year}-${month}-${day} ${hour}:00`;
-}
-
-/**
- * 檢查是否需要重新打 API
- */
-function shouldCallAPI(stockId) {
-    try {
-        const lastUpdateKey = `wordCloud_lastUpdate_${stockId}`;
-        const storedTime = localStorage.getItem(lastUpdateKey);
-        const currentHour = getCurrentHourString();
-        
-        if (storedTime === currentHour) {
-            logger.debug(`當前小時 ${currentHour} 已有資料，跳過 API 調用`);
-            return false;
-        }
-        
-        logger.debug(`需要更新資料，上次更新: ${storedTime || '無'}, 當前: ${currentHour}`);
-        return true;
-    } catch (err) {
-        logger.error('檢查更新時間錯誤:', err);
-        return true; // 出錯時重新打 API
-    }
-}
-
-/**
- * 儲存更新時間
- */
-function saveUpdateTime(stockId) {
-    try {
-        const lastUpdateKey = `wordCloud_lastUpdate_${stockId}`;
-        const currentHour = getCurrentHourString();
-        localStorage.setItem(lastUpdateKey, currentHour);
-        logger.debug(`已儲存更新時間: ${currentHour}`);
-    } catch (err) {
-        logger.error('儲存更新時間錯誤:', err);
-    }
-}
+const updateTime = ref('Loading...');
+const WORDCLOUD_STORAGE_KEY = `wordCloud_${props.stockId}`;
 
 /** 
  * API: 取得文字雲資料
@@ -91,12 +45,8 @@ async function callWordCloudAPI(stockId) {
         const response = await res.json();
         wordCounts.value = response.wordCounts;
         
-        // 存儲資料到 localStorage
-        const storageKey = `wordCloud_${stockId}`;
-        localStorage.setItem(storageKey, JSON.stringify(response.wordCounts));
-        
-        // 存儲更新時間
-        saveUpdateTime(stockId);
+        // 存儲更新到 localStorage
+        saveToLocalStorage(WORDCLOUD_STORAGE_KEY, response.wordCounts);
 
         logger.debug('文字雲資料:', wordCounts.value);
         logger.func.success(callWordCloudAPI, [stockId]);
@@ -199,16 +149,15 @@ onMounted(async () => {
     emit('loading-start') // 通知父組件：開始載入
     try {
         // 檢查是否需要重新打 API
-        if (shouldCallAPI(props.stockId)) {
+        if (shouldCallAPI(WORDCLOUD_STORAGE_KEY)) {
             // 需要更新，調用 API
             await callWordCloudAPI(props.stockId);
         } else {
             // 不需要更新，從 localStorage 載入
-            const storageKey = `wordCloud_${props.stockId}`;
-            const storedData = localStorage.getItem(storageKey);
+            const storedData = localStorage.getItem(WORDCLOUD_STORAGE_KEY);
             if (storedData) {
                 wordCounts.value = JSON.parse(storedData);
-                logger.debug('從 localStorage 載入文字雲資料');
+                logger.debug('從 localStorage 載入文字雲資料', wordCounts.value);
             }
         }
         // 更新顯示的時間
