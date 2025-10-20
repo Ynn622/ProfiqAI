@@ -45,6 +45,7 @@ import ProbCircle from '../Common/probCircle.vue';
 import { ref, onMounted, computed } from 'vue';
 import { API_BASE_URL } from '@/utils/apiConfig.js';
 import { getColorByValue } from '@/utils/colorHelper.js';
+import { getCurrentHourString, saveToLocalStorage, shouldCallAPI } from '@/utils/localStorageTool.js';
 
 // Props
 const props = defineProps({
@@ -55,6 +56,8 @@ const props = defineProps({
 const emit = defineEmits(['loading-start', 'loading-end'])
 
 const loading = ref(false);
+const STORAGE_KEY = `basicData_${props.stockId}`;
+
 const basicDataList = ref({
     "basicData": {
         "PE_ratio": null,
@@ -98,7 +101,10 @@ async function callBasicSectionAPI(stockId) {
         if (!response.ok) { throw new Error(`HTTP error! status: ${response.status}`); }
         
         const data = await response.json();
-        basicDataList.value = data || [];
+        basicDataList.value = data;
+
+        // 儲存到 localStorage
+        saveToLocalStorage(STORAGE_KEY, basicDataList.value);
 
         logger.func.success(callBasicSectionAPI, [stockId]);
     } catch (error) {
@@ -109,8 +115,26 @@ async function callBasicSectionAPI(stockId) {
 
 onMounted(async () => {
     emit('loading-start') // 通知父組件：開始載入
-    await callBasicSectionAPI(props.stockId);
-    emit('loading-end')   // 通知父組件：結束載入
+    try {
+        // 檢查是否需要重新打 API
+        if (shouldCallAPI(STORAGE_KEY)) {
+            // 需要更新，調用 API
+            await callBasicSectionAPI(props.stockId);
+        } else {
+            // 不需要更新，從 localStorage 載入
+            const storedData = localStorage.getItem(STORAGE_KEY);
+            if (storedData) {
+                basicDataList.value = JSON.parse(storedData);
+                logger.debug('從 localStorage 載入基本面資料', basicDataList.value);
+            }
+        }
+        // 更新顯示的時間
+        // updateTime.value = getCurrentHourString();
+    } catch (err) {
+        logger.error('基本面分析初始化錯誤:', err);
+    } finally {
+        emit('loading-end') // 通知父組件：結束載入
+    }
 });
 
 </script>
