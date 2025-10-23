@@ -1,15 +1,16 @@
 <template>
-    <div class="news-row" @click="openLink(props.url)">
+    <div class="news-row" @click="openLink(url)">
         <div class="news-info">
-            <span class="news-title">{{ title.replace(/<[^>]+>/g, '') }}</span>
+            <span class="news-title">{{ cleanTitle }}</span>
             <span v-if="!isMobile" class="news-meta">
-                <i class="fa-solid fa-square-arrow-up-right" /> 鉅亨網 &nbsp;
+                &nbsp; 
+                <i class="fa-solid fa-square-arrow-up-right" /> {{ source }} &nbsp;
                 <i class="fa-solid fa-clock" /> {{ time }}
             </span>
         </div>
-        <span>{{ content }}</span>
+        <span class="news-summary">{{ summary }}</span>
         <div class="news-meta" v-if="isMobile">
-            <i class="fa-solid fa-square-arrow-up-right" /> 鉅亨網 &nbsp;
+            <i class="fa-solid fa-square-arrow-up-right" /> {{ source }} &nbsp;
             <i class="fa-solid fa-clock" /> {{ time }}
         </div>
     </div>
@@ -18,6 +19,7 @@
 <script setup>
 // 工具 & 套件
 import { isMobileView } from '@/utils/userInterface.js';
+import { computed } from 'vue';
 
 // Props
 const props = defineProps({
@@ -29,11 +31,15 @@ const props = defineProps({
         type: Number,
         default: 0
     },
-    content: {
+    summary: {
         type: String,
         default: ''
     },
     url: {
+        type: String,
+        default: ''
+    },
+    source: {
         type: String,
         default: ''
     }
@@ -41,11 +47,12 @@ const props = defineProps({
 
 const { width, isMobile } = isMobileView();
 
+const cleanTitle = computed(() => props.title.replace(/<[^>]+>/g, ''));
 
 // 轉換時間戳為 YYYY-MM-DD HH:MM 格式
 const time = formatTime(props.timestamp*1000);
 function formatTime(timestamp) {
-    const date = new Date(timestamp - 60 * 60 * 8 * 1000);
+    const date = new Date(timestamp);
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const day = String(date.getDate()).padStart(2, '0');
@@ -93,9 +100,9 @@ function openLink(url) {
 }
 
 .news-meta {
-    width: 250px;
     text-align: end;
     align-self: start;
+    white-space: nowrap;
 }
 
 @media (max-width: 768px) {

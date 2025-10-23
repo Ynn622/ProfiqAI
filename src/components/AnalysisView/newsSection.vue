@@ -11,9 +11,11 @@
                     <NewsRow v-for="(news, idx) in newsDataList" 
                         :key="idx" 
                         :title="news.title" 
-                        :content="news.content"
+                        :summary="news.summary"
                         :timestamp="news.timestamp" 
-                        :url="news.url" />
+                        :url="news.url"
+                        :source="news.source"
+                        />
                 </div>
             </div>
         </div>
@@ -24,6 +26,7 @@
 // 組件
 import NewsRow from '../newsRow.vue';
 import ProbCircle from '../Common/probCircle.vue';
+import { API_BASE_URL } from '@/utils/apiConfig.js';
 
 // 工具 & 套件
 import { ref, onMounted } from 'vue';
@@ -34,18 +37,19 @@ const props = defineProps({
     stockName: { type: String, required: true }
 });
 
+const newsProvider = {
+    'udn': '聯合新聞網',
+    'cnyes': '鉅亨網'
+}
 
 const newsDataList = ref([]);
 
-async function callAnueNewsAPI(page = 1) {
+async function callNewsAPI(page = 1) {
     logger.debug(props.stockName);
     try {
-        logger.func.start(callAnueNewsAPI, [page]);
-        const response = await fetch(`https://ess.api.cnyes.com/ess/api/v1/news/keyword?q=${props.stockName}&limit=20&page=${page}`, {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-            }
+        logger.func.start(callNewsAPI, [page]);
+        const response = await fetch(`${API_BASE_URL}/View/news/summary?stockID=${props.stockId}&page=${page}`, {
+            method: 'GET'
         });
 
         if (!response.ok) {
@@ -53,22 +57,23 @@ async function callAnueNewsAPI(page = 1) {
         }
 
         const newsData = await response.json();
-        newsData.value = newsData.data.items || [];
+        newsData.value = newsData.news || [];
         newsDataList.value = newsData.value.map(item => ({
-            title: item.title,
-            content: item.summary,
-            timestamp: item.publishAt,
-            url: 'https://news.cnyes.com/news/id/' + item.newsId
+            title: item.Title,
+            summary: item.Summary,
+            timestamp: item.TimeStamp,
+            url: item.Url,
+            source: newsProvider[item.Source]
         }));
-        logger.func.success(callAnueNewsAPI, [page]);
+        logger.func.success(callNewsAPI, [page]);
     } catch (error) {
-        logger.func.error(callAnueNewsAPI, [page]);
+        logger.func.error(callNewsAPI, [page]);
         logger.error('個股新聞 API 錯誤:', error);
     }
 }
 
 onMounted(() => {
-    callAnueNewsAPI();
+    callNewsAPI();
 });
 </script>
 
