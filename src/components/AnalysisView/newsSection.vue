@@ -7,7 +7,9 @@
             </div>
             <div class="analysis-right">
                 <h3>個股新聞</h3>
-                <div class="news-list">
+                <LoadingMask v-if="loading" type="small"/>
+                <div v-else-if="!newsDataList.length" class="no-data">截取新聞失敗，請稍後再試！</div>
+                <div v-else class="news-list">
                     <NewsRow v-for="(news, idx) in newsDataList" 
                         :key="idx" 
                         :title="news.title" 
@@ -30,6 +32,7 @@ import { API_BASE_URL } from '@/utils/apiConfig.js';
 
 // 工具 & 套件
 import { ref, onMounted } from 'vue';
+import LoadingMask from '../Common/loadingMask.vue';
 
 // Props
 const props = defineProps({
@@ -43,6 +46,7 @@ const newsProvider = {
 }
 
 const newsDataList = ref([]);
+const loading = ref(false);
 
 async function callNewsAPI(page = 1) {
     logger.debug(props.stockName);
@@ -72,8 +76,10 @@ async function callNewsAPI(page = 1) {
     }
 }
 
-onMounted(() => {
-    callNewsAPI();
+onMounted(async () => {
+    loading.value = true;
+    await callNewsAPI();
+    loading.value = false;
 });
 </script>
 
@@ -98,6 +104,15 @@ onMounted(() => {
     display: grid;
     grid-template-columns: 1fr;
     gap: 10px;
+}
+
+.no-data {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    color: #999;
+    font-size: 16px;
 }
 
 @media (max-width: 1100px) {

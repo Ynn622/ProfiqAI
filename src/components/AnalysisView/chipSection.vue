@@ -6,7 +6,10 @@
                 <ProbCircle :isUp="true" :directionLabel="'偏多'" />
             </div>
             <div class="analysis-right">
-                <div class="segment">
+                <div v-if="loading">
+                    <LoadingMask type="small"/>
+                </div>
+                <div v-else class="segment">
                     <a-segmented class="segment" v-model:value="segmentValue" :options="segmentOptions" />
                     <ChipChart :chipData="chipData" :segmentValue="segmentValue" :loading="loading" />
                     <ChipTable :chipData="chipData" :segmentValue="segmentValue" :loading="loading" />
@@ -18,21 +21,20 @@
 
 <script setup>
 // 組件
+import ChipChart from '../chipChart.vue';
+import ChipTable from '../chipTable.vue';
+import LoadingMask from '../Common/loadingMask.vue';
 import ProbCircle from '../Common/probCircle.vue';
 
 // 工具 & 套件
 import { ref, onMounted, computed } from 'vue';
 import { API_BASE_URL } from '@/utils/apiConfig.js';
-import ChipChart from '../chipChart.vue';
-import ChipTable from '../chipTable.vue';
 
 // Props
 const props = defineProps({
     stockId: { type: String, required: true },
     stockName: { type: String, required: true }
 });
-// Emits
-const emit = defineEmits(['loading-start', 'loading-end']);
 
 const loading = ref(false);
 
@@ -77,11 +79,9 @@ async function callChipAPI(stockId) {
 }
 
 onMounted(async () => {
-    emit('loading-start') // 通知父組件：開始載入
     loading.value = true;
     await callChipAPI(props.stockId);
     loading.value = false;
-    emit('loading-end')   // 通知父組件：結束載入
 });
 
 </script>
