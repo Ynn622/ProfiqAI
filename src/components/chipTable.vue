@@ -41,8 +41,8 @@ const dataMapping = {
         labels: ['外資', '投信', '自營商', '總和']
     },
     '主力': {
-        keys: ['Master'],
-        labels: ['主力'],
+        keys: ['MainForce'],
+        labels: ['主力買賣超'],
     },
     '融資＆融券': {
         keys: ['MarginBuy', 'MarginSell', 'MarginRatio'],

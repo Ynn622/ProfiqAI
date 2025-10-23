@@ -48,7 +48,7 @@ const dataMapping = {
         colors: ['#FFA552', '#00C49A', '#0081A7']
     },
     '主力': {
-        keys: ['Master'],
+        keys: ['MainForce'],
         labels: ['主力'],
         colors: ['#FF6B6B']
     },
