@@ -17,7 +17,6 @@ import { isMobileView } from '@/utils/userInterface.js';
 import { getCurrentHourString, saveToLocalStorage, shouldCallAPI } from '@/utils/localStorageTool.js';
 import * as echarts from 'echarts';
 import 'echarts-wordcloud';
-import { logger } from '@/utils/logger';
 
 // Props
 const props = defineProps({
