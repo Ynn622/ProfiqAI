@@ -1,9 +1,15 @@
 <template>
     <b>最後更新時間：{{ updateTime }} （整點更新）</b>
-    <div ref="wordCloudContainer" class="word-cloud-container"></div>
+    <div v-if="loading" class="word-cloud-container"><loadingMask type="small"/></div>
+    <div v-else-if="wordCounts === null" class="no-data word-cloud-container">資料異常，請稍後再試！</div>
+    <div v-else-if="Object.keys(wordCounts).length === 0" class="no-data word-cloud-container">新聞不足，文字雲無資料！</div>
+    <div v-else ref="wordCloudContainer" class="word-cloud-container"></div>
 </template>
 
 <script setup>
+// 組件
+import loadingMask from './Common/loadingMask.vue';
+
 // 工具 & 套件
 import { ref, onMounted, nextTick, onUnmounted } from 'vue';
 import { API_BASE_URL } from '@/utils/apiConfig.js';
@@ -27,6 +33,7 @@ const wordCloudContainer = ref(null);
 let chartInstance = null;
 const updateTime = ref('Loading...');
 const WORDCLOUD_STORAGE_KEY = `wordCloud_${props.stockId}`;
+const loading = ref(false);
 
 /** 
  * API: 取得文字雲資料
@@ -146,7 +153,7 @@ function resizeChart() {
 }
 
 onMounted(async () => {
-    emit('loading-start') // 通知父組件：開始載入
+    loading.value = true;
     try {
         // 檢查是否需要重新打 API
         if (shouldCallAPI(WORDCLOUD_STORAGE_KEY)) {
@@ -163,24 +170,25 @@ onMounted(async () => {
         // 更新顯示的時間
         updateTime.value = getCurrentHourString();
         
-        // 等待 DOM 渲染完成
-        await nextTick();
-        
-        // 初始化圖表
-        initChart();
-        
-        // 渲染文字雲
-        if (wordCounts.value) {
-            renderWordCloud();
-        }
-        
-        // 監聽視窗大小變化
-        window.addEventListener('resize', resizeChart);
-        
     } catch (err) {
         logger.error('文字雲初始化錯誤:', err);
     } finally {
-        emit('loading-end') // 通知父組件：結束載入
+        loading.value = false;
+        
+        // 在 loading 結束後，等待 DOM 更新完成再初始化圖表
+        await nextTick();
+        
+        // 確認有資料且容器已渲染
+        if (wordCounts.value && Object.keys(wordCounts.value).length > 0) {
+            // 初始化圖表
+            initChart();
+            
+            // 渲染文字雲
+            renderWordCloud();
+            
+            // 監聽視窗大小變化
+            window.addEventListener('resize', resizeChart);
+        }
     }
 });
 
@@ -213,6 +221,15 @@ onUnmounted(() => {
 
 .word-cloud-container:hover {
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+}
+
+.no-data {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #585858;
+    font-size: 18px;
+    font-weight: 700;
 }
 
 /* 響應式設計 */
