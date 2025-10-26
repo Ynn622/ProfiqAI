@@ -1,8 +1,13 @@
 <template>
     <div>
         <div class="pill">隔日上漲機率</div>
-        <div class="prob-circle" :class="{ up: isUp, down: !isUp }">
-            <div class="prob-text">{{ props.probability }}%</div>
+        <div class="prob-circle" :class="{
+            up: probState === 'up',
+            down: probState === 'down',
+            unknown: probState === 'unknown'
+        }">
+            <div v-if="probState === 'unknown'" class="prob-text">--</div>
+            <div v-else class="prob-text">{{ props.probability }}%</div>
         </div>
     </div>
 </template>
@@ -13,12 +18,16 @@ import { computed } from 'vue'
 
 // Props
 const props = defineProps({
-    probability: { type: Number, required: true, default: 50 }
+    probability: { type: Number, default: null }
 })
 
 
-// 計算屬性，機率大於 50% 就上漲
-const isUp = computed(() => props.probability > 50)
+// 回傳狀態：unknown / up / down
+const probState = computed(() => {
+    if (props.probability === null) return 'unknown'
+    if (props.probability > 50) return 'up'
+    return 'down'
+})
 
 </script>
 
@@ -41,15 +50,18 @@ const isUp = computed(() => props.probability > 50)
 .prob-circle.down {
     background: var(--lightBear);
 }
+.prob-circle.unknown {
+    background: var(--gray);
+}
 
 .prob-text {
-    font-size: clamp(30px, 6vw, 60px);
-    font-weight: 900;
+    font-size: clamp(30px, 6vw, 54px);
+    font-weight: 800;
 }
 
 @media (max-width: 768px) {
     .prob-circle {
-        width: 50vw;
+        width: 40vw;
     }
 }
 </style>
