@@ -1,6 +1,5 @@
 import { ref, computed } from 'vue';
 import { API_BASE_URL } from '@/utils/apiConfig';
-import { logger } from '@/utils/logger';
 
 // 全域股票資料狀態
 const stocksData = ref(new Map());

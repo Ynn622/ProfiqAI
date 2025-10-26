@@ -5,11 +5,16 @@
 
         <!-- 價格與漲跌 -->
         <span class="stock-price">
-            {{ isTaiwanMarketOpen() ? '目前價格' : '收盤價' }}：{{ stockPrice.price }}
-            <span class="stock-change" :class="{ up: stockPrice.trend, down: !stockPrice.trend }">
-                {{ stockPrice.trend ? '+' : '-' }}{{ stockPrice.change }}
-                ({{ stockPrice.trend ? '▲' : '▼' }}{{ stockPrice.pct }}%)
-            </span>
+            <template v-if="stockPrice.price === 0">
+                {{ isTaiwanMarketOpen() ? '目前價格' : '收盤價' }}：<span class="no-data">載入中</span>
+            </template>
+            <template v-else>
+                {{ isTaiwanMarketOpen() ? '目前價格' : '收盤價' }}：{{ stockPrice.price }}
+                <span class="stock-change" :class="{ up: stockPrice.trend, down: !stockPrice.trend }">
+                    {{ stockPrice.trend ? '+' : '-' }}{{ stockPrice.change }}
+                    ({{ stockPrice.trend ? '▲' : '▼' }}{{ stockPrice.pct }}%)
+                </span>
+            </template>
         </span>
         <span></span>
 
@@ -149,6 +154,11 @@ watch(
 }
 .watchlist-btn:hover {
     background-color: gold;
+}
+
+.no-data {
+    color: #888888;
+    font-size: 0.8em;
 }
 
 @media (max-width: 768px) {
