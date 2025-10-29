@@ -6,7 +6,7 @@
         <!-- 價格與漲跌 -->
         <span class="stock-price">
             <template v-if="stockPrice.price === 0">
-                {{ isTaiwanMarketOpen() ? '目前價格' : '收盤價' }}：<span class="no-data">載入中</span>
+                {{ isTaiwanMarketOpen() ? '目前價格' : '收盤價' }}：<span class="no-data">{{ stockError ? '載入失敗' : '載入中' }}</span>
             </template>
             <template v-else>
                 {{ isTaiwanMarketOpen() ? '目前價格' : '收盤價' }}：{{ stockPrice.price }}
@@ -26,7 +26,7 @@
 <script setup>
 // 工具 & 套件
 import { useStockData } from '@/utils/stockData';
-import { watch, onMounted, onUnmounted, computed } from 'vue';
+import { watch, onMounted, onUnmounted, computed, ref } from 'vue';
 
 // Props
 const props = defineProps({
@@ -36,6 +36,7 @@ const props = defineProps({
 // Emits
 const emit = defineEmits(['updateStockData']);
 
+const stockError = ref(false);
 
 // 使用全域股票資料管理
 const { 
@@ -58,7 +59,9 @@ async function updateStock() {
     
     // 透過 emit 回傳資料給父元件
     emit('updateStockData', data.liveInfo);
+    stockError.value = false;
   } catch (err) {
+    stockError.value = true;
     logger.error('更新股票資料失敗:', err);
   }
 }
