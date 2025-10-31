@@ -73,7 +73,7 @@ function handleStockDataUpdate(data) {
 async function fetchStockData(stockId) {
   try {
     const response = await callAPI({
-      url: '/View/stockData',
+      url: '/stock/stockData',
       params: { stock_id: stockId },
       funcName: 'fetchStockData'
     });
@@ -94,8 +94,8 @@ async function fetchStockData(stockId) {
 async function fetchStockPredict(stockId) {
   try {
     const response = await callAPI({
-      url: '/View/Predict/futureUpProb',
-      params: { stockID: stockId },
+      url: '/predict/futureUpProb',
+      params: { stock_id: stockId },
       funcName: 'fetchStockPredict'
     });
 

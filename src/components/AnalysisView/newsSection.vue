@@ -56,8 +56,8 @@ async function callNewsAPI(page = 1) {
     logger.debug(props.stockName);
     try {
         const response = await callAPI({
-            url: '/View/news/summary',
-            params: { stockID: props.stockId, page: page },
+            url: '/news/summary',
+            params: { stock_id: props.stockId, page: page },
             funcName: 'callNewsAPI'
         });
 

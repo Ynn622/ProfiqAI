@@ -59,7 +59,7 @@ export function useStockData() {
       setLoading(stockId, true);
       
       const response = await callAPI({
-        url: '/View/liveStockInfo',
+        url: '/stock/liveStockInfo',
         params: { stock_id: stockId },
         funcName: 'fetchLiveStockInfo'
       });

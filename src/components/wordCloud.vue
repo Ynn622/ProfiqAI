@@ -41,8 +41,8 @@ const loading = ref(false);
 async function callWordCloudAPI(stockId) {
     try {
         const response = await callAPI({
-            url: '/View/news/wordCloud',
-            params: { stockID: stockId },
+            url: '/news/wordCloud',
+            params: { stock_id: stockId },
             funcName: 'callWordCloudAPI'
         });
 

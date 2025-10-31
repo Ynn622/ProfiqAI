@@ -93,8 +93,8 @@ const basicData = computed(() => basicDataList.value.basicData);
 async function callBasicSectionAPI(stockId) {
     try {
         const response = await callAPI({
-            url: '/View/section/basicInfo',
-            params: { stockID: stockId },
+            url: '/basic/basicInfo',
+            params: { stock_id: stockId },
             funcName: 'callBasicSectionAPI'
         });
 

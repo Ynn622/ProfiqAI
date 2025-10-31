@@ -51,8 +51,8 @@ const chipData = ref(null);
 async function callChipAPI(stockId) {
     try {
         const response = await callAPI({
-            url: '/View/section/chipInfo',
-            params: { stockID: stockId },
+            url: '/chip/chipInfo',
+            params: { stock_id: stockId },
             funcName: 'callChipAPI'
         });
 

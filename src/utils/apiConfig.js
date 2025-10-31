@@ -30,8 +30,8 @@ export const API_BASE_URL = getApiBaseUrl();
  * @example
  * // GET 請求 - 使用 params
  * const data = await callAPI({
- *   url: '/View/Predict/futureUpProb',
- *   params: { stockID: '2330' },
+ *   url: '/Predict/futureUpProb',
+ *   params: { stock_id: '2330' },
  *   funcName: 'fetchStockPredict'
  * });
  * 
