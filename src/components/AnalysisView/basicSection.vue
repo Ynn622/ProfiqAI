@@ -43,7 +43,7 @@ import ProbCircle from '../Common/probCircle.vue';
 
 // 工具 & 套件
 import { ref, onMounted, computed } from 'vue';
-import { API_BASE_URL } from '@/utils/apiConfig.js';
+import { callAPI } from '@/utils/apiConfig.js';
 import { getColorByValue } from '@/utils/colorHelper.js';
 import { getCurrentHourString, saveToLocalStorage, shouldCallAPI } from '@/utils/localStorageTool.js';
 
@@ -87,29 +87,23 @@ const basicDataList = ref({
 });
 const basicData = computed(() => basicDataList.value.basicData);
 
-
+/** 
+ * API: 取得基本面資料
+ */
 async function callBasicSectionAPI(stockId) {
     try {
-        logger.func.start(callBasicSectionAPI, [stockId]);
-        const response = await fetch(`${API_BASE_URL}/View/section/basicInfo?stockID=${stockId}`, {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-            }
+        const response = await callAPI({
+            url: '/View/section/basicInfo',
+            params: { stockID: stockId },
+            funcName: 'callBasicSectionAPI'
         });
 
-        if (!response.ok) { throw new Error(`HTTP error! status: ${response.status}`); }
-        
-        const data = await response.json();
-        basicDataList.value = data;
+        basicDataList.value = response;
 
         // 儲存到 localStorage
         saveToLocalStorage(STORAGE_KEY, basicDataList.value);
-
-        logger.func.success(callBasicSectionAPI, [stockId]);
     } catch (error) {
-        logger.func.error(callBasicSectionAPI, [stockId]);
-        logger.error('基本面分析 API 錯誤:', error);
+        // 錯誤已經在 callAPI 中記錄
     }
 }
 

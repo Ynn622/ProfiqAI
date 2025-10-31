@@ -1,5 +1,5 @@
 import { ref, computed } from 'vue';
-import { API_BASE_URL } from '@/utils/apiConfig';
+import { callAPI } from '@/utils/apiConfig';
 
 // 全域股票資料狀態
 const stocksData = ref(new Map());
@@ -55,18 +55,14 @@ export function useStockData() {
 
   // 取得即時股票資訊
   async function fetchLiveStockInfo(stockId) {
-    const url = `${API_BASE_URL}/View/liveStockInfo?stock_id=${stockId}`;
-
     try {
       setLoading(stockId, true);
-      logger.func.start(fetchLiveStockInfo, [stockId]);
       
-      const res = await fetch(url, { method: "GET" });
-      if (!res.ok) {
-        throw new Error(`HTTP ${res.status} ${res.statusText}`);
-      }
-      
-      const response = await res.json();
+      const response = await callAPI({
+        url: '/View/liveStockInfo',
+        params: { stock_id: stockId },
+        funcName: 'fetchLiveStockInfo'
+      });
 
       // 更新全域狀態
       updateStockData(stockId, {
@@ -79,7 +75,6 @@ export function useStockData() {
         }
       });
 
-      logger.func.success(fetchLiveStockInfo, [stockId]);
       return {
         stockName: response.info.StockName,
         stockPrice: {
@@ -91,8 +86,7 @@ export function useStockData() {
         liveInfo: response.info
       };
     } catch (err) {
-      logger.func.error(fetchLiveStockInfo, [stockId]);
-      logger.error('取得即時股票資訊錯誤:', err);
+      // 錯誤已經在 callAPI 中記錄
     } finally {
       setLoading(stockId, false);
     }

@@ -28,11 +28,12 @@
 // 組件
 import NewsRow from '../newsRow.vue';
 import ProbCircle from '../Common/probCircle.vue';
-import { API_BASE_URL } from '@/utils/apiConfig.js';
+import LoadingMask from '../Common/loadingMask.vue';
 
 // 工具 & 套件
 import { ref, onMounted } from 'vue';
-import LoadingMask from '../Common/loadingMask.vue';
+import { callAPI } from '@/utils/apiConfig.js';
+import { logger } from '@/utils/logger';
 
 // Props
 const props = defineProps({
@@ -48,31 +49,28 @@ const newsProvider = {
 const newsDataList = ref([]);
 const loading = ref(false);
 
+/** 
+ * API: 取得新聞摘要資料
+ */
 async function callNewsAPI(page = 1) {
     logger.debug(props.stockName);
     try {
-        logger.func.start(callNewsAPI, [page]);
-        const response = await fetch(`${API_BASE_URL}/View/news/summary?stockID=${props.stockId}&page=${page}`, {
-            method: 'GET'
+        const response = await callAPI({
+            url: '/View/news/summary',
+            params: { stockID: props.stockId, page: page },
+            funcName: 'callNewsAPI'
         });
 
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
-        const newsData = await response.json();
-        newsData.value = newsData.news || [];
-        newsDataList.value = newsData.value.map(item => ({
+        response.value = response.news || [];
+        newsDataList.value = response.value.map(item => ({
             title: item.Title,
             summary: item.Summary,
             timestamp: item.TimeStamp,
             url: item.Url,
             source: newsProvider[item.Source]
         }));
-        logger.func.success(callNewsAPI, [page]);
     } catch (error) {
-        logger.func.error(callNewsAPI, [page]);
-        logger.error('個股新聞 API 錯誤:', error);
+        // 錯誤已經在 callAPI 中記錄
     }
 }
 

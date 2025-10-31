@@ -28,7 +28,7 @@ import ProbCircle from '../Common/probCircle.vue';
 
 // 工具 & 套件
 import { ref, onMounted, computed } from 'vue';
-import { API_BASE_URL } from '@/utils/apiConfig.js';
+import { callAPI } from '@/utils/apiConfig.js';
 
 // Props
 const props = defineProps({
@@ -49,17 +49,13 @@ const chipData = ref(null);
  * API: 取得籌碼資料 (三大法人、主力、融資、融券)
  */
 async function callChipAPI(stockId) {
-    const url = `${API_BASE_URL}/View/section/chipInfo?stockID=${stockId}`;
-
     try {
-        logger.func.start(callChipAPI, [stockId]);
-        const res = await fetch(url, { method: "GET" });
+        const response = await callAPI({
+            url: '/View/section/chipInfo',
+            params: { stockID: stockId },
+            funcName: 'callChipAPI'
+        });
 
-        if (!res.ok) {
-            throw new Error(`HTTP ${res.status} ${res.statusText}`);
-        }
-
-        const response = await res.json();
         chipData.value = response;
 
         // 計算三大法人總和
@@ -70,11 +66,8 @@ async function callChipAPI(stockId) {
                 return foreign + dealer + investor;
             });
         }
-
-        logger.func.success(callChipAPI, [stockId]);
     } catch (err) {
-        logger.func.error(callChipAPI, [stockId]);
-        logger.error('籌碼面分析 API 錯誤:', err);
+        // 錯誤已經在 callAPI 中記錄
     }
 }
 

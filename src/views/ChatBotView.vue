@@ -69,7 +69,7 @@ import Nav from '@/components/Common/Nav.vue';
 
 // 工具 & 套件
 import { ref, computed, onMounted, watch, nextTick } from 'vue';
-import { API_BASE_URL } from '@/utils/apiConfig.js';
+import { callAPI } from '@/utils/apiConfig.js';
 import { processMarkdown } from '@/utils/markdownParser.js';
 import { logger } from '@/utils/logger';
 
@@ -128,30 +128,22 @@ function send() {
     scrollBottom();
 }
 
+/** 
+ * API: 聊天機器人回應
+ */
 async function callChatBotAPI(prompt, model, convo) {
     loading.value = true;
     try {
-        logger.func.start(callChatBotAPI, [model, prompt]);
-        const response = await fetch(`${API_BASE_URL}/chat/chatBot`, {
+        const response = await callAPI({
+            url: '/chat/chatBot',
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ question: prompt, model: model })
+            body: { question: prompt, model: model },
+            funcName: 'callChatBotAPI'
         });
-        
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        
-        const data = await response.json();
-        const botReply = data.response || '抱歉，我現在無法回答您的問題。';
 
+        const botReply = response.response || '抱歉，我現在無法回答您的問題。';
         convo.messages.push({ role: 'bot', text: botReply });
-        logger.func.success(callChatBotAPI, [model, prompt]);
     } catch (error) {
-        logger.func.error(callChatBotAPI, [model, prompt]);
-        logger.error('ChatBot API 錯誤:', error);
         convo.messages.push({ 
             role: 'bot', 
             text: '抱歉，系統暫時無法連接，請稍後再試。' 

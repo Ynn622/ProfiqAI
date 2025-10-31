@@ -39,7 +39,7 @@ import AnalysisFactors from '@/components//SummaryView/AnalysisFactors.vue';
 import LoadingMask from '@/components/Common/loadingMask.vue'; 
 
 // 工具 & 套件
-import { API_BASE_URL } from '@/utils/apiConfig';
+import { callAPI } from '@/utils/apiConfig';
 import { logger } from '@/utils/logger';
 import { ref, computed, watch, onMounted } from 'vue';
 import { useRoute } from 'vue-router'
@@ -71,28 +71,20 @@ function handleStockDataUpdate(data) {
  * API: 取得歷史股價資料 (K 線)
  */
 async function fetchStockData(stockId) {
-  const url = `${API_BASE_URL}/View/stockData?stock_id=${stockId}`;
-
   try {
-    logger.func.start(fetchStockData, [stockId]);
-    const res = await fetch(url, { method: "GET" });
-
-    if (!res.ok) {
-      throw new Error(`HTTP ${res.status} ${res.statusText}`);
-    }
-
-    const response = await res.json();
+    const response = await callAPI({
+      url: '/View/stockData',
+      params: { stock_id: stockId },
+      funcName: 'fetchStockData'
+    });
 
     kData.value = response.data;
     // 如果 PriceBar 還沒有股票名稱，這裡也設定一下
     if (!stockName.value) {
       stockName.value = response.stockName;
     }
-
-    logger.func.success(fetchStockData, [stockId]);
   } catch (err) {
-    logger.func.error(fetchStockData, [stockId]);
-    logger.error('取得股票資料錯誤:', err);
+    // 錯誤已經在 callAPI 中記錄
   }
 }
 
@@ -100,24 +92,16 @@ async function fetchStockData(stockId) {
  * API: 取得股票 隔日上漲機率
  */
 async function fetchStockPredict(stockId) {
-  const url = `${API_BASE_URL}/View/Predict/futureUpProb?stockID=${stockId}`;
-
   try {
-    logger.func.start(fetchStockPredict, [stockId]);
-    const res = await fetch(url, { method: "GET" });
-
-    if (!res.ok) {
-      throw new Error(`HTTP ${res.status} ${res.statusText}`);
-    }
-
-    const response = await res.json();
+    const response = await callAPI({
+      url: '/View/Predict/futureUpProb',
+      params: { stockID: stockId },
+      funcName: 'fetchStockPredict'
+    });
 
     prob.value = response.futureUpProb * 100;
-
-    logger.func.success(fetchStockPredict, [stockId]);
   } catch (err) {
-    logger.func.error(fetchStockPredict, [stockId]);
-    logger.error('取得股票預測錯誤:', err);
+    // 錯誤已經在 callAPI 中記錄
   }
 }
 

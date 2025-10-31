@@ -12,7 +12,7 @@ import loadingMask from './Common/loadingMask.vue';
 
 // 工具 & 套件
 import { ref, onMounted, nextTick, onUnmounted } from 'vue';
-import { API_BASE_URL } from '@/utils/apiConfig.js';
+import { callAPI } from '@/utils/apiConfig.js';
 import { isMobileView } from '@/utils/userInterface.js';
 import { getCurrentHourString, saveToLocalStorage, shouldCallAPI } from '@/utils/localStorageTool.js';
 import * as echarts from 'echarts';
@@ -39,27 +39,21 @@ const loading = ref(false);
  * API: 取得文字雲資料
  */
 async function callWordCloudAPI(stockId) {
-    const url = `${API_BASE_URL}/View/news/wordCloud?stockID=${stockId}`;
-
     try {
-        logger.func.start(callWordCloudAPI, [stockId]);
-        const res = await fetch(url, { method: "GET" });
+        const response = await callAPI({
+            url: '/View/news/wordCloud',
+            params: { stockID: stockId },
+            funcName: 'callWordCloudAPI'
+        });
 
-        if (!res.ok) {
-            throw new Error(`HTTP ${res.status} ${res.statusText}`);
-        }
-
-        const response = await res.json();
         wordCounts.value = response.wordCounts;
         
         // 存儲更新到 localStorage
         saveToLocalStorage(WORDCLOUD_STORAGE_KEY, response.wordCounts);
 
         logger.debug('文字雲資料:', wordCounts.value);
-        logger.func.success(callWordCloudAPI, [stockId]);
     } catch (err) {
-        logger.func.error(callWordCloudAPI, [stockId]);
-        logger.error('文字雲 API 錯誤:', err);
+        // 錯誤已經在 callAPI 中記錄
     }
 }
 
