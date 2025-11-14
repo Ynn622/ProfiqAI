@@ -1,65 +1,80 @@
 <template>
   <div class="screen">
-
+    <!-- 背景圖 -->
     <div class="bg-chart" style="background-image: url('KChart.png')" />
+
+    <!-- 頂端按鈕 -->
     <header class="topbar">
-      <nav class="auth">
-        <button class="auth-btn sign-up" @click="commingSoon">註冊</button>
-        <button class="auth-btn login" @click="commingSoon">登入</button>
-      </nav>
+      <div class="auth">
+        <button v-for="btn in ['註冊', '登入']" :key="btn" class="auth-btn" @click="comingSoon">
+          {{ btn }}
+        </button>
+      </div>
     </header>
 
+    <!-- 主內容 -->
     <section class="main-section">
-      <div class="logo-wrap">
-        <img class="logo-img" src="/logo.png" alt="AI 投資智聊 logo" />
-      </div>
+      <img class="logo-img" src="/logo.png" alt="AI 投資智聊 logo" />
 
       <h1>個股全面向健檢，快速搜出好股！</h1>
-
       <SearchBar design="home" />
 
+      <!-- 功能介紹區 -->
       <div class="function">
-        <div class="function-item">
-          <i class="fa-solid fa-chart-column"></i>
-          <span>股票速覽</span>
-        </div>
-        <div class="function-item">
-          <i class="fa-solid fa-gauge"></i>
-          <span>分析儀表</span>
-        </div>
-        <div class="function-item">
-          <i class="fa-solid fa-cloud"></i>
-          <span>新聞股雲</span>
+        <div
+          v-for="item in functions"
+          :key="item.title"
+          class="function-item"
+        >
+          <i :class="item.icon"></i>
+          <span>{{ item.title }}</span>
+          <div class="tooltip">{{ item.desc }}</div>
         </div>
       </div>
 
       <chat-bot-btn />
     </section>
-
   </div>
 </template>
 
 <script setup>
-
-import { ref } from 'vue';
-import { useRouter } from 'vue-router';
-import chatBotBtn from '@/components/Button/ChatBotButton.vue';
+import { ref } from 'vue'
 import SearchBar from '@/components/Common/SearchBar.vue'
+import chatBotBtn from '@/components/Button/ChatBotButton.vue'
 
-const stockId = ref('');
-const router = useRouter();
+// Tooltip + icon data
+const functions = [
+  {
+    title: '股票速覽',
+    icon: 'fa-solid fa-chart-column',
+    desc: '提供即時股價與基本面摘要，分析法人持股與市場趨勢。'
+  },
+  {
+    title: '分析儀表',
+    icon: 'fa-solid fa-gauge',
+    desc: '介紹分析儀表。'
+  },
+    {
+    title: '新聞股雲',
+    icon: 'fa-solid fa-link',
+    desc: '介紹新聞股雲。'
+  }
+]
 
-function commingSoon() {
-  alert("此功能尚未開放，敬請期待！");
+function comingSoon() {
+  alert('此功能尚未開放，敬請期待！')
 }
-
-
 </script>
 
 <style scoped>
 @import '/src/assets/main.css';
 
-/* 全視窗 */
+/* 🩵 全域背景 */
+.screen {
+  position: relative;
+  text-align: center;
+  min-height: 100vh;
+}
 .bg-chart {
   position: absolute;
   inset: 0;
@@ -67,24 +82,20 @@ function commingSoon() {
   background-position: center;
   background-size: cover;
   pointer-events: none;
+  z-index: 0;
 }
 
-/* 頂端列 */
+/* 🧭 頂端登入註冊 */
 .topbar {
-  z-index: 2;
   position: absolute;
   top: 20px;
   right: 20px;
+  z-index: 2;
+}
+.auth {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
+  gap: 20px;
 }
-/* 登入區塊 */
-.auth { 
-  display: flex; 
-  gap: 20px; 
-}
-
 .auth-btn {
   font-size: 18px;
   font-weight: 700;
@@ -92,62 +103,49 @@ function commingSoon() {
   border-radius: 12px;
   border: 1px solid rgba(0,0,0,0.08);
   background: rgba(255,255,255,0.7);
-  backdrop-filter: saturate(120%) blur(6px);
+  backdrop-filter: blur(6px);
   cursor: pointer;
   box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  transition: all 0.25s ease;
 }
-.auth-btn.login {
+.auth-btn:hover {
+  transform: translateY(-1px);
   background: #fff;
 }
-.auth-btn.sign-up {
-  background: rgba(255,255,255,0.35);
-}
 
-/* 主要內容區 */
+/* 📈 主內容 */
 .main-section {
   position: relative;
   z-index: 1;
-  min-height: 100vh;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 20px;
-  text-align: center;
-}
-
-/* logo區塊 */
-.logo-wrap {
-  width: 200px;
-  height: 200px;
-  display: grid;
-  place-items: center;
+  min-height: 100vh;
 }
 .logo-img {
-  max-width: 160px;
-  height: auto;
+  width: 160px;
   border-radius: 10%;
   transition: transform 0.3s ease;
 }
-
 .logo-img:hover {
   transform: scale(1.05);
 }
-
 h1 {
   font-size: 34px;
   font-weight: 800;
   color: #0f172a;
 }
 
-/* 功能區塊 */
+/* ⚙️ 功能區塊 */
 .function {
   display: flex;
-  margin: 20px 0;
   gap: 70px;
+  margin: 20px 0;
 }
-
 .function-item {
+  position: relative;
   display: flex;
   flex-flow: column;
   align-items: center;
@@ -155,19 +153,49 @@ h1 {
   font-size: 18px;
   font-weight: 500;
   color: #0f172a;
+  cursor: pointer;
 }
-
 .function-item i {
   font-size: 38px;
 }
 
-@media (max-width: 480px) {
-  h1 { 
-    font-size: 24px; 
-  }
-  .logo-img {
-    max-width: 140px;
-  }
+/* 💬 Tooltip */
+.tooltip {
+  position: absolute;
+  bottom: 120%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.75);
+  color: #fff;
+  padding: 10px 14px;
+  border-radius: 10px;
+  font-size: 0.9rem;
+  width: 240px;
+  line-height: 1.5;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.25s ease;
+  pointer-events: none;
+  z-index: 10;
+}
+.tooltip::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 6px solid transparent;
+  border-top-color: rgba(0, 0, 0, 0.75);
+}
+.function-item:hover .tooltip {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(-50%) translateY(-6px);
 }
 
+@media (max-width: 480px) {
+  h1 { font-size: 24px; }
+  .function { flex-direction: column; gap: 30px; }
+}
 </style>
