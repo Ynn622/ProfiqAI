@@ -1,19 +1,51 @@
 <template>
-    <div class="prob-circle" :class="{ up: isUp, down: !isUp }">
-        <div class="prob-text">{{ directionLabel }}</div>
+    <div class="prob-circle" :class="circleClass">
+        <div class="prob-text">{{ label }}</div>
     </div>
 </template>
 
 <script setup>
+import { computed } from 'vue';
+
 // Props
 const props = defineProps({
-    isUp: {
-        type: Boolean,
-        default: false
-    },
-    directionLabel: {
-        type: String,
-        default: ''
+    score: {
+        type: Number,
+        required: true,
+        validator: (value) => value >= -2 && value <= 2
+    }
+});
+
+// 根據分數計算標籤
+const label = computed(() => {
+    switch (props.score) {
+        case -2:
+            return '極空';
+        case -1:
+            return '偏空';
+        case 0:
+            return '持平';
+        case 1:
+            return '偏多';
+        case 2:
+            return '極多';
+        default:
+            return '持平';
+    }
+});
+
+// 根據分數計算樣式類別
+const circleClass = computed(() => {
+    if (props.score === 2) {
+        return 'extreme-up';
+    } else if (props.score === 1) {
+        return 'up';
+    } else if (props.score === -1) {
+        return 'down';
+    } else if (props.score === -2) {
+        return 'extreme-down';
+    } else {
+        return 'neutral';
     }
 });
 </script>
@@ -47,12 +79,36 @@ const props = defineProps({
     background: var(--lightBull-hover);
 }
 
+.prob-circle.extreme-up {
+    background: var(--darkBull);
+}
+
+.prob-circle.extreme-up:hover {
+    background: var(--darkBull-hover);
+}
+
 .prob-circle.down {
     background: var(--lightBear);
 }
 
 .prob-circle.down:hover {
     background: var(--lightBear-hover);
+}
+
+.prob-circle.extreme-down {
+    background: var(--darkBear);
+}
+
+.prob-circle.extreme-down:hover {
+    background: var(--darkBear-hover);
+}
+
+.prob-circle.neutral {
+    background: var(--gray);
+}
+
+.prob-circle.neutral:hover {
+    background: var(--gray-hover);
 }
 
 @media (max-width: 900px) {

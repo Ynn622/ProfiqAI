@@ -3,7 +3,7 @@
         <div class="analysis-container">
             <div class="analysis-left">
                 <h3>技術面分析</h3>
-                <ProbCircle :isUp="true" :directionLabel="'偏多'" />
+                <ProbCircle :score="techScore" />
             </div>
             <div class="analysis-right">
                 <SquareData title="MACD" value="11.72" :change="2.01" color="bg-red" />
@@ -21,6 +21,13 @@
 // 組件
 import SquareData from '../SquareData.vue';
 import ProbCircle from '../Common/probCircle.vue';
+
+// Props
+const props = defineProps({
+    stockId: { type: String, required: true },
+    stockName: { type: String, required: true },
+    techScore: { type: Number, default: 0 }
+});
 
 </script>
 

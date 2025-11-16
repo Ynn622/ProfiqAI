@@ -23,7 +23,7 @@
                 <div class="segment-section">
                     <keep-alive>
                         <component :is="componentMap[segmentValue]" :stockId="stockId" :stockName="stockName" 
-                                    @loading-start="onLoadingStart" @loading-end="onLoadingEnd"/>
+                                    :techScore="techScore" @loading-start="onLoadingStart" @loading-end="onLoadingEnd"/>
                     </keep-alive>
                 </div>
             </div>
@@ -46,6 +46,7 @@ import technicSection from '@/components/AnalysisView/technicSection.vue';
 // 工具 & 套件
 import { ref, onMounted, computed } from 'vue';
 import { useRoute } from 'vue-router';
+import { callAPI } from '@/utils/apiConfig.js';
 
 // 取得路由參數
 const route = useRoute();
@@ -68,6 +69,7 @@ const loading = ref(false)
 
 // 從 PriceBar 接收的資料
 const stockName = ref('');
+const techScore = ref(0);
 
 // 各面分析 模擬資料
 const basicAnalysis = ref({
@@ -77,7 +79,7 @@ const basicAnalysis = ref({
 });
 const technicalAnalysis = ref({
     factor: '技術',
-    direction: 1,
+    direction: 0,
     description: '從近期的股價走勢來看，台積電在2025年2月9日的收盤價1125元後，稍微回落至1110元（2月10日），反映出市場對於加徵關稅的不安情緒。\n目前的5MA和10MA顯示短期的均線支撐相當接近，若能穩住在此區域，則可能形成盤整或反彈機會。'
 });
 const marketAnalysis = ref({
@@ -91,6 +93,27 @@ const chipAnalysis = ref({
     description: '在籌碼面方面，外資持股比例為73.45%，投信持股比例為1.86％，自營商持股比例為6.52%。\n值得注意的是，外資持股比例在近期有所下降，顯示外資對台積電的持股態度趨於保守。'
 });
 
+/** 
+ * API: 取得技術面分數
+ */
+async function fetchTechScore() {
+    try {
+        const response = await callAPI({
+            url: '/tech/score',
+            params: { stock_id: stockId.value },
+            funcName: 'fetchTechScore'
+        });
+        
+        const direction = response?.technical_data?.direction ?? 0;
+        technicalAnalysis.value.direction = direction;
+        techScore.value = direction;
+    } catch (error) {
+        // 錯誤已經在 callAPI 中記錄
+        technicalAnalysis.value.direction = 0;
+        techScore.value = 0;
+    }
+}
+
 // Emits: 處理從 PriceBar 回傳的股票資料
 function handleStockDataUpdate(data) {
     stockName.value = data.StockName;
@@ -98,6 +121,11 @@ function handleStockDataUpdate(data) {
 // Emits: 載入中狀態傳遞給子組件
 function onLoadingStart() { loading.value = true }
 function onLoadingEnd() { loading.value = false }
+
+// 頁面載入時取得技術面分數
+onMounted(() => {
+    fetchTechScore();
+});
 
 </script>
 

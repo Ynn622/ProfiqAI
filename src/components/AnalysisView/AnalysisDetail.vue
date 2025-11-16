@@ -3,7 +3,7 @@
         <div class="pill">{{ factor }}面分析</div>
         <div class="analysis-section">
             <div>
-                <ProbCircle :isUp="isUp" :directionLabel="directionLabel" />
+                <ProbCircle :score="direction" />
             </div>
             <div class="analysis-desc" v-html="description">
             </div>
@@ -14,9 +14,6 @@
 <script setup>
 // 組件
 import ProbCircle from '../Common/probCircle.vue';
-
-// 工具 & 套件
-import { computed } from 'vue';
 
 // Props
 const props = defineProps({
@@ -32,14 +29,6 @@ const props = defineProps({
         type: Number,
         default: 0
     }
-});
-
-const isUp = computed(() => props.direction > 0)
-
-const directionLabel = computed(() => {
-    if (props.direction > 0) return '偏多';
-    if (props.direction < 0) return '偏空';
-    return '持平';
 });
 
 </script>

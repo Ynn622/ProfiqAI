@@ -3,7 +3,7 @@
         <div class="analysis-container">
             <div class="analysis-left">
                 <h3>基本面分析</h3>
-                <ProbCircle :isUp="true" :directionLabel="'偏多'" />
+                <ProbCircle :score="1" />
             </div>
             <div class="analysis-right">
                 <SquareData title="EPS" 
