@@ -42,7 +42,7 @@ import ProbCircle from '../Common/probCircle.vue';
     height: 100%;
 }
 
-@media (max-width: 900px) {
+@media (max-width: 665px) {
     .analysis-container {
         flex-direction: column;
     }

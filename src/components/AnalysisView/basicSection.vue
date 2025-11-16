@@ -149,7 +149,7 @@ onMounted(async () => {
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
     height: 100%;
 }
-@media (max-width: 900px) {
+@media (max-width: 665px) {
     .analysis-container {
         flex-direction: column;
     }

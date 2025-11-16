@@ -8,7 +8,7 @@
  /* 股市 */
   --lightBull: #ffb3b3;          /* 偏多：粉紅 */
   --lightBull-hover: #ff8a8a;      /* 比粉紅深一點 */
-  --darkBull: #ff6f6f;           /* 偏多：紅 */
+  --darkBull: #fc7979;           /* 偏多：紅 */
   --darkBull-hover: #fb5858;       /* 紅色變亮一點 */
 
   --lightBear: #bdfcc0;          /* 偏空：淺綠 */

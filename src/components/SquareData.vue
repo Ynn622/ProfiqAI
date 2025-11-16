@@ -182,10 +182,10 @@ function handleClick() {
         font-size: 24px;
     }
     .value {
-        font-size: 20px;
+        font-size: 18px;
     }
     .change {
-        font-size: 16px;
+        font-size: 14px;
     }
 }
 </style>
