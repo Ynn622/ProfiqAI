@@ -1,5 +1,5 @@
 <template>
-    <div class="square-data-button" :class="color">
+    <div class="square-data-button" :class="color" @click="handleClick">
         <div class="title-area">
             <span class="title">{{ title }}</span>
         </div>
@@ -8,11 +8,23 @@
             <span class="change" v-if="change!=0">{{ trend }}{{ change }}<span v-html="changeIcon"></span></span>
         </div>
     </div>
+
+    <!-- 彈窗 -->
+    <SquareDetailModal
+        v-model:visible="showModal"
+        :title="title"
+        :value="value"
+        :valuePrefix="valuePrefix"
+        :valueSuffix="valueSuffix"
+        :change="change"
+        :color="color"
+    />
 </template>
 
 <script setup>
 // 工具 & 套件
 import { ref, computed } from 'vue';
+import SquareDetailModal from './SquareDetailModal.vue';
 
 // Props
 const props = defineProps({
@@ -43,6 +55,8 @@ const props = defineProps({
 });
 
 
+const showModal = ref(false);
+
 const trend = computed(() => (props.change > 0 ? '+' : ''))
 const changeIcon = computed(() => {
     if (props.change > 0) return '<i class="fa-solid fa-arrow-trend-up"></i>'
@@ -55,6 +69,10 @@ function formatValue(val) {
     return `${val}`
 }
 
+function handleClick() {
+    showModal.value = true;
+}
+
 </script>
 
 <style scoped>
@@ -64,37 +82,73 @@ function formatValue(val) {
     padding: 10px 20px;
     width: 200px;
     transition: box-shadow 0.3s ease-in-out,
-                background-color 0.3s ease-in-out;
+                background-color 0.3s ease-in-out,
+                transform 0.2s ease-in-out;
     box-shadow: var(--shadow-small);
+    cursor: pointer;
 }
 .square-data-button:hover {
     box-shadow: var(--shadow-small-hover);
+    transform: translateY(-2px);
+}
+.square-data-button:active {
+    transform: translateY(0);
 }
 /* ==============================
    股市配色（多空顏色系）
    ============================== */
 
 /* 多方：紅色 */
-.bg-dark-red { background-color: var(--darkBull); }
-.bg-dark-red:hover { background-color: var(--darkBull-hover); }
+.bg-dark-red {
+  background-color: var(--darkBull);
+}
 
-.bg-red { background-color: var(--lightBull); }
-.bg-red:hover { background-color: var(--lightBull-hover); }
+.bg-dark-red:hover {
+  background-color: var(--darkBull-hover);
+}
+
+.bg-red {
+  background-color: var(--lightBull);
+}
+
+.bg-red:hover {
+  background-color: var(--lightBull-hover);
+}
 
 /* 空方：綠色 */
-.bg-green { background-color: var(--lightBear); }
-.bg-green:hover { background-color: var(--lightBear-hover); }
+.bg-green {
+  background-color: var(--lightBear);
+}
 
-.bg-dark-green { background-color: var(--darkBear); }
-.bg-dark-green:hover { background-color: var(--darkBear-hover); }
+.bg-green:hover {
+  background-color: var(--lightBear-hover);
+}
+
+.bg-dark-green {
+  background-color: var(--darkBear);
+}
+
+.bg-dark-green:hover {
+  background-color: var(--darkBear-hover);
+}
 
 /* 盤整：黃色 */
-.bg-yellow { background-color: var(--lightFlat); }
-.bg-yellow:hover { background-color: var(--lightFlat-hover); }
+.bg-yellow {
+  background-color: var(--lightFlat);
+}
+
+.bg-yellow:hover {
+  background-color: var(--lightFlat-hover);
+}
 
 /* 中性：灰色 */
-.bg-gray { background-color: var(--gray); }
-.bg-gray:hover { background-color: var(--gray-hover); }
+.bg-gray {
+  background-color: var(--gray);
+}
+
+.bg-gray:hover {
+  background-color: var(--gray-hover);
+}
 
 .value-area {
     display: flex;

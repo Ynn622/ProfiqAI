@@ -1,0 +1,120 @@
+{
+    "EPS": {
+        "title": "EPS (每股盈餘)",
+        "fullName": "Earnings Per Share",
+        "description": "EPS 表示公司「每一股可以賺到多少錢」，是最直接衡量獲利能力的指標。EPS 越高，代表公司賺得越多、獲利越穩健。例如：稅後淨利 10 億、股數 1 億 → EPS = 10 元。",
+        "formula": "EPS = 稅後淨利 ÷ 流通在外普通股股數",
+        "bullish": "EPS 連續幾季成長、穩定高於同業，或公司每年穩定配息，顯示獲利結構健康。",
+        "bearish": "EPS 連續下滑、轉負、波動大，或成長來自一次性收益，表示獲利不穩定。",
+        "chartType": "bar",
+        "trend": "年度趨勢圖"
+    },
+    "P/E Ratio": {
+        "title": "本益比（P/E Ratio）",
+        "fullName": "Price-to-Earnings Ratio",
+        "description": "本益比衡量股價相對 EPS 的高低，用來評估市場對公司成長性的期待。偏低且獲利穩定代表可能被低估；偏高但獲利未跟上則需留意風險。",
+        "formula": "本益比 = 股價 ÷ 每股盈餘（EPS）",
+        "bullish": "本益比偏低（如 <10）且獲利穩定，或本益比上升但 EPS 同步增長，顯示市場信心提升。",
+        "bearish": "本益比過高（如 >40）但獲利無成長支撐，或本益比持續下降，代表市場對未來轉保守。",
+        "chartType": "line",
+        "trend": "歷史趨勢分析"
+    },
+    "ROE": {
+        "title": "股東權益報酬率（ROE）",
+        "fullName": "Return on Equity",
+        "description": "ROE 衡量公司使用股東資金賺錢的能力，是股東報酬的重要指標。數值越高，代表資金運用越有效率。",
+        "formula": "ROE = 稅後淨利 ÷ 股東權益",
+        "bullish": "ROE > 15% 或呈現連續上升，代表獲利能力強、資金運用效率高。",
+        "bearish": "ROE 長期低於 5%、下滑或波動大，顯示獲利結構不佳或負債壓力大。",
+        "chartType": "line",
+        "trend": "年度績效表現"
+    },
+    "ROA": {
+        "title": "總資產報酬率（ROA）",
+        "fullName": "Return on Assets",
+        "description": "ROA 用來衡量公司運用所有資產（包含自有資金與負債）賺錢的效率。能有效反映公司整體的營運與資源利用表現，ROA 越高代表公司利用資產創造收益的能力越強。",
+        "formula": "ROA = 稅後淨利 ÷ 總資產",
+        "bullish": "ROA 高於 10% 或持續上升，表示資產運用效率佳、公司整體經營健康。",
+        "bearish": "ROA 長期低於 5% 或呈現下滑，代表資產報酬偏低，獲利或資源利用效率下降。",
+        "chartType": "line",
+        "trend": "年度 ROA 變化趨勢"
+    },
+    "現金股利": {
+        "title": "現金股利",
+        "fullName": "Dividend",
+        "description": "公司將賺到的錢，以「現金」的方式分配給股東。是股東最直接的投資報酬來源。",
+        "formula": "現金股利 = 每股發放的現金金額 × 持股數\n例：若每股配發 3 元、你持有 1,000 股 → 可領到 3,000 元。",
+        "chartType": "bar",
+        "trend": "歷年配息記錄"
+    },
+    "營收 (YoY)": {
+        "title": "營收 (YoY)",
+        "fullName": "Revenue（Year-over-Year）",
+        "description": "營收反映公司產品或服務的銷售表現，是最基礎的經營成長指標。可透過年增（YoY）判斷長期趨勢、月增（MoM）觀察短期動能。",
+        "formula": "營收 = 銷售數量 × 單價",
+        "bullish": "YoY 持續為正且上升，MoM 連續成長，顯示需求強勁、營運改善。",
+        "bearish": "YoY 為負或連續下滑、MoM 連續轉弱，表示成長動能減弱或進入淡季。",
+        "chartType": "bar",
+        "trend": "月度/季度營收趨勢"
+    },
+    "EMA5_10": {
+        "title": "EMA5 / EMA10",
+        "fullName": "Exponential Moving Average (5-day / 10-day)",
+        "description": "EMA 是指數移動平均線，會給近期價格更高權重，能更快速反應行情。EMA5 與 EMA10 分別反映短期與中期的價格趨勢，用於判斷短線多空轉折。",
+        "formula": "EMAₜ = 當日收盤價 × α + 前一日 EMA × (1 - α)，α = 2 / (N + 1)",
+        "bullish": "EMA5 上穿 EMA10（黃金交叉）→ 短期趨勢轉強，偏多訊號。",
+        "bearish": "EMA5 下穿 EMA10（死亡交叉）→ 短期疲弱，偏空訊號。",
+        "chartType": "line",
+        "trend": "短期均線交叉趨勢"
+    },
+    "MACD": {
+        "title": "MACD 指標",
+        "fullName": "Moving Average Convergence Divergence",
+        "description": "MACD 用於判斷趨勢強度與可能的轉折點，由短期與長期 EMA 的差值計算而成，再搭配訊號線判斷多空方向。",
+        "formula": "MACD = EMA(12) - EMA(26)，Signal = MACD 的 9 日 EMA",
+        "bullish": "MACD 線由下往上突破 Signal 線 → 多頭訊號，趨勢轉強。",
+        "bearish": "MACD 線由上往下跌破 Signal 線 → 空頭訊號，趨勢轉弱。",
+        "chartType": "line",
+        "trend": "趨勢強度與轉折觀察"
+    },
+    "KD": {
+        "title": "KD 指標",
+        "fullName": "Stochastic Oscillator (K/D)",
+        "description": "KD 是常用的動能震盪指標，用來觀察股價短期是否處於超買或超賣狀態，K 與 D 值介於 0～100 間。",
+        "formula": "K = 前 K × 2/3 + RSV × 1/3；D = 前 D × 2/3 + K × 1/3；RSV = (今日收盤 - 9日最低) ÷ (9日最高 - 最低) × 100",
+        "bullish": "K 值上穿 D 值（黃金交叉），或 KD < 20 反彈 → 短期偏多。",
+        "bearish": "K 值下穿 D 值（死亡交叉），或 KD > 80 下彎 → 短期偏空。",
+        "chartType": "line",
+        "trend": "短線超買超賣狀態"
+    },
+    "RSI": {
+        "title": "RSI 相對強弱指標",
+        "fullName": "Relative Strength Index",
+        "description": "RSI 衡量股價近期香港上漲與下跌的相對強度，可用來判斷市場是否過熱（超買）或過冷（超賣）。",
+        "formula": "RSI = 上漲平均值 ÷ (上漲平均值 + 下跌平均值) × 100",
+        "bullish": "RSI < 30 後反彈 → 超賣、可能反彈。",
+        "bearish": "RSI > 70 後下滑 → 超買、可能修正。",
+        "chartType": "line",
+        "trend": "短期動能與超買超賣"
+    },
+    "ROC": {
+        "title": "ROC 變動率指標",
+        "fullName": "Rate of Change",
+        "description": "ROC 顯示當前股價相較於過去 N 天前的變化幅度，是觀察股價動能是否增強或轉弱的重要指標。",
+        "formula": "ROC = [(今日收盤價 - N 日前收盤價) ÷ N 日前收盤價] × 100%",
+        "bullish": "ROC 由負轉正 → 動能增強、股價可能開始上漲。",
+        "bearish": "ROC 由正轉負 → 動能轉弱、可能進入修正。",
+        "chartType": "line",
+        "trend": "價格動能變化"
+    },
+    "BIAS": {
+        "title": "BIAS 乖離率",
+        "fullName": "Bias Ratio",
+        "description": "BIAS 衡量股價相對於移動平均線的偏離幅度，用於觀察短期是否漲多或跌深。",
+        "formula": "BIAS = (收盤價 − 移動平均線) ÷ 移動平均線 × 100%",
+        "bullish": "BIAS < -5% → 股價短線跌深，有機會反彈。",
+        "bearish": "BIAS > +5% → 股價短線漲多，可能拉回修正。",
+        "chartType": "line",
+        "trend": "短期乖離與反轉訊號"
+    }
+}
