@@ -47,17 +47,17 @@ const functions = [
   {
     title: '股票速覽',
     icon: 'fa-solid fa-chart-column',
-    desc: '提供即時股價與基本面摘要，分析法人持股與市場趨勢。'
+    desc: '提供即時股價、K 線圖、股價預測功能。'
   },
   {
     title: '分析儀表',
     icon: 'fa-solid fa-gauge',
-    desc: '介紹分析儀表。'
+    desc: '以股市 4 面向健檢，快速了解個股狀況。'
   },
     {
     title: '新聞股雲',
     icon: 'fa-solid fa-link',
-    desc: '介紹新聞股雲。'
+    desc: '整合最新財經新聞，並以文字雲呈現關鍵資訊。'
   }
 ]
 
@@ -171,6 +171,7 @@ h1 {
   border-radius: 10px;
   font-size: 0.9rem;
   width: 240px;
+  max-width: 85vw;
   line-height: 1.5;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
   opacity: 0;
@@ -178,6 +179,8 @@ h1 {
   transition: all 0.25s ease;
   pointer-events: none;
   z-index: 10;
+  white-space: normal;
+  word-wrap: break-word;
 }
 .tooltip::after {
   content: '';
@@ -195,7 +198,33 @@ h1 {
 }
 
 @media (max-width: 480px) {
-  h1 { font-size: 24px; }
-  .function { flex-direction: column; gap: 30px; }
+  h1 {
+    font-size: 24px;
+  }
+
+  .logo-img {
+    max-width: 140px;
+  }
+
+  .function {
+    gap: 50px;
+    padding: 0 10px;
+  }
+
+  .function-item {
+    font-size: 16px;
+  }
+
+  .function-item i {
+    font-size: 32px;
+  }
+
+  .tooltip {
+    font-size: 0.85rem;
+    padding: 8px 12px;
+    width: auto;
+    min-width: 180px;
+    max-width: 90vw;
+  }
 }
 </style>
