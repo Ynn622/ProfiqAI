@@ -3,7 +3,7 @@
         <div class="analysis-container">
             <div class="analysis-left">
                 <h3>籌碼面分析</h3>
-                <ProbCircle :score="1" />
+                <ProbCircle :score="chipScore" />
             </div>
             <div class="analysis-right">
                 <div v-if="loading">
@@ -33,7 +33,8 @@ import { callAPI } from '@/utils/apiConfig.js';
 // Props
 const props = defineProps({
     stockId: { type: String, required: true },
-    stockName: { type: String, required: true }
+    stockName: { type: String, required: true },
+    chipScore: { type: Number, default: 0 }
 });
 
 const loading = ref(false);
@@ -107,7 +108,7 @@ onMounted(async () => {
     background-color: #cfcfcf;
 }
 
-@media (max-width: 900px) {
+@media (max-width: 665px) {
     .analysis-container {
         flex-direction: column;
     }

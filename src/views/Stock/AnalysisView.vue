@@ -23,7 +23,7 @@
                 <div class="segment-section">
                     <keep-alive>
                         <component :is="componentMap[segmentValue]" :stockId="stockId" :stockName="stockName" 
-                                    :techScore="techScore" @loading-start="onLoadingStart" @loading-end="onLoadingEnd"/>
+                                    :techScore="techScore" :chipScore="chipScore" @loading-start="onLoadingStart" @loading-end="onLoadingEnd"/>
                     </keep-alive>
                 </div>
             </div>
@@ -70,11 +70,12 @@ const loading = ref(false)
 // 從 PriceBar 接收的資料
 const stockName = ref('');
 const techScore = ref(0);
+const chipScore = ref(0);
 
 // 各面分析 模擬資料
 const basicAnalysis = ref({
     factor: '基本',
-    direction: 1,
+    direction: 0,
     description: '台積電展現出高度的穩定性與成長性。以2023年為例，全年每股盈餘（EPS）約為 30.16元新台幣，雖然較2022年略為下滑（主要受到終端需求調整與總體經濟不確定性影響），但仍處於歷史高檔區間。這反映出即使在全球半導體景氣循環調整的情況下，公司仍具強勁的獲利能力。'
 });
 const technicalAnalysis = ref({
@@ -84,12 +85,12 @@ const technicalAnalysis = ref({
 });
 const marketAnalysis = ref({
     factor: '消息',
-    direction: -1,
+    direction: 0,
     description: '隨著美國可能對多國徵收關稅，特別是針對半導體股，造成市場情緒不佳，這將對台積電的股價造成壓力。\n投資者需密切注意這方面的進展。然而長期來看，台積電的市場地位依然強勁，受到AI相關需求以及其他高科技產品的驅動，未來仍有增長潛力。'
 });
 const chipAnalysis = ref({
     factor: '籌碼',
-    direction: 1,
+    direction: 0,
     description: '在籌碼面方面，外資持股比例為73.45%，投信持股比例為1.86％，自營商持股比例為6.52%。\n值得注意的是，外資持股比例在近期有所下降，顯示外資對台積電的持股態度趨於保守。'
 });
 
@@ -114,6 +115,27 @@ async function fetchTechScore() {
     }
 }
 
+/** 
+ * API: 取得籌碼面分數
+ */
+async function fetchChipScore() {
+    try {
+        const response = await callAPI({
+            url: '/chip/score',
+            params: { stock_id: stockId.value },
+            funcName: 'fetchChipScore'
+        });
+        
+        const direction = response?.chip_data?.direction ?? 0;
+        chipAnalysis.value.direction = direction;
+        chipScore.value = direction;
+    } catch (error) {
+        // 錯誤已經在 callAPI 中記錄
+        chipAnalysis.value.direction = 0;
+        chipScore.value = 0;
+    }
+}
+
 // Emits: 處理從 PriceBar 回傳的股票資料
 function handleStockDataUpdate(data) {
     stockName.value = data.StockName;
@@ -122,9 +144,10 @@ function handleStockDataUpdate(data) {
 function onLoadingStart() { loading.value = true }
 function onLoadingEnd() { loading.value = false }
 
-// 頁面載入時取得技術面分數
+// 頁面載入時取得技術面和籌碼面分數
 onMounted(() => {
     fetchTechScore();
+    fetchChipScore();
 });
 
 </script>

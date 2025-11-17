@@ -113,7 +113,7 @@ onMounted(async () => {
     font-size: 16px;
 }
 
-@media (max-width: 1100px) {
+@media (max-width: 665px) {
     .analysis-container {
         flex-direction: column;
     }
