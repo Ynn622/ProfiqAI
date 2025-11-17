@@ -6,31 +6,36 @@
                 <ProbCircle :score="1" />
             </div>
             <div class="analysis-right">
-                <SquareData title="EPS" 
-                            :value="basicData?.eps?.toFixed(2)" 
-                            :change="basicData?.epsGap"
-                            :color="getColorByValue('eps', basicData?.eps)" />
-                <SquareData :title="'P/E Ratio'" 
-                            :value="basicData?.PE_ratio"
-                            :valueSuffix="' 倍'"
-                            :color="getColorByValue('pe', basicData?.PE_ratio)" />
-                <SquareData :title="'營收 (YoY)'" 
-                            :value="basicData?.MoM"
-                            :valuePrefix="(basicData?.MoM > 0) ? '+' : ''"
-                            :valueSuffix="' %'"
-                            :color="getColorByValue('mom', basicData?.MoM)" />
-                <SquareData :title="'現金股利'" 
-                            :value="basicData?.stockSplits" 
-                            :valueSuffix="' 元'"
-                            :color="getColorByValue('dividend', basicData?.stockSplits)" />
-                <SquareData :title="'ROA'" 
-                            :value="basicData?.ROA"
-                            :valueSuffix="' %'"
-                            :color="getColorByValue('roa', basicData?.ROA)" />
-                <SquareData :title="'ROE'" 
-                            :value="basicData?.ROE"
-                            :valueSuffix="' %'"
-                            :color="getColorByValue('roe', basicData?.ROE)" />
+                <div v-if="loading" class="loading-container">
+                    <LoadingMask type="small"/>
+                </div>
+                <template v-else>
+                    <SquareData title="EPS" 
+                                :value="basicData?.eps?.toFixed(2)" 
+                                :change="basicData?.epsGap"
+                                :color="getColorByValue('eps', basicData?.eps)" />
+                    <SquareData :title="'P/E Ratio'" 
+                                :value="basicData?.PE_ratio"
+                                :valueSuffix="' 倍'"
+                                :color="getColorByValue('pe', basicData?.PE_ratio)" />
+                    <SquareData :title="'營收 (YoY)'" 
+                                :value="basicData?.MoM"
+                                :valuePrefix="(basicData?.MoM > 0) ? '+' : ''"
+                                :valueSuffix="' %'"
+                                :color="getColorByValue('mom', basicData?.MoM)" />
+                    <SquareData :title="'現金股利'" 
+                                :value="basicData?.stockSplits" 
+                                :valueSuffix="' 元'"
+                                :color="getColorByValue('dividend', basicData?.stockSplits)" />
+                    <SquareData :title="'ROA'" 
+                                :value="basicData?.ROA"
+                                :valueSuffix="' %'"
+                                :color="getColorByValue('roa', basicData?.ROA)" />
+                    <SquareData :title="'ROE'" 
+                                :value="basicData?.ROE"
+                                :valueSuffix="' %'"
+                                :color="getColorByValue('roe', basicData?.ROE)" />
+                </template>
             </div>
         </div>
     </div>
@@ -40,6 +45,7 @@
 // 組件
 import SquareData from '../SquareData.vue';
 import ProbCircle from '../Common/probCircle.vue';
+import LoadingMask from '../Common/loadingMask.vue';
 
 // 工具 & 套件
 import { ref, onMounted, computed } from 'vue';
@@ -52,8 +58,6 @@ const props = defineProps({
     stockId: { type: String, required: true },
     stockName: { type: String, required: true }
 });
-// Emits
-const emit = defineEmits(['loading-start', 'loading-end'])
 
 const loading = ref(false);
 const STORAGE_KEY = `basicData_${props.stockId}`;
@@ -108,7 +112,7 @@ async function callBasicSectionAPI(stockId) {
 }
 
 onMounted(async () => {
-    emit('loading-start') // 通知父組件：開始載入
+    loading.value = true; // 開始載入
     try {
         // 檢查是否需要重新打 API
         if (shouldCallAPI(STORAGE_KEY)) {
@@ -127,7 +131,7 @@ onMounted(async () => {
     } catch (err) {
         logger.error('基本面分析初始化錯誤:', err);
     } finally {
-        emit('loading-end') // 通知父組件：結束載入
+        loading.value = false; // 結束載入
     }
 });
 
@@ -149,6 +153,15 @@ onMounted(async () => {
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
     height: 100%;
 }
+
+.loading-container {
+    grid-column: 1 / -1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 200px;
+}
+
 @media (max-width: 665px) {
     .analysis-container {
         flex-direction: column;

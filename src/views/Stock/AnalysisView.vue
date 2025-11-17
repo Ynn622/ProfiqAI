@@ -145,9 +145,16 @@ function onLoadingStart() { loading.value = true }
 function onLoadingEnd() { loading.value = false }
 
 // 頁面載入時取得技術面和籌碼面分數
-onMounted(() => {
-    fetchTechScore();
-    fetchChipScore();
+onMounted(async () => {
+    loading.value = true;
+    try {
+        await Promise.all([
+            fetchTechScore(),
+            fetchChipScore()
+        ]);
+    } finally {
+        loading.value = false;
+    }
 });
 
 </script>
