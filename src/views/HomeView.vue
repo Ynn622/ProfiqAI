@@ -5,17 +5,7 @@
 
     <!-- 頂端按鈕 -->
     <header class="topbar">
-      <UserProfile 
-        :is-logged-in="isLoggedIn"
-        :user-name="userName"
-        :user-avatar="userAvatar"
-        @facebook-login="handleFacebookLogin"
-        @google-login="handleGoogleLogin"
-        @logout="handleLogout"
-        @navigate-watchlist="navigateToWatchlist"
-        @navigate-settings="navigateToSettings"
-        @navigate-referral="navigateToReferral"
-      />
+      <UserProfile />
     </header>
 
     <!-- 主內容 -->
@@ -67,45 +57,6 @@ const functions = [
     desc: '整合最新財經新聞，並以文字雲呈現關鍵資訊。'
   }
 ]
-
-// 用戶登入狀態 (暫時寫死，之後可接 API)
-const isLoggedIn = ref(false);
-const userName = ref('巴菲佑');
-const userAvatar = ref(''); // 可設定為頭像 URL
-
-// 處理登入
-function handleFacebookLogin() {
-  console.log('Facebook 登入');
-  // TODO: 實作 Facebook 登入邏輯
-}
-
-function handleGoogleLogin() {
-  console.log('Google 登入');
-  // TODO: 實作 Google 登入邏輯
-}
-
-// 處理登出
-function handleLogout() {
-  console.log('登出');
-  isLoggedIn.value = false;
-  // TODO: 實作登出邏輯
-}
-
-// 導航功能
-function navigateToWatchlist() {
-  console.log('前往自選清單');
-  // TODO: 實作導航邏輯
-}
-
-function navigateToSettings() {
-  console.log('前往個人設定');
-  // TODO: 實作導航邏輯
-}
-
-function navigateToReferral() {
-  console.log('前往推薦朋友');
-  // TODO: 實作導航邏輯
-}
 
 function comingSoon() {
   alert('此功能尚未開放，敬請期待！')

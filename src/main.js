@@ -5,6 +5,7 @@ import App from './App.vue'
 import router from './router'
 import Antd, { Segmented } from 'ant-design-vue'
 import "@/utils/logger"
+import { initAuthStore } from '@/utils/authStore'
 
 const app = createApp(App)
 
@@ -12,3 +13,6 @@ app.use(router)
 app.use(Antd)
 
 app.mount('#app')
+
+// 初始化 Auth Store
+initAuthStore()

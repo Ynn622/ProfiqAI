@@ -88,26 +88,14 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref } from 'vue'
+import { useAuthStore } from '@/utils/authStore'
+import { message } from 'ant-design-vue'
+import router from '@/router'
 
-// Props
-const props = defineProps({
-  // 是否已登入
-  isLoggedIn: {
-    type: Boolean,
-    default: false
-  },
-  // 用戶名稱
-  userName: {
-    type: String,
-    default: '巴菲佑'
-  },
-  // 用戶頭像
-  userAvatar: {
-    type: String,
-    default: ''
-  }
-})
+// 使用 Auth Store
+const authStore = useAuthStore()
+const { isLoggedIn, userName, userAvatar, handleGoogleLogin: googleLogin, handleFacebookLogin: facebookLogin, handleLogout: logout } = authStore
 
 // 顯示面板狀態
 const showPanel = ref(false)
@@ -122,50 +110,68 @@ function closePanel() {
   showPanel.value = false
 }
 
-// 事件發射
-const emit = defineEmits([
-  'facebook-login',
-  'google-login',
-  'logout',
-  'navigate-watchlist',
-  'navigate-settings',
-  'navigate-referral'
-])
-
 // 處理 Facebook 登入
-function handleFacebookLogin() {
-  emit('facebook-login')
+async function handleFacebookLogin() {
   closePanel()
+  
+  const { success, error } = await facebookLogin()
+  
+  if (success) {
+    message.success('正在跳轉到 Facebook 登入...')
+  } else {
+    message.error(`Facebook 登入失敗: ${error.message}`)
+  }
 }
 
 // 處理 Google 登入
-function handleGoogleLogin() {
-  emit('google-login')
+async function handleGoogleLogin() {
   closePanel()
+  
+  const { success, error } = await googleLogin()
+  
+  if (success) {
+    message.success('正在跳轉到 Google 登入...')
+  } else {
+    message.error(`Google 登入失敗: ${error.message}`)
+  }
 }
 
 // 處理登出
-function handleLogout() {
-  emit('logout')
+async function handleLogout() {
   closePanel()
+  
+  const { success, error } = await logout()
+  
+  if (success) {
+    message.success('已成功登出')
+    router.push({ name: 'home' })
+  } else {
+    message.error(`登出失敗: ${error.message}`)
+  }
 }
 
 // 處理導航到自選清單
 function handleWatchlist() {
-  emit('navigate-watchlist')
   closePanel()
+  message.info('自選清單功能開發中...')
+  // TODO: 實作導航邏輯
+  // router.push({ name: 'watchlist' })
 }
 
 // 處理導航到個人設定
 function handleSettings() {
-  emit('navigate-settings')
   closePanel()
+  message.info('個人設定功能開發中...')
+  // TODO: 實作導航邏輯
+  // router.push({ name: 'settings' })
 }
 
 // 處理導航到推薦朋友
 function handleReferral() {
-  emit('navigate-referral')
   closePanel()
+  message.info('推薦朋友功能開發中...')
+  // TODO: 實作導航邏輯
+  // router.push({ name: 'referral' })
 }
 </script>
 

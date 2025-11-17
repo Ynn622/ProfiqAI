@@ -31,6 +31,11 @@ const router = createRouter({
       component: () => import('../views/ChatBotView.vue'),
     },
     {
+      path: '/auth/callback',
+      name: 'auth-callback',
+      component: () => import('../views/AuthCallback.vue'),
+    },
+    {
       path: '/:pathMatch(.*)*', // 捕捉不存在的路由
       redirect: '/',
     },
