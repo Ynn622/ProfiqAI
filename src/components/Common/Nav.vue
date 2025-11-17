@@ -25,7 +25,18 @@
                 class="fa-solid fa-arrow-left back-icon" 
                 @click="toggleMobileSearch"
             ></i>
-            <i v-else-if="!isMobile" class="user fa-solid fa-circle-user"></i>
+            <UserProfile 
+              v-else-if="!isMobile"
+              :is-logged-in="isLoggedIn"
+              :user-name="userName"
+              :user-avatar="userAvatar"
+              @facebook-login="handleFacebookLogin"
+              @google-login="handleGoogleLogin"
+              @logout="handleLogout"
+              @navigate-watchlist="navigateToWatchlist"
+              @navigate-settings="navigateToSettings"
+              @navigate-referral="navigateToReferral"
+            />
             <i 
               v-else-if="!isChatBotRoute" 
               class="fa-solid fa-bars" 
@@ -46,6 +57,7 @@
 // 組件
 import SearchBar from '@/components/Common/SearchBar.vue';
 import ChatBotButton from '@/components/Button/ChatBotButton.vue';
+import UserProfile from '@/components/Common/UserProfile.vue';
 
 // 工具 & 套件
 import router from '@/router';
@@ -62,6 +74,45 @@ const showMobileSearch = ref(false);
 const isChatBotRoute = computed(() => {
     return route.name === 'chat-bot';
 });
+
+// 用戶登入狀態 (暫時寫死，之後可接 API)
+const isLoggedIn = ref(false);
+const userName = ref('巴菲佑');
+const userAvatar = ref(''); // 可設定為頭像 URL
+
+// 處理登入
+function handleFacebookLogin() {
+    console.log('Facebook 登入');
+    // TODO: 實作 Facebook 登入邏輯
+}
+
+function handleGoogleLogin() {
+    console.log('Google 登入');
+    // TODO: 實作 Google 登入邏輯
+}
+
+// 處理登出
+function handleLogout() {
+    console.log('登出');
+    isLoggedIn.value = false;
+    // TODO: 實作登出邏輯
+}
+
+// 導航功能
+function navigateToWatchlist() {
+    console.log('前往自選清單');
+    // TODO: 實作導航邏輯
+}
+
+function navigateToSettings() {
+    console.log('前往個人設定');
+    // TODO: 實作導航邏輯
+}
+
+function navigateToReferral() {
+    console.log('前往推薦朋友');
+    // TODO: 實作導航邏輯
+}
 
 const PageDict = {
     '股票速覽': 'stock-summary',

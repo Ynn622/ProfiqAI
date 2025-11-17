@@ -1,0 +1,391 @@
+<template>
+  <div class="user-profile-container">
+    <!-- 頭像按鈕 -->
+    <div class="avatar-button" @click="togglePanel">
+      <img 
+        v-if="isLoggedIn && userAvatar" 
+        :src="userAvatar" 
+        alt="用戶頭像" 
+        class="avatar-image"
+      />
+      <i v-else class="fa-solid fa-circle-user default-avatar"></i>
+    </div>
+
+    <!-- 下拉面板 -->
+    <transition name="panel-fade">
+      <div v-if="showPanel" class="dropdown-panel" :class="{ 'logged-in': isLoggedIn }">
+        <!-- 未登入狀態 -->
+        <div v-if="!isLoggedIn" class="panel-content login-panel">
+          <div class="panel-header">
+            <i class="fa-solid fa-circle-user default-avatar-large"></i>
+            <div class="header-text">
+              <h3>未登入</h3>
+              <p>登入以啟用完整功能</p>
+            </div>
+          </div>
+
+          <div class="divider"></div>
+
+          <div class="auth-buttons">
+            <button class="auth-btn facebook" @click="handleFacebookLogin">
+              <i class="fa-brands fa-facebook"></i>
+              以 FaceBook 帳號登入
+            </button>
+            <button class="auth-btn google" @click="handleGoogleLogin">
+              <i class="fa-brands fa-google"></i>
+              以 Google 帳號登入
+            </button>
+          </div>
+        </div>
+
+        <!-- 已登入狀態 -->
+        <div v-else class="panel-content profile-panel">
+          <div class="panel-header">
+            <img 
+              v-if="userAvatar" 
+              :src="userAvatar" 
+              alt="用戶頭像" 
+              class="avatar-image-large"
+            />
+            <i v-else class="fa-solid fa-circle-user default-avatar-large"></i>
+            <div class="header-text">
+              <h3>{{ userName }}</h3>
+              <p class="user-badge">
+                <i class="fa-solid fa-crown"></i>
+                智聊用戶
+              </p>
+            </div>
+          </div>
+
+          <div class="divider"></div>
+
+          <div class="menu-list">
+            <div class="menu-item" @click="handleWatchlist">
+              自選清單
+            </div>
+            <div class="menu-item" @click="handleSettings">
+              個人設定
+            </div>
+            <div class="menu-item" @click="handleReferral">
+              推薦朋友
+            </div>
+            <div class="divider"></div>
+            <div class="menu-item logout" @click="handleLogout">
+              登出
+            </div>
+          </div>
+        </div>
+      </div>
+    </transition>
+
+    <!-- 點擊外部關閉 -->
+    <div 
+      v-if="showPanel" 
+      class="backdrop" 
+      @click="closePanel"
+    ></div>
+  </div>
+</template>
+
+<script setup>
+import { ref, computed } from 'vue'
+
+// Props
+const props = defineProps({
+  // 是否已登入
+  isLoggedIn: {
+    type: Boolean,
+    default: false
+  },
+  // 用戶名稱
+  userName: {
+    type: String,
+    default: '巴菲佑'
+  },
+  // 用戶頭像
+  userAvatar: {
+    type: String,
+    default: ''
+  }
+})
+
+// 顯示面板狀態
+const showPanel = ref(false)
+
+// 切換面板
+function togglePanel() {
+  showPanel.value = !showPanel.value
+}
+
+// 關閉面板
+function closePanel() {
+  showPanel.value = false
+}
+
+// 事件發射
+const emit = defineEmits([
+  'facebook-login',
+  'google-login',
+  'logout',
+  'navigate-watchlist',
+  'navigate-settings',
+  'navigate-referral'
+])
+
+// 處理 Facebook 登入
+function handleFacebookLogin() {
+  emit('facebook-login')
+  closePanel()
+}
+
+// 處理 Google 登入
+function handleGoogleLogin() {
+  emit('google-login')
+  closePanel()
+}
+
+// 處理登出
+function handleLogout() {
+  emit('logout')
+  closePanel()
+}
+
+// 處理導航到自選清單
+function handleWatchlist() {
+  emit('navigate-watchlist')
+  closePanel()
+}
+
+// 處理導航到個人設定
+function handleSettings() {
+  emit('navigate-settings')
+  closePanel()
+}
+
+// 處理導航到推薦朋友
+function handleReferral() {
+  emit('navigate-referral')
+  closePanel()
+}
+</script>
+
+<style scoped>
+.user-profile-container {
+  position: relative;
+  z-index: 1000;
+}
+
+/* 頭像按鈕 */
+.avatar-button {
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.avatar-button:hover {
+  transform: scale(1.05);
+}
+
+.default-avatar {
+  font-size: 50px;
+  color: #666;
+  transition: color 0.2s ease;
+}
+
+.avatar-button:hover .default-avatar {
+  color: #333;
+}
+
+.avatar-image {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #e0e0e0;
+  transition: border-color 0.2s ease;
+}
+
+.avatar-button:hover .avatar-image {
+  border-color: #999;
+}
+
+/* 背景遮罩 */
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 999;
+  background: transparent;
+}
+
+/* 下拉面板 */
+.dropdown-panel {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  width: 320px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  z-index: 1001;
+  overflow: hidden;
+}
+
+/* 面板內容 */
+.panel-content {
+  padding: 20px;
+}
+
+/* 面板頭部 */
+.panel-header {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin-bottom: 15px;
+}
+
+.default-avatar-large {
+  font-size: 60px;
+  color: #666;
+}
+
+.avatar-image-large {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #e0e0e0;
+}
+
+.header-text h3 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+  color: #333;
+  text-align: left;
+}
+
+.header-text p {
+  margin: 5px 0 0 0;
+  font-size: 14px;
+  color: #666;
+}
+
+.user-badge {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  color: #0b70f5 !important;
+}
+
+.user-badge i {
+  font-size: 14px;
+}
+
+/* 分隔線 */
+.divider {
+  height: 1px;
+  background: #e0e0e0;
+  margin: 15px 0;
+}
+
+/* 登入按鈕 */
+.auth-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.auth-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  padding: 12px 20px;
+  border: none;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.auth-btn i {
+  font-size: 18px;
+}
+
+.auth-btn.facebook {
+  background: #1877f2;
+  color: white;
+}
+
+.auth-btn.facebook:hover {
+  background: #166fe5;
+}
+
+.auth-btn.google {
+  background: white;
+  color: #333;
+  border: 1px solid #e0e0e0;
+}
+
+.auth-btn.google:hover {
+  background: #f5f5f5;
+}
+
+/* 選單列表 */
+.menu-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.menu-item {
+  padding: 12px 15px;
+  font-size: 15px;
+  color: #333;
+  cursor: pointer;
+  border-radius: 6px;
+  transition: background 0.2s ease;
+}
+
+.menu-item:hover {
+  background: #f5f5f5;
+}
+
+.menu-item.logout {
+  color: #ef4444;
+  font-weight: 500;
+}
+
+.menu-item.logout:hover {
+  background: #fee;
+}
+
+/* 過渡動畫 */
+.panel-fade-enter-active,
+.panel-fade-leave-active {
+  transition: all 0.2s ease;
+}
+
+.panel-fade-enter-from,
+.panel-fade-leave-to {
+  opacity: 0;
+  transform: translateY(-10px);
+}
+
+/* 響應式設計 */
+@media (max-width: 768px) {
+  .dropdown-panel {
+    width: 280px;
+    right: -10px;
+  }
+
+  .default-avatar {
+    font-size: 40px;
+  }
+
+  .avatar-image {
+    width: 40px;
+    height: 40px;
+  }
+}
+</style>
