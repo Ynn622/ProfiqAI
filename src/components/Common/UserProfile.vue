@@ -166,12 +166,76 @@ function handleSettings() {
   // router.push({ name: 'settings' })
 }
 
-// 處理導航到推薦朋友
-function handleReferral() {
+// 處理推薦朋友功能
+async function handleReferral() {
   closePanel()
-  message.info('推薦朋友功能開發中...')
-  // TODO: 實作導航邏輯
-  // router.push({ name: 'referral' })
+  
+  const shareUrl = 'https://investchat.net/'
+  const shareTitle = '投資智聊AI - 屬於您的股市顧問！'
+  const shareText = '投資智聊AI - 屬於您的股市顧問！'
+
+  // 檢查是否支援 Web Share API
+  if (navigator.share) {
+    try {
+      await navigator.share({
+        title: shareTitle,
+        text: shareText,
+        url: shareUrl
+      })
+      message.success('分享成功!')
+    } catch (error) {
+      // 用戶取消分享或發生錯誤
+      if (error.name !== 'AbortError') {
+        console.error('分享失敗:', error)
+        // 如果分享失敗,嘗試複製連結
+        copyToClipboard(shareUrl)
+      }
+    }
+  } else {
+    // 不支援 Web Share API,使用複製連結
+    copyToClipboard(shareUrl)
+  }
+}
+
+// 複製連結到剪貼簿
+function copyToClipboard(text) {
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text)
+      .then(() => {
+        message.success('連結已複製到剪貼簿!')
+      })
+      .catch(err => {
+        console.error('複製失敗:', err)
+        fallbackCopyToClipboard(text)
+      })
+  } else {
+    fallbackCopyToClipboard(text)
+  }
+}
+
+// 備用複製方法(相容舊版瀏覽器)
+function fallbackCopyToClipboard(text) {
+  const textArea = document.createElement('textarea')
+  textArea.value = text
+  textArea.style.position = 'fixed'
+  textArea.style.left = '-9999px'
+  document.body.appendChild(textArea)
+  textArea.focus()
+  textArea.select()
+  
+  try {
+    const successful = document.execCommand('copy')
+    if (successful) {
+      message.success('連結已複製到剪貼簿!')
+    } else {
+      message.error('複製失敗,請手動複製: ' + text)
+    }
+  } catch (err) {
+    console.error('複製失敗:', err)
+    message.error('複製失敗,請手動複製: ' + text)
+  }
+  
+  document.body.removeChild(textArea)
 }
 </script>
 
