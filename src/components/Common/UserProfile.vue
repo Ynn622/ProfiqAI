@@ -84,21 +84,101 @@
       class="backdrop" 
       @click="closePanel"
     ></div>
+
+    <!-- 個人設定彈窗 -->
+    <transition name="modal-fade">
+      <div v-if="showSettingsModal" class="modal-overlay" @click="closeSettingsModal">
+        <div class="modal-container" @click.stop>
+          <div class="modal-header">
+            <h2>個人資料</h2>
+            <button class="close-btn" @click="closeSettingsModal">
+              <i class="fa-solid fa-xmark"></i>
+            </button>
+          </div>
+
+          <div class="modal-body">
+            <!-- 頭像區域 -->
+            <div class="avatar-section">
+              <div class="avatar-display">
+                <img 
+                  v-if="userAvatar" 
+                  :src="userAvatar" 
+                  alt="用戶頭像" 
+                  class="avatar-image-xl"
+                />
+                <i v-else class="fa-solid fa-circle-user default-avatar-xl"></i>
+              </div>
+            </div>
+
+            <!-- 名稱編輯區 -->
+            <div class="form-group">
+              <label>名稱 <i class="fa-solid fa-pen edit-icon"></i></label>
+              <input 
+                v-model="editableName"
+                type="text" 
+                class="form-input"
+                placeholder="請輸入您的名稱"
+                maxlength="50"
+              />
+            </div>
+
+            <!-- 登入方式顯示 -->
+            <div class="form-group">
+              <label>登入方式</label>
+              <div class="login-method">
+                <i :class="loginMethodIcon"></i>
+                {{ loginMethodText }}
+              </div>
+            </div>
+          </div>
+
+          <div class="modal-footer">
+            <button class="modal-btn cancel" @click="closeSettingsModal">
+              取消
+            </button>
+            <button class="modal-btn confirm" @click="saveSettings" :disabled="isSaving">
+              <i v-if="isSaving" class="fa-solid fa-spinner fa-spin"></i>
+              {{ isSaving ? '儲存中...' : '設定' }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </transition>
   </div>
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { useAuthStore } from '@/utils/authStore'
 import { message } from 'ant-design-vue'
 import router from '@/router'
 
 // 使用 Auth Store
 const authStore = useAuthStore()
-const { isLoggedIn, userName, userAvatar, handleGoogleLogin: googleLogin, handleFacebookLogin: facebookLogin, handleLogout: logout } = authStore
+const { isLoggedIn, userName, userAvatar, user, handleGoogleLogin: googleLogin, handleFacebookLogin: facebookLogin, handleLogout: logout, handleUpdateProfile } = authStore
 
 // 顯示面板狀態
 const showPanel = ref(false)
+
+// 個人設定彈窗狀態
+const showSettingsModal = ref(false)
+const editableName = ref('')
+const isSaving = ref(false)
+
+// 登入方式相關計算屬性
+const loginMethodIcon = computed(() => {
+  const provider = user.value?.app_metadata?.provider
+  if (provider === 'google') return 'fa-brands fa-google'
+  if (provider === 'facebook') return 'fa-brands fa-facebook'
+  return 'fa-solid fa-envelope'
+})
+
+const loginMethodText = computed(() => {
+  const provider = user.value?.app_metadata?.provider
+  if (provider === 'google') return 'Google'
+  if (provider === 'facebook') return 'FaceBook'
+  return 'Email'
+})
 
 // 切換面板
 function togglePanel() {
@@ -161,9 +241,45 @@ function handleWatchlist() {
 // 處理導航到個人設定
 function handleSettings() {
   closePanel()
-  message.info('個人設定功能開發中...')
-  // TODO: 實作導航邏輯
-  // router.push({ name: 'settings' })
+  // 初始化編輯名稱為當前名稱
+  editableName.value = userName.value
+  showSettingsModal.value = true
+}
+
+// 關閉個人設定彈窗
+function closeSettingsModal() {
+  showSettingsModal.value = false
+  editableName.value = ''
+}
+
+// 儲存個人設定
+async function saveSettings() {
+  // 驗證名稱
+  if (!editableName.value.trim()) {
+    message.warning('名稱不能為空')
+    return
+  }
+
+  isSaving.value = true
+
+  try {
+    // 更新用戶資料到 Supabase
+    const { success, error } = await handleUpdateProfile({
+      nickname: editableName.value.trim()
+    })
+
+    if (success) {
+      message.success('個人資料更新成功!')
+      closeSettingsModal()
+    } else {
+      message.error(`更新失敗: ${error?.message || '未知錯誤'}`)
+    }
+  } catch (err) {
+    console.error('儲存設定失敗:', err)
+    message.error('儲存失敗,請稍後再試')
+  } finally {
+    isSaving.value = false
+  }
 }
 
 // 處理推薦朋友功能
@@ -456,6 +572,224 @@ function fallbackCopyToClipboard(text) {
   .avatar-image {
     width: 40px;
     height: 40px;
+  }
+}
+
+/* 個人設定彈窗樣式 */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  padding: 20px;
+}
+
+.modal-container {
+  background: white;
+  border-radius: 16px;
+  width: 100%;
+  max-width: 450px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  overflow: hidden;
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 24px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.modal-header h2 {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 600;
+  color: #333;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  font-size: 24px;
+  color: #666;
+  cursor: pointer;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+}
+
+.close-btn:hover {
+  background: #f5f5f5;
+  color: #333;
+}
+
+.modal-body {
+  padding: 24px;
+}
+
+.avatar-section {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 24px;
+}
+
+.avatar-display {
+  position: relative;
+}
+
+.avatar-image-xl {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 4px solid #e0e0e0;
+}
+
+.default-avatar-xl {
+  font-size: 120px;
+  color: #666;
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #333;
+  margin-bottom: 8px;
+}
+
+.edit-icon {
+  font-size: 12px;
+  color: #999;
+}
+
+.form-input {
+  width: 100%;
+  padding: 12px 16px;
+  font-size: 15px;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: #0b70f5;
+  box-shadow: 0 0 0 3px rgba(11, 112, 245, 0.1);
+}
+
+.login-method {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  background: #f5f5f5;
+  border-radius: 8px;
+  font-size: 15px;
+  color: #333;
+}
+
+.login-method i {
+  font-size: 18px;
+}
+
+.modal-footer {
+  display: flex;
+  gap: 12px;
+  padding: 20px 24px;
+  border-top: 1px solid #e0e0e0;
+  background: #fafafa;
+}
+
+.modal-btn {
+  flex: 1;
+  padding: 12px 24px;
+  font-size: 15px;
+  font-weight: 500;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.modal-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.modal-btn.cancel {
+  background: white;
+  color: #333;
+  border: 1px solid #e0e0e0;
+}
+
+.modal-btn.cancel:hover:not(:disabled) {
+  background: #f5f5f5;
+}
+
+.modal-btn.confirm {
+  background: #0b70f5;
+  color: white;
+}
+
+.modal-btn.confirm:hover:not(:disabled) {
+  background: #0960d9;
+}
+
+/* 彈窗動畫 */
+.modal-fade-enter-active,
+.modal-fade-leave-active {
+  transition: all 0.3s ease;
+}
+
+.modal-fade-enter-from,
+.modal-fade-leave-to {
+  opacity: 0;
+}
+
+.modal-fade-enter-active .modal-container,
+.modal-fade-leave-active .modal-container {
+  transition: all 0.3s ease;
+}
+
+.modal-fade-enter-from .modal-container,
+.modal-fade-leave-to .modal-container {
+  transform: scale(0.9);
+  opacity: 0;
+}
+
+/* 響應式設計 - 彈窗 */
+@media (max-width: 768px) {
+  .modal-container {
+    max-width: 90%;
+  }
+
+  .avatar-image-xl {
+    width: 100px;
+    height: 100px;
+  }
+
+  .default-avatar-xl {
+    font-size: 100px;
   }
 }
 </style>
