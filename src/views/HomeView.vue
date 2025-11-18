@@ -34,7 +34,6 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
 import SearchBar from '@/components/Common/SearchBar.vue'
 import chatBotBtn from '@/components/Button/ChatBotButton.vue'
 import UserProfile from '@/components/Common/UserProfile.vue'
@@ -57,10 +56,6 @@ const functions = [
     desc: '整合最新財經新聞，並以文字雲呈現關鍵資訊。'
   }
 ]
-
-function comingSoon() {
-  alert('此功能尚未開放，敬請期待！')
-}
 </script>
 
 <style scoped>
