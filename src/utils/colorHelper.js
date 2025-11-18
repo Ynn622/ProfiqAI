@@ -12,52 +12,84 @@ export function getColorByValue(field, val) {
     const name = field.trim().toLowerCase();
 
     // === 本益比 (PE) ===
+    // PE_THRESHOLDS = [(30, -1), (20, 2), (10, 1), (-999, -1)]
     if (name.includes('pe')) {
-        if (val > 30 || val < 10) return 'bg-dark-green'; // 很差
-        if (val >= 20) return 'bg-green';                 // 差
-        if (val >= 15) return 'bg-red';                   // 好
-        if (val >= 10) return 'bg-dark-red';              // 超好
-        return 'bg-gray';
+        if (val > 30) return 'bg-green';                  // 差 (-1)
+        if (val >= 20) return 'bg-dark-red';              // 超好 (2)
+        if (val >= 10) return 'bg-red';                   // 好 (1)
+        return 'bg-green';                                // 差 (-1)
     }
 
     // === 月增率 (MoM) ===
+    // MOM_THRESHOLDS = [(15, 2), (3, 1), (-15, -1), (-999, -2)]
     if (name.includes('mom')) {
-        if (val < 0) return 'bg-dark-green';              // 很差
-        if (val < 5) return 'bg-green';                   // 差
-        if (val < 15) return 'bg-red';                    // 好
-        return 'bg-dark-red';                             // 超好
+        if (val >= 15) return 'bg-dark-red';              // 超好 (2)
+        if (val >= 3) return 'bg-red';                    // 好 (1)
+        if (val >= -15) return 'bg-green';                // 差 (-1)
+        return 'bg-dark-green';                           // 很差 (-2)
     }
 
     // === 年增率 (YoY) ===
+    // YOY_THRESHOLDS = [(25, 2), (10, 1), (-5, -1), (-999, -2)]
     if (name.includes('yoy')) {
-        if (val < 0) return 'bg-dark-green';
-        if (val < 10) return 'bg-green';
-        if (val < 25) return 'bg-red';
-        return 'bg-dark-red';
+        if (val >= 25) return 'bg-dark-red';              // 超好 (2)
+        if (val >= 10) return 'bg-red';                   // 好 (1)
+        if (val >= -5) return 'bg-green';                 // 差 (-1)
+        return 'bg-dark-green';                           // 很差 (-2)
     }
 
     // === EPS ===
+    // EPS_THRESHOLDS = [(5, 2), (2, 1), (-1, -1), (-999, -2)]
     if (name.includes('eps')) {
-        if (val < 1) return 'bg-dark-green';
-        if (val < 3) return 'bg-green';
-        if (val < 6) return 'bg-red';
-        return 'bg-dark-red';
+        if (val >= 5) return 'bg-dark-red';               // 超好 (2)
+        if (val >= 2) return 'bg-red';                    // 好 (1)
+        if (val >= -1) return 'bg-green';                 // 差 (-1)
+        return 'bg-dark-green';                           // 很差 (-2)
     }
 
     // === ROE ===
+    // ROE_THRESHOLDS = [(13, 2), (8, 1), (0, -1), (-999, -2)]
     if (name.includes('roe')) {
-        if (val < 5) return 'bg-dark-green';
-        if (val < 10) return 'bg-green';
-        if (val < 20) return 'bg-red';
-        return 'bg-dark-red';
+        if (val >= 13) return 'bg-dark-red';              // 超好 (2)
+        if (val >= 8) return 'bg-red';                    // 好 (1)
+        if (val >= 0) return 'bg-green';                  // 差 (-1)
+        return 'bg-dark-green';                           // 很差 (-2)
     }
 
     // === ROA ===
+    // ROA_THRESHOLDS = [(6, 2), (2, 1), (0, -1), (-999, -2)]
     if (name.includes('roa')) {
-        if (val < 2) return 'bg-dark-green';
-        if (val < 5) return 'bg-green';
-        if (val < 10) return 'bg-red';
-        return 'bg-dark-red';
+        if (val >= 6) return 'bg-dark-red';               // 超好 (2)
+        if (val >= 2) return 'bg-red';                    // 好 (1)
+        if (val >= 0) return 'bg-green';                  // 差 (-1)
+        return 'bg-dark-green';                           // 很差 (-2)
+    }
+
+    // === GPM (毛利率) ===
+    // GPM_THRESHOLDS = [(40, 2), (20, 1), (0, -1), (-999, -2)]
+    if (name.includes('gpm') || name.includes('gross profit margin')) {
+        if (val >= 40) return 'bg-dark-red';              // 超好 (2)
+        if (val >= 20) return 'bg-red';                   // 好 (1)
+        if (val >= 0) return 'bg-green';                  // 差 (-1)
+        return 'bg-dark-green';                           // 很差 (-2)
+    }
+
+    // === OPM (營業利益率) ===
+    // OPM_THRESHOLDS = [(20, 2), (10, 1), (0, -1), (-999, -2)]
+    if (name.includes('opm') || name.includes('operating profit margin')) {
+        if (val >= 20) return 'bg-dark-red';              // 超好 (2)
+        if (val >= 10) return 'bg-red';                   // 好 (1)
+        if (val >= 0) return 'bg-green';                  // 差 (-1)
+        return 'bg-dark-green';                           // 很差 (-2)
+    }
+
+    // === PTPM (稅前淨利率) ===
+    // PTPM_THRESHOLDS = [(20, 2), (10, 1), (0, -1), (-999, -2)]
+    if (name.includes('ptpm') || name.includes('pretax profit margin')) {
+        if (val >= 20) return 'bg-dark-red';              // 超好 (2)
+        if (val >= 10) return 'bg-red';                   // 好 (1)
+        if (val >= 0) return 'bg-green';                  // 差 (-1)
+        return 'bg-dark-green';                           // 很差 (-2)
     }
 
     // === 股利（現金股利、股票股利） ===
