@@ -23,7 +23,7 @@
                 <div class="segment-section">
                     <keep-alive>
                         <component :is="componentMap[segmentValue]" :stockId="stockId" :stockName="stockName" 
-                                    :techScore="techScore" :chipScore="chipScore" @loading-start="onLoadingStart" @loading-end="onLoadingEnd"/>
+                                    :techScore="techScore" :chipScore="chipScore" :basicScore="basicScore" :basicData="basicData" />
                     </keep-alive>
                 </div>
             </div>
@@ -47,6 +47,7 @@ import technicSection from '@/components/AnalysisView/technicSection.vue';
 import { ref, onMounted, computed } from 'vue';
 import { useRoute } from 'vue-router';
 import { callAPI } from '@/utils/apiConfig.js';
+import { saveToLocalStorage, shouldCallAPI } from '@/utils/localStorageTool.js';
 
 // 取得路由參數
 const route = useRoute();
@@ -71,6 +72,8 @@ const loading = ref(false)
 const stockName = ref('');
 const techScore = ref(0);
 const chipScore = ref(0);
+const basicScore = ref(0);
+const basicData = ref(null);
 
 // 各面分析 模擬資料
 const basicAnalysis = ref({
@@ -93,6 +96,50 @@ const chipAnalysis = ref({
     direction: 0,
     description: '在籌碼面方面，外資持股比例為73.45%，投信持股比例為1.86％，自營商持股比例為6.52%。\n值得注意的是，外資持股比例在近期有所下降，顯示外資對台積電的持股態度趨於保守。'
 });
+
+/** 
+ * API: 取得基本面分數和資料
+ */
+async function fetchBasicScore() {
+    const STORAGE_KEY = `basicScore_${stockId.value}`;
+    
+    // 檢查是否需要重新打 API
+    if (!shouldCallAPI(STORAGE_KEY)) {
+        // 從 localStorage 載入
+        const storedData = localStorage.getItem(STORAGE_KEY);
+        if (storedData) {
+            const parsedData = JSON.parse(storedData);
+            basicAnalysis.value.direction = parsedData.direction ?? 0;
+            basicScore.value = parsedData.direction ?? 0;
+            basicData.value = parsedData.basicData ?? null;
+            return;
+        }
+    }
+    
+    try {
+        const response = await callAPI({
+            url: '/basic/score',
+            params: { stock_id: stockId.value },
+            funcName: 'fetchBasicScore'
+        });
+        
+        const direction = response?.basicData?.direction ?? 0;
+        basicAnalysis.value.direction = direction;
+        basicScore.value = direction;
+        basicData.value = response?.basicData ?? null;
+        
+        // 儲存到 localStorage
+        saveToLocalStorage(STORAGE_KEY, {
+            direction,
+            basicData: response?.basicData
+        });
+    } catch (error) {
+        // 錯誤已經在 callAPI 中記錄
+        basicAnalysis.value.direction = 0;
+        basicScore.value = 0;
+        basicData.value = null;
+    }
+}
 
 /** 
  * API: 取得技術面分數
@@ -119,6 +166,20 @@ async function fetchTechScore() {
  * API: 取得籌碼面分數
  */
 async function fetchChipScore() {
+    const STORAGE_KEY = `chipScore_${stockId.value}`;
+    
+    // 檢查是否需要重新打 API
+    if (!shouldCallAPI(STORAGE_KEY)) {
+        // 從 localStorage 載入
+        const storedData = localStorage.getItem(STORAGE_KEY);
+        if (storedData) {
+            const parsedData = JSON.parse(storedData);
+            chipAnalysis.value.direction = parsedData.direction ?? 0;
+            chipScore.value = parsedData.direction ?? 0;
+            return;
+        }
+    }
+    
     try {
         const response = await callAPI({
             url: '/chip/score',
@@ -129,6 +190,12 @@ async function fetchChipScore() {
         const direction = response?.chip_data?.direction ?? 0;
         chipAnalysis.value.direction = direction;
         chipScore.value = direction;
+        
+        // 儲存到 localStorage
+        saveToLocalStorage(STORAGE_KEY, {
+            direction,
+            chip_data: response?.chip_data
+        });
     } catch (error) {
         // 錯誤已經在 callAPI 中記錄
         chipAnalysis.value.direction = 0;
@@ -140,15 +207,13 @@ async function fetchChipScore() {
 function handleStockDataUpdate(data) {
     stockName.value = data.StockName;
 }
-// Emits: 載入中狀態傳遞給子組件
-function onLoadingStart() { loading.value = true }
-function onLoadingEnd() { loading.value = false }
 
-// 頁面載入時取得技術面和籌碼面分數
+// 頁面載入時取得各面分數
 onMounted(async () => {
     loading.value = true;
     try {
         await Promise.all([
+            fetchBasicScore(),
             fetchTechScore(),
             fetchChipScore()
         ]);

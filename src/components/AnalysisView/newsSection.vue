@@ -3,7 +3,7 @@
         <div class="analysis-container">
             <div class="analysis-left">
                 <h3>消息面分析</h3>
-                <ProbCircle :score="-1" />
+                <ProbCircle :score="0" />
             </div>
             <div class="analysis-right">
                 <h3>個股新聞</h3>
