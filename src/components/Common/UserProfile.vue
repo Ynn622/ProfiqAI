@@ -8,7 +8,7 @@
         alt="用戶頭像" 
         class="avatar-image"
       />
-      <i v-else class="fa-solid fa-circle-user default-avatar"></i>
+      <i v-else class="fa-solid fa-user-circle default-avatar" :class="{ 'logged-in': isLoggedIn }"></i>
     </div>
 
     <!-- 下拉面板 -->
@@ -47,7 +47,7 @@
               alt="用戶頭像" 
               class="avatar-image-large"
             />
-            <i v-else class="fa-solid fa-circle-user default-avatar-large"></i>
+            <i v-else class="fa-solid fa-user-circle default-avatar-large logged-in"></i>
             <div class="header-text">
               <h3>{{ userName }}</h3>
               <p class="user-badge">
@@ -106,7 +106,7 @@
                   alt="用戶頭像" 
                   class="avatar-image-xl"
                 />
-                <i v-else class="fa-solid fa-circle-user default-avatar-xl"></i>
+                <i v-else class="fa-solid fa-user-circle default-avatar-xl logged-in"></i>
               </div>
             </div>
 
@@ -377,8 +377,16 @@ function fallbackCopyToClipboard(text) {
   transition: color 0.2s ease;
 }
 
+.default-avatar.logged-in {
+  color: #0b70f5;
+}
+
 .avatar-button:hover .default-avatar {
   color: #333;
+}
+
+.avatar-button:hover .default-avatar.logged-in {
+  color: #0960d9;
 }
 
 .avatar-image {
@@ -431,6 +439,10 @@ function fallbackCopyToClipboard(text) {
 .default-avatar-large {
   font-size: 60px;
   color: #666;
+}
+
+.default-avatar-large.logged-in {
+  color: #0b70f5;
 }
 
 .avatar-image-large {
@@ -656,6 +668,10 @@ function fallbackCopyToClipboard(text) {
 .default-avatar-xl {
   font-size: 120px;
   color: #666;
+}
+
+.default-avatar-xl.logged-in {
+  color: #0b70f5;
 }
 
 .form-group {
