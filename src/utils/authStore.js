@@ -26,7 +26,8 @@ const error = ref(null)
 const isLoggedIn = computed(() => user.value !== null)
 const userName = computed(() => {
   if (!user.value) return ''
-  return user.value.user_metadata?.full_name || 
+  return user.value.user_metadata?.nickname ||
+         user.value.user_metadata?.full_name || 
          user.value.user_metadata?.name || 
          user.value.email?.split('@')[0] || 
          '用戶'
