@@ -125,7 +125,6 @@ h1 {
   font-size: 18px;
   font-weight: 500;
   color: #0f172a;
-  cursor: pointer;
 }
 .function-item i {
   font-size: 38px;
