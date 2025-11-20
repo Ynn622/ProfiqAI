@@ -17,7 +17,7 @@
 
 <script setup>
 // 工具 & 套件
-import { useRouter } from 'vue-router';
+import { useRouter, useRoute } from 'vue-router';
 import { useWindowSize } from '@vueuse/core';
 import { computed, ref } from 'vue';
 
@@ -30,17 +30,36 @@ const { width } = useWindowSize();
 const isMobile = computed(() => width.value < 768);
 
 const router = useRouter();
+const route = useRoute();
 
 function asidePage(page) {
-  // 這裡可以根據選擇的頁面進行路由跳轉或其他操作
   const PageDict = {
     1: 'stock-summary',
     2: 'stock-analysis',
     3: 'stock-linked'
   };
-  logger.msg(`選擇的頁面: ${page}`);
+  
+  // 嘗試從當前路由獲取 stock 參數
+  let stock = route.params.stock;
+  
+  // 如果當前路由沒有 stock，嘗試從 localStorage 獲取
+  if (!stock) {
+      const history = localStorage.getItem('searchHistory');
+      if (history) {
+          const searchHistory = JSON.parse(history);
+          if (searchHistory.length > 0) {
+              stock = searchHistory[0];
+          }
+      }
+  }
+
   if (PageDict[page]) {
-    router.push({ name: PageDict[page]});
+    if (stock) {
+        logger.msg(`Aside導航至: ${PageDict[page]}, Stock: ${stock}`);
+        router.push({ name: PageDict[page], params: { stock } });
+    } else {
+        alert('請先搜尋股票');
+    }
   }
 }
 

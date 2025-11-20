@@ -98,6 +98,8 @@ function asidePage(page) {
     align-items: center;
     gap: 10px;
     height: 70px;
+    position: relative;
+    z-index: 1001;
 }
 
 .nav-left {
