@@ -138,7 +138,7 @@ onMounted(() => {
   grid-template-columns: 2fr 1fr;
   gap: 1.5rem;
   width: 100%;
-  min-height: calc(100vh - 120px);
+  min-height: 100dvh;
 }
 
 /* 左側：自選股清單區 */
@@ -298,7 +298,7 @@ onMounted(() => {
   border-radius: 12px;
   padding: 1.5rem;
   overflow-y: auto;
-  max-height: calc(100vh - 120px);
+  max-height: 100dvh;
 }
 
 .section-title {

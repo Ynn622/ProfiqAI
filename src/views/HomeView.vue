@@ -65,7 +65,7 @@ const functions = [
 .screen {
   position: relative;
   text-align: center;
-  min-height: 100vh;
+  min-height: 100dvh;
 }
 .bg-chart {
   position: absolute;
@@ -94,7 +94,7 @@ const functions = [
   align-items: center;
   justify-content: center;
   gap: 20px;
-  min-height: 100vh;
+  min-height: 100dvh;
 }
 .logo-img {
   width: 160px;

@@ -203,7 +203,7 @@ onMounted(() => {
 .chat-layout {
     display: flex;
     flex: 1;
-    max-height: calc(100vh - 120px);
+    max-height: calc(100dvh - 110px);
     margin: 10px;
 }
 
