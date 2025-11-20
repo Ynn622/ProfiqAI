@@ -651,9 +651,9 @@ onMounted(() => {
     
     .conversation-list {
         position: fixed;
-        top: 0;
+        top: 70px;
         left: 0;
-        height: 100%;
+        height: calc(100% - 70px);
         z-index: 30;
         transform: translateX(-100%);
         opacity: 0;
