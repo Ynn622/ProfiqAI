@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '../views/HomeView.vue'
 import stockList from '../data/stockList.json'
+import { useAuthStore, initAuthStore } from '../utils/authStore'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -31,6 +32,12 @@ const router = createRouter({
       component: () => import('../views/ChatBotView.vue'),
     },
     {
+      path: '/watchlist',
+      name: 'watchlist',
+      component: () => import('../views/WatchListView.vue'),
+      meta: { requiresAuth: true }, // 需要登入才能訪問
+    },
+    {
       path: '/auth/callback',
       name: 'auth-callback',
       component: () => import('../views/AuthCallback.vue'),
@@ -42,8 +49,9 @@ const router = createRouter({
   ],
 })
 
-// 🔒 全域導航守衛：檢查 stock 是否存在於 JSON 清單
-router.beforeEach((to, from, next) => {
+// 🔒 全域導航守衛:檢查 stock 是否存在於 JSON 清單 & 登入驗證
+router.beforeEach(async (to, from, next) => {
+  // 檢查股票代碼是否存在
   if (to.params.stock) {
     const stockCode = to.params.stock
     if (!stockList.includes(stockCode)) {
@@ -51,6 +59,19 @@ router.beforeEach((to, from, next) => {
       return next('/')
     }
   }
+
+  // 檢查是否需要登入驗證
+  if (to.meta.requiresAuth) {
+    const authStore = useAuthStore()
+    if (authStore.isLoading.value) {
+      await initAuthStore()
+    }
+    if (!authStore.isLoggedIn.value) {
+      // 未登入 → 導回首頁
+      return next({ name: 'home' })
+    }
+  }
+
   next()
 })
 

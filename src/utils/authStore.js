@@ -6,6 +6,7 @@ import {
   signUpWithEmail,
   signOut,
   getCurrentUser,
+  getSession,
   onAuthStateChange,
   resetPassword,
   updatePassword,
@@ -21,6 +22,8 @@ import {
 const user = ref(null)
 const isLoading = ref(true)
 const error = ref(null)
+let initPromise = null
+let authStateSubscribed = false
 
 // 計算屬性
 const isLoggedIn = computed(() => user.value !== null)
@@ -45,36 +48,50 @@ const userEmail = computed(() => user.value?.email || '')
  * 檢查當前用戶狀態並設置監聽器
  */
 export async function initAuthStore() {
-  isLoading.value = true
-  
-  try {
-    // 獲取當前用戶
-    const { user: currentUser, error: fetchError } = await getCurrentUser()
-    
-    if (fetchError) {
-      console.error('初始化用戶狀態失敗:', fetchError)
-      error.value = fetchError
-    } else {
-      user.value = currentUser
-    }
-  } catch (err) {
-    console.error('初始化 Auth Store 失敗:', err)
-    error.value = err
-  } finally {
-    isLoading.value = false
-  }
+  // 避免重複初始化
+  if (initPromise) return initPromise
 
-  // 監聽認證狀態變化
-  onAuthStateChange((event, session) => {
-    console.log('Auth 狀態變化:', event)
-    user.value = session?.user || null
-    
-    if (event === 'SIGNED_IN') {
-      console.log('用戶已登入:', user.value)
-    } else if (event === 'SIGNED_OUT') {
-      console.log('用戶已登出')
+  initPromise = (async () => {
+    isLoading.value = true
+
+    try {
+      // 先嘗試從本地恢復 Session（避免重整後短暫變成未登入）
+      const { session, error: sessionError } = await getSession()
+      if (sessionError) {
+        console.error('恢復 Session 失敗:', sessionError)
+        error.value = sessionError
+      }
+
+      user.value = session?.user || null
+
+      // 如果還沒有 user，再呼叫 getCurrentUser 做一次確認
+      if (!user.value) {
+        const { user: currentUser, error: fetchError } = await getCurrentUser()
+        if (fetchError) {
+          console.error('初始化用戶狀態失敗:', fetchError)
+          error.value = fetchError
+        } else {
+          user.value = currentUser
+        }
+      }
+    } catch (err) {
+      console.error('初始化 Auth Store 失敗:', err)
+      error.value = err
+    } finally {
+      isLoading.value = false
     }
-  })
+
+    // 僅註冊一次狀態監聽
+    if (!authStateSubscribed) {
+      onAuthStateChange((event, session) => {
+        console.log('Auth 狀態變化:', event)
+        user.value = session?.user || null
+      })
+      authStateSubscribed = true
+    }
+  })()
+
+  return initPromise
 }
 
 /**

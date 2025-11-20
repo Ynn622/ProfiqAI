@@ -9,10 +9,17 @@ import { initAuthStore } from '@/utils/authStore'
 
 const app = createApp(App)
 
-app.use(router)
-app.use(Antd)
+async function bootstrap() {
+  // 先初始化登入狀態，避免刷新的第一個路由判斷拿到空的 user
+  await initAuthStore()
 
-app.mount('#app')
+  app.use(router)
+  app.use(Antd)
 
-// 初始化 Auth Store
-initAuthStore()
+  await router.isReady()
+  app.mount('#app')
+}
+
+bootstrap().catch((err) => {
+  console.error('App 初始化失敗:', err)
+})

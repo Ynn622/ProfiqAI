@@ -233,9 +233,7 @@ async function handleLogout() {
 // 處理導航到自選清單
 function handleWatchlist() {
   closePanel()
-  message.info('自選清單功能開發中...')
-  // TODO: 實作導航邏輯
-  // router.push({ name: 'watchlist' })
+  router.push({ name: 'watchlist' })
 }
 
 // 處理導航到個人設定
