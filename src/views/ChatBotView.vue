@@ -1,6 +1,6 @@
 <template>
     <div class="screen">
-        <Nav />
+        <Nav :show-menu="false" />
         <div class="chat-layout">
             <aside class="conversation-list" :class="{ open: sideOpen }">
                 <div class="list-header">
@@ -71,7 +71,6 @@ import Nav from '@/components/Common/Nav.vue';
 import { ref, computed, onMounted, watch, nextTick } from 'vue';
 import { callAPI } from '@/utils/apiConfig.js';
 import { processMarkdown } from '@/utils/markdownParser.js';
-import { logger } from '@/utils/logger';
 
 
 const isMobile = ref(false);

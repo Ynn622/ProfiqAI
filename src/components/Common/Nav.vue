@@ -16,7 +16,6 @@
 
         <div class="nav-right">
             <ChatBotButton 
-              v-if="!isMobile || !isChatBotRoute" 
               design="small" 
               :class="{ 'compact': isMobile && showMobileSearch }" 
             />
@@ -29,7 +28,7 @@
               v-else-if="!isMobile"
             />
             <i 
-              v-else-if="!isChatBotRoute" 
+              v-else-if="showMenu" 
               class="fa-solid fa-bars" 
               @click="toggleMenu"
             ></i>
@@ -37,7 +36,7 @@
     </div>
 
     <!-- 手機版選單 -->
-    <div v-if="expandMenu && isMobile && !isChatBotRoute" class="nav-bar-menu">
+    <div v-if="expandMenu && isMobile && showMenu" class="nav-bar-menu">
         <div v-for="(value, key) in PageDict" :key="key" @click="asidePage(key)">
             <div class="menu-item">{{ key }}</div>
         </div>
@@ -53,18 +52,17 @@ import UserProfile from '@/components/Common/UserProfile.vue';
 // 工具 & 套件
 import router from '@/router';
 import { isMobileView } from '@/utils/userInterface.js';
-import { ref, computed } from 'vue';
-import { useRoute } from 'vue-router';
-
-const route = useRoute();
-const { width, isMobile } = isMobileView();
+import { ref, toRefs } from 'vue';
+const props = defineProps({
+    showMenu: {
+        type: Boolean,
+        default: true
+    }
+});
+const { showMenu } = toRefs(props);
+const { isMobile } = isMobileView();
 const expandMenu = ref(false);
 const showMobileSearch = ref(false);
-
-// Check if current route is the chat bot route
-const isChatBotRoute = computed(() => {
-    return route.name === 'chat-bot';
-});
 
 const PageDict = {
     '股票速覽': 'stock-summary',

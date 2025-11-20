@@ -2,7 +2,7 @@
   <div class="screen">
     <!-- 載入中 spinner -->
     <LoadingMask v-if="loading" />
-    <Nav />
+    <Nav :show-menu="false" />
     <div class="main-content">
       <div class="layout-container">
         <!-- 左側：自選股清單區 -->
