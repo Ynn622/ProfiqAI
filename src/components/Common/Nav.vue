@@ -147,7 +147,7 @@ function asidePage(page) {
 /* 手機版樣式 */
 .nav-bar.phone {
     padding: 20px 10px;
-    margin-bottom: 10px;
+    margin-bottom: 3px;
     border: 1px solid rgba(0, 0, 0, 0.08);
     background-color: rgba(255, 255, 255, 0.6);
     backdrop-filter: blur(10px);

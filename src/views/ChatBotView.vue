@@ -244,7 +244,7 @@ onMounted(() => {
 .chat-layout {
     display: flex;
     flex: 1;
-    max-height: calc(100dvh - 110px);
+    max-height: calc(100dvh - 100px);
     margin: 10px;
 }
 
@@ -364,7 +364,7 @@ onMounted(() => {
     align-items: center;
     gap: 12px;
     padding: 14px 18px 10px;
-    border-bottom: 1px solid #e2e6ee;
+    border-bottom: 1px solid #cfcfcf;;
 }
 
 .chat-title {
@@ -700,6 +700,8 @@ onMounted(() => {
 @media (max-width: 768px) {
     .chat-layout {
         position: relative;
+        margin: 5px;
+        max-height: calc(100dvh - 80px);
     }
     
     .conversation-list {
@@ -735,7 +737,8 @@ onMounted(() => {
     }
 
     .input-bar {
-        padding: 14px 10px 18px;
+        padding: 8px 10px;
+        border-top: 1px solid #cfcfcf;
     }
 
     /* 手機版表格優化 */
@@ -768,7 +771,7 @@ onMounted(() => {
 /* 更小的手機屏幕（如iPhone SE） */
 @media (max-width: 480px) {
     :deep(.bubble .table-container) {
-        max-width: calc(100vw - 130px);
+        max-width: calc(100vw - 120px);
     }
 
     :deep(.bubble table) {
