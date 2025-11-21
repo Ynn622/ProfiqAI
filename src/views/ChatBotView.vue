@@ -76,7 +76,7 @@ import { processMarkdown } from '@/utils/markdownParser.js';
 const isMobile = ref(false);
 const sideOpen = ref(false);
 const conversations = ref([{
-    id: 'conv-' + Date.now(),
+    id: generateChatId(),
     title: '新的會話',
     messages: [{ role: 'bot', text: '嗨～我是**智聊機器人**，您的 AI 投資夥伴。今天有想討論的股市問題嗎？' }]
 }]);
@@ -136,7 +136,7 @@ async function callChatBotAPI(prompt, model, convo) {
         const response = await callAPI({
             url: '/chat/chatBot',
             method: 'POST',
-            body: { question: prompt, model: model },
+            body: { question: prompt, model: model, uuid: convo.id },
             funcName: 'callChatBotAPI'
         });
 
@@ -154,7 +154,7 @@ async function callChatBotAPI(prompt, model, convo) {
 }
 function selectConversation(id) { activeId.value = id; if (isMobile.value) { sideOpen.value = false; } }
 function newConversation() {
-    const id = 'conv-' + Date.now();
+    const id = generateChatId();
     conversations.value.unshift({
         id,
         title: '新的會話',
@@ -187,6 +187,14 @@ function resetTextareaHeight() {
     });
 }
 
+function generateChatId() {
+    const now = new Date();
+    const datePart = now.toISOString().replace(/[-:T]/g, '').slice(0, 14);
+    const uuid = crypto?.randomUUID?.() ??
+        `${Date.now()}_${Math.random().toString(16).slice(2)}`;
+    logger.msg(`Generated chat ID: ${datePart}_${uuid}`);
+    return `${datePart}_${uuid}`;
+}
 
 // 進入頁面時執行
 onMounted(() => {
