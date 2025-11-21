@@ -11,7 +11,10 @@
                     <li v-for="c in conversations" :key="c.id" :class="{ active: c.id === activeId }"
                         @click="selectConversation(c.id)">
                         <i class="fa-regular fa-comments"></i>
-                        <span class="title">{{ c.title }}</span>
+                        <div class="conversation-meta">
+                            <span class="title">{{ c.title }}</span>
+                            <span class="created-at">{{ c.createdAt }}</span>
+                        </div>
                     </li>
                 </ul>
                 <div class="new-chat-block">
@@ -42,20 +45,20 @@
                         </div>
                         <div class="bubble" v-html="processMarkdown(m.text)"></div>
                     </div>
-                    <div class="msg-row bot loading" v-if="loading">
+                    <div class="msg-row bot loading" v-if="activeLoading">
                         <div class="avatar"><i class="fa-solid fa-robot"></i></div>
                         <div class="bubble"><span class="dot" v-for="n in 3" :key="n"></span></div>
                     </div>
                 </div>
                 <form class="input-bar" @submit.prevent="send">
-                    <textarea ref="textareaRef" v-model="userInput" :placeholder="loading ? '等待機器人回應中...' : '請輸入文字...'" 
+                    <textarea ref="textareaRef" v-model="userInput" :placeholder="activeLoading ? '等待機器人回應中...' : '請輸入文字...'" 
                         rows="1" 
                         @keydown.enter.exact.prevent="handleEnterKey" 
                         @input="autoResize" 
                         @compositionstart="handleCompositionStart"
                         @compositionend="handleCompositionEnd"
-                        :disabled="loading"></textarea>
-                    <button type="submit" :disabled="!userInput.trim() || loading" class="send-btn"><i
+                        :disabled="activeLoading"></textarea>
+                    <button type="submit" :disabled="!userInput.trim() || activeLoading" class="send-btn"><i
                             class="fa-solid fa-paper-plane"></i></button>
                 </form>
             </div>
@@ -71,22 +74,26 @@ import Nav from '@/components/Common/Nav.vue';
 import { ref, computed, onMounted, watch, nextTick } from 'vue';
 import { callAPI } from '@/utils/apiConfig.js';
 import { processMarkdown } from '@/utils/markdownParser.js';
+import { logger } from '@/utils/logger';
 
 
 const isMobile = ref(false);
 const sideOpen = ref(false);
 const conversations = ref([{
     id: generateChatId(),
-    title: '新的會話',
+    title: '智聊 AI',
+    createdAt: formatTime(new Date()),
+    loading: false,
     messages: [{ role: 'bot', text: '嗨～我是**智聊機器人**，您的 AI 投資夥伴。今天有想討論的股市問題嗎？' }]
 }]);
 const activeId = ref(conversations.value[0]?.id || '');
 const userInput = ref('');
-const loading = ref(false);
 const msgContainer = ref(null);
 const textareaRef = ref(null);
 const isComposing = ref(false); // 追蹤中文輸入法狀態
-const activeMessages = computed(() => conversations.value.find(c => c.id === activeId.value)?.messages || []);
+const activeConversation = computed(() => conversations.value.find(c => c.id === activeId.value));
+const activeMessages = computed(() => activeConversation.value?.messages || []);
+const activeLoading = computed(() => activeConversation.value?.loading || false);
 
 // 模型選擇
 const modelOptions = ['GPT-4.1-mini', 'GPT-4o-mini', 'GPT-5-mini']
@@ -107,16 +114,16 @@ function handleCompositionEnd() {
 
 function handleEnterKey() {
     // 如果正在使用中文輸入法選字，則不發送訊息
-    if (!loading.value && !isComposing.value) {
+    if (!activeLoading.value && !isComposing.value) {
         send();
     }
 }
 
 function send() {
-    if (loading.value) return; // 防止在載入期間發送訊息
+    const convo = activeConversation.value;
+    if (!convo || convo.loading) return; // 防止在載入期間發送訊息
     const text = userInput.value.trim();
     if (!text) return;
-    const convo = conversations.value.find(c => c.id === activeId.value);
     convo.messages.push({ role: 'user', text });
     userInput.value = '';
     
@@ -131,7 +138,7 @@ function send() {
  * API: 聊天機器人回應
  */
 async function callChatBotAPI(prompt, model, convo) {
-    loading.value = true;
+    convo.loading = true;
     try {
         const response = await callAPI({
             url: '/chat/chatBot',
@@ -148,7 +155,7 @@ async function callChatBotAPI(prompt, model, convo) {
             text: '抱歉，系統暫時無法連接，請稍後再試。' 
         });
     } finally {
-        loading.value = false;
+        convo.loading = false;
         scrollBottom();
     }
 }
@@ -157,7 +164,9 @@ function newConversation() {
     const id = generateChatId();
     conversations.value.unshift({
         id,
-        title: '新的會話',
+        title: '智聊 AI',
+        createdAt: formatTime(new Date()),
+        loading: false,
         messages: [{
             role: 'bot', text: '嗨～我是**智聊機器人**，您的 AI 投資夥伴。今天有想討論的股市問題嗎？' }]
     });
@@ -187,13 +196,37 @@ function resetTextareaHeight() {
     });
 }
 
+// 產生唯一會話 ID
 function generateChatId() {
     const now = new Date();
-    const datePart = now.toISOString().replace(/[-:T]/g, '').slice(0, 14);
-    const uuid = crypto?.randomUUID?.() ??
-        `${Date.now()}_${Math.random().toString(16).slice(2)}`;
-    logger.msg(`Generated chat ID: ${datePart}_${uuid}`);
+
+    // 取得 yyyy/mm/dd
+    const dateStr = now.toLocaleDateString("zh-TW", {
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit"
+    }).replace(/\//g, "");
+
+    // 取得 HH:mm:ss
+    const timeStr = now.toLocaleTimeString("zh-TW", {
+        hour12: false
+    }).replace(/:/g, "");
+
+    const datePart = `${dateStr}T${timeStr}`; // yyyyMMddTHHmmss
+    const uuid = crypto?.randomUUID?.() ?? `${Date.now()}_${Math.random().toString(16).slice(2)}`;
     return `${datePart}_${uuid}`;
+}
+
+// 格式化時間為 yyyy-MM-dd HH:mm:ss
+function formatTime(date = new Date()) {
+    const dateStr = date.toLocaleDateString("zh-TW", {
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit"
+    }).replace(/\//g, "-");
+    const timeStr = date.toLocaleTimeString("zh-TW", { hour12: false });
+
+    return `${dateStr} ${timeStr}`;
 }
 
 // 進入頁面時執行
@@ -273,6 +306,18 @@ onMounted(() => {
     white-space: nowrap;
     text-overflow: ellipsis;
     overflow: hidden;
+}
+
+.conversation-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    flex: 1;
+}
+
+.conversation-meta .created-at {
+    font-size: 12px;
+    color: #8a8a96;
 }
 
 .new-chat-block {
