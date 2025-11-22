@@ -23,7 +23,8 @@
                 <div class="segment-section">
                     <keep-alive>
                         <component :is="componentMap[segmentValue]" :stockId="stockId" :stockName="stockName" 
-                                    :techScore="techScore" :chipScore="chipScore" :basicScore="basicScore" :basicData="basicData" />
+                                    :techScore="techScore" :chipScore="chipScore" :basicScore="basicScore" 
+                                    :basicData="basicData" :techData="techData" />
                     </keep-alive>
                 </div>
             </div>
@@ -74,6 +75,7 @@ const techScore = ref(0);
 const chipScore = ref(0);
 const basicScore = ref(0);
 const basicData = ref(null);
+const techData = ref(null);
 
 // 各面分析 模擬資料
 const basicAnalysis = ref({
@@ -152,13 +154,16 @@ async function fetchTechScore() {
             funcName: 'fetchTechScore'
         });
         
-        const direction = response?.technical_data?.direction ?? 0;
+        const techResponse = response?.technical_data ?? null;
+        const direction = techResponse?.direction ?? 0;
         technicalAnalysis.value.direction = direction;
         techScore.value = direction;
+        techData.value = techResponse;
     } catch (error) {
         // 錯誤已經在 callAPI 中記錄
         technicalAnalysis.value.direction = 0;
         techScore.value = 0;
+        techData.value = null;
     }
 }
 

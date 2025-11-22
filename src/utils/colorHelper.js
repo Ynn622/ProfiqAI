@@ -116,3 +116,18 @@ export function getColorByValue(field, val) {
     // 預設情況
     return 'bg-gray';
 }
+
+/**
+ * 技術指標顏色：依後端 label 文字（極多、偏多、偏空、極空）決定。
+ * 若無法判斷則回傳中性灰色。
+ */
+export function getTechStatusColor(status) {
+    const text = String(status);
+
+    if (text.includes('極多')) return 'bg-dark-red';
+    if (text.includes('偏多')) return 'bg-red';
+    if (text.includes('偏空')) return 'bg-green';
+    if (text.includes('極空')) return 'bg-dark-green';
+
+    return 'bg-gray';
+}

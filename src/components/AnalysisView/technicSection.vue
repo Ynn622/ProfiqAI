@@ -6,18 +6,23 @@
                 <ProbCircle :score="techScore" />
             </div>
             <div class="analysis-right">
-                <SquareData title="MACD" value="11.72" :change="2.01" color="bg-red" />
-                <SquareData title="KD" value="高檔鈍化" color="bg-green" />
-                <SquareData title="RSI" value="死亡交叉" color="bg-green" />
-                <SquareData title="週線" value="接近股價" color="bg-yellow" />
-                <SquareData title="月線" value=">股價" color="bg-green" />
-                <SquareData title="季線" value="<股價" color="bg-red" />
+                <SquareData 
+                    v-for="item in indicatorTiles" 
+                    :key="item.title"
+                    :title="item.title"
+                    :value="item.value"
+                    :color="item.color"
+                />
             </div>
         </div>
     </div>
 </template>
 
 <script setup>
+// 工具 & 套件
+import { computed } from 'vue';
+import { getTechStatusColor } from '@/utils/colorHelper.js';
+
 // 組件
 import SquareData from '../SquareData.vue';
 import ProbCircle from '../Common/probCircle.vue';
@@ -26,7 +31,20 @@ import ProbCircle from '../Common/probCircle.vue';
 const props = defineProps({
     stockId: { type: String, required: true },
     stockName: { type: String, required: true },
-    techScore: { type: Number, default: 0 }
+    techScore: { type: Number, default: 0 },
+    techData: { type: Object, default: null }
+});
+
+const indicatorTiles = computed(() => {
+    const data = props.techData || {};
+    return [
+        { title: 'EMA', value: data.EMA_Status ?? '-', color: getTechStatusColor(data.EMA_label) },
+        { title: 'MACD', value: data.MACD_Status ?? '-', color: getTechStatusColor(data.MACD_label) },
+        { title: 'KD', value: data.KD_Status ?? '-', color: getTechStatusColor(data.KD_label) },
+        { title: 'RSI', value: data.RSI_Status ?? '-', color: getTechStatusColor(data.RSI_label) },
+        { title: 'ROC', value: data.ROC_Status ?? '-', color: getTechStatusColor(data.ROC_label) },
+        { title: 'BIAS', value: data.BIAS_Status ?? '-', color: getTechStatusColor(data.BIAS_label) },
+    ];
 });
 
 </script>

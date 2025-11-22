@@ -4,7 +4,7 @@
             <span class="title">{{ title }}</span>
         </div>
         <div class="value-area">
-            <span class="value">{{ valuePrefix }}{{ formatValue(value) }}{{ valueSuffix }}</span>
+            <span class="value" :class="valueSizeClass">{{ formattedValue }}</span>
             <span class="change" v-if="change!=0">{{ trend }}{{ change }}<span v-html="changeIcon"></span></span>
         </div>
     </div>
@@ -64,6 +64,15 @@ const changeIcon = computed(() => {
     return ''
 })
 
+const formattedValue = computed(() => `${props.valuePrefix}${formatValue(props.value)}${props.valueSuffix}`)
+const valueSizeClass = computed(() => {
+    const len = formattedValue.value.length
+    if (len > 12) return 'value-xxs'
+    if (len > 9) return 'value-xs'
+    if (len > 6) return 'value-sm'
+    return ''
+})
+
 function formatValue(val) {
     if (val === null || val === undefined) return ''
     return `${val}`
@@ -86,6 +95,8 @@ function handleClick() {
                 transform 0.2s ease-in-out;
     box-shadow: var(--shadow-small);
     cursor: pointer;
+    display: flex;
+    flex-direction: column;
 }
 .square-data-button:hover {
     box-shadow: var(--shadow-small-hover);
@@ -153,8 +164,9 @@ function handleClick() {
 .value-area {
     display: flex;
     flex-direction: row;
-    align-items: baseline;
+    align-items: center;
     justify-content: space-between;
+    flex: 1;
 }
 
 .title {
@@ -165,6 +177,18 @@ function handleClick() {
 .value {
     font-weight: 700;
     font-size: 24px;
+}
+
+.value-sm {
+    font-size: 20px;
+}
+
+.value-xs {
+    font-size: 16px;
+}
+
+.value-xxs {
+    font-size: 14px;
 }
 
 .change {
@@ -183,6 +207,15 @@ function handleClick() {
     }
     .value {
         font-size: 18px;
+    }
+    .value-sm {
+        font-size: 16px;
+    }
+    .value-xs {
+        font-size: 14px;
+    }
+    .value-xxs {
+        font-size: 12px;
     }
     .change {
         font-size: 14px;

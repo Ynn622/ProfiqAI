@@ -57,7 +57,7 @@
         "chartType": "bar",
         "trend": "月度/季度營收趨勢"
     },
-    "EMA5_10": {
+    "EMA": {
         "title": "EMA5 / EMA10",
         "fullName": "Exponential Moving Average (5-day / 10-day)",
         "description": "EMA 是指數移動平均線，會給近期價格更高權重，能更快速反應行情。EMA5 與 EMA10 分別反映短期與中期的價格趨勢，用於判斷短線多空轉折。",
