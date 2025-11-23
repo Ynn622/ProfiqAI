@@ -5,7 +5,7 @@
       id="input-stock-id"
       placeholder="輸入股票代碼…"
       v-model="stockId"
-      @keyup.enter="searchStock"
+      @keyup.enter="searchStock(true)"
       autocomplete="off"
       @focus="showDropdown = true"
       @blur="handleBlur"
@@ -29,13 +29,18 @@
         <div class="dropdown-header">搜尋歷史</div>
         <div 
           v-for="(history, index) in searchHistory" 
-          :key="history"
+          :key="history.code"
           class="stock-item history-item"
         >
           <div class="history-content" @mousedown="selectHistory(history)">
-            <div class="history-number">{{ history }}</div>
+            <div class="history-number">{{ history.code }}</div>
+            <div class="history-name" v-if="history.name"> {{ history.name }}</div>
           </div>
-          <button class="remove-history" @mousedown.stop="removeHistory(index)" aria-label="刪除歷史紀錄">
+          <button
+            class="remove-history"
+            @mousedown.prevent.stop="removeHistory(index)"
+            aria-label="刪除歷史紀錄"
+          >
             <i class="fa-solid fa-xmark"></i>
           </button>
         </div>
@@ -45,11 +50,11 @@
       <div v-else-if="stockId && filteredStocks.length > 0">
         <div 
           v-for="stock in filteredStocks" 
-          :key="stock"
+          :key="stock.code"
           class="stock-item"
           @mousedown="selectStock(stock)"
         >
-          {{ stock }}
+          {{ stock.code }}{{ stock.name ? ' ' + stock.name : '' }}
         </div>
       </div>
     </div>
@@ -77,79 +82,124 @@ const stockId = ref('');
 const showDropdown = ref(false);
 const searchHistory = ref([]);
 
-// 过滤股票清单
-const filteredStocks = computed(() => {
-  if (!stockId.value) return [];
-  
-  // 根据输入的数字过滤股票 (前缀匹配)
-  return stockList.filter(stock => 
-    stock.startsWith(stockId.value)
-  ).slice(0, 10); // 限制显示前10个结果
+const normalizedStockList = computed(() => {
+  // 將 stockList 統一轉成 { code, name } 物件，保留相容舊格式（純代碼字串）
+  return stockList.map(stock => {
+    if (typeof stock === 'string') {
+      return { code: stock, name: '' };
+    }
+    return stock;
+  });
 });
 
-// 载入搜寻历史
+// 過濾股票清單
+const filteredStocks = computed(() => {
+  const keyword = stockId.value.trim().toLowerCase();
+  if (!keyword) return [];
+  
+  // 根據輸入的數字過濾股票（前綴匹配）
+  return normalizedStockList.value
+    .filter(stock => 
+      stock.code.toLowerCase().startsWith(keyword) ||
+      (stock.name && stock.name.toLowerCase().includes(keyword))
+    )
+    .sort((a, b) => a.code.localeCompare(b.code, 'zh-Hant', { numeric: true }))
+    .slice(0, 10); // 限制顯示前10個結果
+});
+
+// 載入搜尋歷史
 onMounted(() => {
   const history = localStorage.getItem('searchHistory');
   if (history) {
-    searchHistory.value = JSON.parse(history).slice(0, 10); // 限制显示前10个历史记录
+    searchHistory.value = JSON.parse(history).map(normalizeHistoryEntry).slice(0, 10); // 限制顯示前10筆歷史紀錄
   }
 });
 
 function handleBlur() {
-  // 延迟隐藏下拉菜单，以便点击选项时不会立即消失
+  // 延遲隱藏下拉選單，以便點擊選項時不會立即消失
   setTimeout(() => {
     showDropdown.value = false;
   }, 200);
 }
 
-function searchStock() {
+function searchStock(useFirstMatch = false) {
   if (!stockId.value) {
     alert('請輸入股票代碼!')
     return
   }
-  addToSearchHistory(stockId.value);
-  logger.msg(`搜尋股票: ${stockId.value}`);
-  router.push({ name: 'stock-summary', params: { stock: stockId.value } });
+
+  const match = findMatchedStock(stockId.value, useFirstMatch);
+  if (!match) {
+    alert('找不到符合的股票');
+    return;
+  }
+
+  stockId.value = match.code;
+  addToSearchHistory(match);
+  logger.msg(`搜尋股票: ${match.code}`);
+  router.push({ name: 'stock-summary', params: { stock: match.code } });
 }
 
 function closeSearch() {
   emit('close-search');
 }
 
-// 删除历史记录功能
+// 刪除歷史紀錄功能
 function removeHistory(index) {
-  // 移除指定索引的历史记录
+  // 移除指定索引的歷史紀錄
   searchHistory.value.splice(index, 1);
   // 更新 localStorage
   localStorage.setItem('searchHistory', JSON.stringify(searchHistory.value));
 }
 
-// 选择历史记录功能
+// 選擇歷史紀錄功能
 function selectHistory(stock) {
-  stockId.value = stock;
+  const entry = normalizeHistoryEntry(stock);
+  stockId.value = entry.code;
   showDropdown.value = false;
-  addToSearchHistory(stock);
+  addToSearchHistory(entry);
   searchStock();
 }
 
-// 选择股票功能
+// 選擇股票功能
 function selectStock(stock) {
-  stockId.value = stock;
+  const entry = normalizeHistoryEntry(stock);
+  stockId.value = entry.code;
   showDropdown.value = false;
-  addToSearchHistory(stock);
+  addToSearchHistory(entry);
   searchStock();
 }
 
-// 添加到搜索历史功能
+// 加入搜尋歷史功能
 function addToSearchHistory(stock) {
-  // 移除重复的历史记录
-  const history = searchHistory.value.filter(item => item !== stock);
-  // 将新的记录放在最前面
-  history.unshift(stock);
-  // 限制历史记录数量为10
+  const entry = normalizeHistoryEntry(stock);
+  // 移除重複的歷史紀錄（依代碼）
+  const history = searchHistory.value.filter(item => item.code !== entry.code);
+  // 將新的紀錄放在最前面
+  history.unshift(entry);
+  // 限制歷史紀錄數量為 10
   searchHistory.value = history.slice(0, 10);
-  // 储存到 localStorage
+  // 儲存到 localStorage
   localStorage.setItem('searchHistory', JSON.stringify(searchHistory.value));
+}
+
+function findMatchedStock(input, useFirstMatch) {
+  const keyword = input.trim().toLowerCase();
+  if (!keyword) return null;
+
+  const matchList = filteredStocks.value.length > 0 && useFirstMatch
+    ? filteredStocks.value
+    : normalizedStockList.value;
+
+  return matchList.find(stock =>
+    stock.code.toLowerCase().startsWith(keyword) ||
+    (stock.name && stock.name.toLowerCase().includes(keyword))
+  ) || null;
+}
+
+function normalizeHistoryEntry(entry) {
+  if (typeof entry === 'string') return { code: entry, name: '' };
+  return { code: entry.code, name: entry.name || '' };
 }
 </script>
 
@@ -167,8 +217,8 @@ function addToSearchHistory(stock) {
   max-width: 560px;
   width: 100%;
   box-sizing: border-box;
-  position: relative; /* 为下拉菜单提供相对定位 */
-  z-index: 9999; /* 确保搜索框在最上层 */
+  position: relative; /* 為下拉選單提供相對定位 */
+  z-index: 9999; /* 確保搜尋框在最上層 */
 }
 
 .search.mobile-expanded {
@@ -177,7 +227,7 @@ function addToSearchHistory(stock) {
   border-radius: 16px;
   min-height: 40px;
   width: calc(100% - 75px - 10px);
-  z-index: 9999; /* 确保移动端搜索框在最上层 */
+  z-index: 9999; /* 確保行動版搜尋框在最上層 */
 }
 
 .search input {
@@ -300,15 +350,10 @@ function addToSearchHistory(stock) {
   box-shadow: 0 4px 12px rgba(0,0,0,0.1);
   max-height: 300px;
   overflow-y: auto;
-  z-index: 10000; /* 确保下拉菜单在搜索框上方 */
+  z-index: 10000; /* 確保下拉選單在搜尋框上方 */
   margin-top: 5px;
   width: 100%;
   box-sizing: border-box;
-}
-
-/* 移动端下拉菜单特殊处理 */
-.search.mobile-expanded .stock-dropdown {
-  z-index: 10001; /* 移动端确保下拉菜单在最上层 */
 }
 
 .dropdown-header {
@@ -326,7 +371,7 @@ function addToSearchHistory(stock) {
 
 .stock-item {
   display: flex;
-  justify-content: center; /* Center the content */
+  justify-content: flex-start;
   align-items: center;
   padding: 12px 16px;
   cursor: pointer;
@@ -334,23 +379,24 @@ function addToSearchHistory(stock) {
   font-size: 16px;
   font-weight: 500;
   position: relative;
-  text-align: center; /* Center text alignment */
+  text-align: left;
 }
 
-/* 特別针对历史记录中的股票代码居中 */
+/* 歷史紀錄 */
 .history-item {
-  justify-content: center; /* Center content */
+  justify-content: flex-start;
 }
 
 .history-content {
   flex: 1;
   display: flex;
-  justify-content: center;
+  justify-content: flex-start;
   align-items: center;
 }
 
 .history-number {
-  text-align: center;
+  text-align: left;
+  margin-right: 6px;
 }
 
 .stock-item:hover {
@@ -369,7 +415,7 @@ function addToSearchHistory(stock) {
   align-items: center;
   justify-content: center;
   color: #999;
-  z-index: 1; /* 确保按钮在数字上方 */
+  z-index: 1; /* 確保按鈕在數字上方 */
   position: absolute;
   right: 16px;
 }

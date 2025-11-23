@@ -54,7 +54,8 @@ router.beforeEach(async (to, from, next) => {
   // 檢查股票代碼是否存在
   if (to.params.stock) {
     const stockCode = to.params.stock
-    if (!stockList.includes(stockCode)) {
+    const stockCodes = stockList.map(item => (typeof item === 'string' ? item : item.code))
+    if (!stockCodes.includes(stockCode)) {
       // 股票不存在 → 導回首頁 或 顯示錯誤頁
       return next('/')
     }
