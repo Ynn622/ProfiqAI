@@ -34,7 +34,7 @@ import { callAPI } from '@/utils/apiConfig.js';
 const props = defineProps({
     stockId: { type: String, required: true },
     stockName: { type: String, required: true },
-    chipScore: { type: Number, default: 0 }
+    chipScore: { type: Number, default: -99 }
 });
 
 const loading = ref(false);

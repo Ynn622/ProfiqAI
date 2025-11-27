@@ -31,7 +31,7 @@ import ProbCircle from '../Common/probCircle.vue';
 const props = defineProps({
     stockId: { type: String, required: true },
     stockName: { type: String, required: true },
-    techScore: { type: Number, default: 0 },
+    techScore: { type: Number, default: -99 },
     techData: { type: Object, default: null }
 });
 

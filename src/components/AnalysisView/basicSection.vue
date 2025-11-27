@@ -49,7 +49,7 @@ import { getColorByValue } from '@/utils/colorHelper.js';
 const props = defineProps({
     stockId: { type: String, required: true },
     stockName: { type: String, required: true },
-    basicScore: { type: Number, default: 0 },
+    basicScore: { type: Number, default: -99 },
     basicData: { type: Object, default: null }
 });
 

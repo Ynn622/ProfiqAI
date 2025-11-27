@@ -39,7 +39,7 @@ import { logger } from '@/utils/logger';
 const props = defineProps({
     stockId: { type: String, required: true },
     stockName: { type: String, required: true },
-    newsScore: { type: Number, default: 0 }
+    newsScore: { type: Number, default: -99 }
 });
 
 const newsProvider = {

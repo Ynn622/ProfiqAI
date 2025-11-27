@@ -12,13 +12,15 @@ const props = defineProps({
     score: {
         type: Number,
         required: true,
-        validator: (value) => value >= -2 && value <= 2
+        validator: (value) => (value >= -2 && value <= 2) || value == -99
     }
 });
 
 // 根據分數計算標籤
 const label = computed(() => {
     switch (props.score) {
+        case -99:
+            return '－－';
         case -2:
             return '極空';
         case -1:
@@ -44,6 +46,8 @@ const circleClass = computed(() => {
         return 'down';
     } else if (props.score === -2) {
         return 'extreme-down';
+    } else if (props.score === 0) {
+        return 'flat';
     } else {
         return 'neutral';
     }
@@ -69,6 +73,13 @@ const circleClass = computed(() => {
     font-size: clamp(20px, 2.5vw, 30px);
     font-weight: 800;
     padding: 25px;
+}
+
+.prob-circle.flat {
+    background: var(--lightFlat);
+}
+.prob-circle.flat:hover {
+    background: var(--lightFlat-hover);
 }
 
 .prob-circle.up {

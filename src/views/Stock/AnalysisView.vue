@@ -11,10 +11,10 @@
                 <PriceBar :stock-id="stockId" @updateStockData="handleStockDataUpdate" />
                 <div class="main-bottom">
                     <div class="analysis-detail">
-                        <AnalysisDetail v-bind="technicalAnalysis" />
-                        <AnalysisDetail v-bind="chipAnalysis" />
-                        <AnalysisDetail v-bind="marketAnalysis" />
-                        <AnalysisDetail v-bind="basicAnalysis" />
+                        <AnalysisDetail v-bind="analysis.technical" />
+                        <AnalysisDetail v-bind="analysis.chip" />
+                        <AnalysisDetail v-bind="analysis.news" />
+                        <AnalysisDetail v-bind="analysis.basic" />
                     </div>
                 </div>
                 <div class="segment">
@@ -45,7 +45,7 @@ import newsSection from '@/components/AnalysisView/newsSection.vue';
 import technicSection from '@/components/AnalysisView/technicSection.vue';
 
 // 工具 & 套件
-import { ref, onMounted, computed } from 'vue';
+import { ref, onMounted, computed, reactive } from 'vue';
 import { useRoute } from 'vue-router';
 import { callAPI } from '@/utils/apiConfig.js';
 import { saveToLocalStorage, shouldCallAPI } from '@/utils/localStorageTool.js';
@@ -69,36 +69,30 @@ const componentMap = {
 // 載入中
 const loading = ref(false)
 
+function createDefaultAnalysis(factor) {
+    return {
+        factor,
+        direction: -99,
+        description: 'AI 分析生成中...'
+    };
+}
+
+const analysis = reactive({
+    basic: createDefaultAnalysis('基本'),
+    technical: createDefaultAnalysis('技術'),
+    news: createDefaultAnalysis('消息'),
+    chip: createDefaultAnalysis('籌碼')
+});
+
 // 從 PriceBar 接收的資料
 const stockName = ref('');
 const basicData = ref(null);
 const techData = ref(null);
-const techScore = ref(0);
-const chipScore = ref(0);
-const basicScore = ref(0);
-const newsScore = ref(0);
 
-// 各面分析 模擬資料
-const basicAnalysis = ref({
-    factor: '基本',
-    direction: 0,
-    description: 'AI 分析生成中...'
-});
-const technicalAnalysis = ref({
-    factor: '技術',
-    direction: 0,
-    description: 'AI 分析生成中...'
-});
-const marketAnalysis = ref({
-    factor: '消息',
-    direction: 0,
-    description: 'AI 分析生成中...'
-});
-const chipAnalysis = ref({
-    factor: '籌碼',
-    direction: 0,
-    description: 'AI 分析生成中...'
-});
+const basicScore = computed(() => analysis.basic.direction ?? -99);
+const techScore = computed(() => analysis.technical.direction ?? -99);
+const newsScore = computed(() => analysis.news.direction ?? -99);
+const chipScore = computed(() => analysis.chip.direction ?? -99);
 
 /** 
  * API: 取得基本面分數和資料
@@ -112,9 +106,9 @@ async function fetchBasicScore() {
         const storedData = localStorage.getItem(STORAGE_KEY);
         if (storedData) {
             const parsedData = JSON.parse(storedData);
-            basicAnalysis.value.direction = parsedData.direction ?? 0;
-            basicAnalysis.value.description = parsedData?.basicData?.ai_insight ?? 'AI 未提供分析內容';
-            basicScore.value = parsedData.direction ?? 0;
+            const direction = parsedData.direction ?? -99;
+            analysis.basic.direction = direction;
+            analysis.basic.description = parsedData?.basicData?.ai_insight ?? 'AI 未提供分析內容';
             basicData.value = parsedData.basicData ?? null;
             return;
         }
@@ -127,10 +121,9 @@ async function fetchBasicScore() {
             funcName: 'fetchBasicScore'
         });
         
-        const direction = response?.basicData?.direction ?? 0;
-        basicAnalysis.value.direction = direction;
-        basicAnalysis.value.description = response?.basicData?.ai_insight ?? 'AI 未提供分析內容';
-        basicScore.value = direction;
+        const direction = response?.basicData?.direction ?? -99;
+        analysis.basic.direction = direction;
+        analysis.basic.description = response?.basicData?.ai_insight ?? 'AI 未提供分析內容';
         basicData.value = response?.basicData ?? null;
         
         // 儲存到 localStorage
@@ -140,8 +133,7 @@ async function fetchBasicScore() {
         });
     } catch (error) {
         // 錯誤已經在 callAPI 中記錄
-        basicAnalysis.value.direction = 0;
-        basicScore.value = 0;
+        analysis.basic.direction = -99;
         basicData.value = null;
     }
 }
@@ -157,10 +149,9 @@ async function fetchTechScore() {
         const storedData = localStorage.getItem(STORAGE_KEY);
         if (storedData) {
             const parsedData = JSON.parse(storedData);
-            const direction = parsedData.direction ?? 0;
-            technicalAnalysis.value.direction = direction;
-            technicalAnalysis.value.description = parsedData?.technical_data?.ai_insight ?? 'AI 未提供分析內容';
-            techScore.value = direction;
+            const direction = parsedData.direction ?? -99;
+            analysis.technical.direction = direction;
+            analysis.technical.description = parsedData?.technical_data?.ai_insight ?? 'AI 未提供分析內容';
             techData.value = parsedData?.technical_data ?? null;
             return;
         }
@@ -174,10 +165,9 @@ async function fetchTechScore() {
         });
         
         const techResponse = response?.technical_data ?? null;
-        const direction = techResponse?.direction ?? 0;
-        technicalAnalysis.value.direction = direction;
-        technicalAnalysis.value.description = techResponse?.ai_insight ?? 'AI 未提供分析內容';
-        techScore.value = direction;
+        const direction = techResponse?.direction ?? -99;
+        analysis.technical.direction = direction;
+        analysis.technical.description = techResponse?.ai_insight ?? 'AI 未提供分析內容';
         techData.value = techResponse;
 
         // 儲存到 localStorage
@@ -187,8 +177,7 @@ async function fetchTechScore() {
         });
     } catch (error) {
         // 錯誤已經在 callAPI 中記錄
-        technicalAnalysis.value.direction = 0;
-        techScore.value = 0;
+        analysis.technical.direction = -99;
         techData.value = null;
     }
 }
@@ -204,10 +193,9 @@ async function fetchNewsScore() {
         const storedData = localStorage.getItem(STORAGE_KEY);
         if (storedData) {
             const parsedData = JSON.parse(storedData);
-            const direction = parsedData.direction ?? 0;
-            marketAnalysis.value.direction = direction;
-            marketAnalysis.value.description = parsedData.ai_insight ?? 'AI 未提供分析內容';
-            newsScore.value = direction;
+            const direction = parsedData.direction ?? -99;
+            analysis.news.direction = direction;
+            analysis.news.description = parsedData.ai_insight ?? 'AI 未提供分析內容';
             return;
         }
     }
@@ -219,10 +207,9 @@ async function fetchNewsScore() {
             funcName: 'fetchNewsScore'
         });
 
-        const direction = response?.direction ?? 0;
-        marketAnalysis.value.direction = direction;
-        marketAnalysis.value.description = response?.ai_insight ?? 'AI 未提供分析內容';
-        newsScore.value = direction;
+        const direction = response?.direction ?? -99;
+        analysis.news.direction = direction;
+        analysis.news.description = response?.ai_insight ?? 'AI 未提供分析內容';
 
         // 儲存到 localStorage
         saveToLocalStorage(STORAGE_KEY, {
@@ -231,8 +218,7 @@ async function fetchNewsScore() {
         });
     } catch (error) {
         // 錯誤已經在 callAPI 中記錄
-        marketAnalysis.value.direction = 0;
-        newsScore.value = 0;
+        analysis.news.direction = -99;
     }
 }
 
@@ -248,9 +234,8 @@ async function fetchChipScore() {
         const storedData = localStorage.getItem(STORAGE_KEY);
         if (storedData) {
             const parsedData = JSON.parse(storedData);
-            chipAnalysis.value.direction = parsedData.direction ?? 0;
-            chipAnalysis.value.description = parsedData?.chip_data?.ai_insight ?? 'AI 未提供分析內容';
-            chipScore.value = parsedData.direction ?? 0;
+            analysis.chip.direction = parsedData.direction ?? -99;
+            analysis.chip.description = parsedData?.chip_data?.ai_insight ?? 'AI 未提供分析內容';
             return;
         }
     }
@@ -262,10 +247,9 @@ async function fetchChipScore() {
             funcName: 'fetchChipScore'
         });
         
-        const direction = response?.chip_data?.direction ?? 0;
-        chipAnalysis.value.direction = direction;
-        chipAnalysis.value.description = response?.chip_data?.ai_insight ?? 'AI 未提供分析內容';
-        chipScore.value = direction;
+        const direction = response?.chip_data?.direction ?? -99;
+        analysis.chip.direction = direction;
+        analysis.chip.description = response?.chip_data?.ai_insight ?? 'AI 未提供分析內容';
         
         // 儲存到 localStorage
         saveToLocalStorage(STORAGE_KEY, {
@@ -274,8 +258,7 @@ async function fetchChipScore() {
         });
     } catch (error) {
         // 錯誤已經在 callAPI 中記錄
-        chipAnalysis.value.direction = 0;
-        chipScore.value = 0;
+        analysis.chip.direction = -99;
     }
 }
 
