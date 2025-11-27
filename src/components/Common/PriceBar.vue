@@ -27,6 +27,7 @@
 // 工具 & 套件
 import { useStockData } from '@/utils/stockData';
 import { watch, onMounted, onUnmounted, computed, ref } from 'vue';
+import stockList from '@/data/stockList.json';
 
 // Props
 const props = defineProps({
@@ -48,8 +49,20 @@ const {
 
 let liveInfoInterval = null; // 保存 interval id
 
+// 靜態股票代號/名稱對照
+const stockNameMap = new Map(
+  stockList.map(item => {
+    if (typeof item === 'string') return [item, ''];
+    return [item.code, item.name || ''];
+  })
+);
+
 // 計算屬性，從全域狀態取得資料
-const stockName = computed(() => currentStock.value?.stockName || '');
+const stockName = computed(() => {
+  const liveName = currentStock.value?.stockName?.trim();
+  if (liveName) return liveName;
+  return stockNameMap.get(props.stockId) || '';
+});
 const stockPrice = computed(() => currentStock.value?.stockPrice || { price: 0, change: 0, pct: 0, trend: 0 });
 
 // 執行股票資料更新
