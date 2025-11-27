@@ -99,7 +99,7 @@ function asidePage(page) {
     gap: 10px;
     height: 70px;
     position: relative;
-    z-index: 1001;
+    z-index: 500;
 }
 
 .nav-left {

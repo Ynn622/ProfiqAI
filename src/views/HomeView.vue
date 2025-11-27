@@ -149,7 +149,7 @@ h1 {
   visibility: hidden;
   transition: all 0.25s ease;
   pointer-events: none;
-  z-index: 10000; 
+  z-index: 1000; 
   white-space: normal;
   word-wrap: break-word;
 }

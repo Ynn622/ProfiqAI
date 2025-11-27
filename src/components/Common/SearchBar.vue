@@ -218,7 +218,7 @@ function normalizeHistoryEntry(entry) {
   width: 100%;
   box-sizing: border-box;
   position: relative; /* 為下拉選單提供相對定位 */
-  z-index: 9999; /* 確保搜尋框在最上層 */
+  z-index: 100; 
 }
 
 .search.mobile-expanded {
@@ -227,7 +227,7 @@ function normalizeHistoryEntry(entry) {
   border-radius: 16px;
   min-height: 40px;
   width: calc(100% - 75px - 10px);
-  z-index: 9999; /* 確保行動版搜尋框在最上層 */
+  z-index: 100; 
 }
 
 .search input {
@@ -350,7 +350,7 @@ function normalizeHistoryEntry(entry) {
   box-shadow: 0 4px 12px rgba(0,0,0,0.1);
   max-height: 300px;
   overflow-y: auto;
-  z-index: 10000; /* 確保下拉選單在搜尋框上方 */
+  z-index: 101; /* 確保下拉選單在搜尋框上方 */
   margin-top: 5px;
   width: 100%;
   box-sizing: border-box;
