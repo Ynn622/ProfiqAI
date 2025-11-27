@@ -24,7 +24,7 @@
                     <keep-alive>
                         <component :is="componentMap[segmentValue]" :stockId="stockId" :stockName="stockName" 
                                     :techScore="techScore" :chipScore="chipScore" :basicScore="basicScore" 
-                                    :basicData="basicData" :techData="techData" />
+                                    :basicData="basicData" :techData="techData" :newsScore="newsScore" />
                     </keep-alive>
                 </div>
             </div>
@@ -71,11 +71,12 @@ const loading = ref(false)
 
 // 從 PriceBar 接收的資料
 const stockName = ref('');
+const basicData = ref(null);
+const techData = ref(null);
 const techScore = ref(0);
 const chipScore = ref(0);
 const basicScore = ref(0);
-const basicData = ref(null);
-const techData = ref(null);
+const newsScore = ref(0);
 
 // 各面分析 模擬資料
 const basicAnalysis = ref({
@@ -86,12 +87,12 @@ const basicAnalysis = ref({
 const technicalAnalysis = ref({
     factor: '技術',
     direction: 0,
-    description: '敬請期待'
+    description: 'AI 分析生成中...'
 });
 const marketAnalysis = ref({
     factor: '消息',
     direction: 0,
-    description: '敬請期待'
+    description: 'AI 分析生成中...'
 });
 const chipAnalysis = ref({
     factor: '籌碼',
@@ -149,6 +150,22 @@ async function fetchBasicScore() {
  * API: 取得技術面分數
  */
 async function fetchTechScore() {
+    const STORAGE_KEY = `techScore_${stockId.value}`;
+
+    // 檢查是否需要重新打 API
+    if (!shouldCallAPI(STORAGE_KEY)) {
+        const storedData = localStorage.getItem(STORAGE_KEY);
+        if (storedData) {
+            const parsedData = JSON.parse(storedData);
+            const direction = parsedData.direction ?? 0;
+            technicalAnalysis.value.direction = direction;
+            technicalAnalysis.value.description = parsedData?.technical_data?.ai_insight ?? 'AI 未提供分析內容';
+            techScore.value = direction;
+            techData.value = parsedData?.technical_data ?? null;
+            return;
+        }
+    }
+
     try {
         const response = await callAPI({
             url: '/tech/score',
@@ -159,13 +176,63 @@ async function fetchTechScore() {
         const techResponse = response?.technical_data ?? null;
         const direction = techResponse?.direction ?? 0;
         technicalAnalysis.value.direction = direction;
+        technicalAnalysis.value.description = techResponse?.ai_insight ?? 'AI 未提供分析內容';
         techScore.value = direction;
         techData.value = techResponse;
+
+        // 儲存到 localStorage
+        saveToLocalStorage(STORAGE_KEY, {
+            direction,
+            technical_data: techResponse
+        });
     } catch (error) {
         // 錯誤已經在 callAPI 中記錄
         technicalAnalysis.value.direction = 0;
         techScore.value = 0;
         techData.value = null;
+    }
+}
+
+/** 
+ * API: 取得消息面分數
+ */
+async function fetchNewsScore() {
+    const STORAGE_KEY = `newsScore_${stockId.value}`;
+
+    // 檢查是否需要重新打 API
+    if (!shouldCallAPI(STORAGE_KEY)) {
+        const storedData = localStorage.getItem(STORAGE_KEY);
+        if (storedData) {
+            const parsedData = JSON.parse(storedData);
+            const direction = parsedData.direction ?? 0;
+            marketAnalysis.value.direction = direction;
+            marketAnalysis.value.description = parsedData.ai_insight ?? 'AI 未提供分析內容';
+            newsScore.value = direction;
+            return;
+        }
+    }
+
+    try {
+        const response = await callAPI({
+            url: '/news/score',
+            params: { stock_id: stockId.value },
+            funcName: 'fetchNewsScore'
+        });
+
+        const direction = response?.direction ?? 0;
+        marketAnalysis.value.direction = direction;
+        marketAnalysis.value.description = response?.ai_insight ?? 'AI 未提供分析內容';
+        newsScore.value = direction;
+
+        // 儲存到 localStorage
+        saveToLocalStorage(STORAGE_KEY, {
+            direction,
+            ai_insight: response?.ai_insight
+        });
+    } catch (error) {
+        // 錯誤已經在 callAPI 中記錄
+        marketAnalysis.value.direction = 0;
+        newsScore.value = 0;
     }
 }
 
@@ -224,6 +291,7 @@ onMounted(async () => {
         await Promise.all([
             fetchBasicScore(),
             fetchTechScore(),
+            fetchNewsScore(),
             fetchChipScore()
         ]);
     } finally {

@@ -3,7 +3,7 @@
         <div class="analysis-container">
             <div class="analysis-left">
                 <h3>消息面分析</h3>
-                <ProbCircle :score="0" />
+                <ProbCircle :score="newsScore" />
             </div>
             <div class="analysis-right">
                 <h3>個股新聞</h3>
@@ -38,7 +38,8 @@ import { logger } from '@/utils/logger';
 // Props
 const props = defineProps({
     stockId: { type: String, required: true },
-    stockName: { type: String, required: true }
+    stockName: { type: String, required: true },
+    newsScore: { type: Number, default: 0 }
 });
 
 const newsProvider = {
