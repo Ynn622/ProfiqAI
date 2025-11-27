@@ -10,9 +10,9 @@
             </template>
             <template v-else>
                 {{ isTaiwanMarketOpen() ? '目前價格' : '收盤價' }}：{{ stockPrice.price }}
-                <span class="stock-change" :class="{ up: stockPrice.trend, down: !stockPrice.trend }">
-                    {{ stockPrice.trend ? '+' : '-' }}{{ stockPrice.change }}
-                    ({{ stockPrice.trend ? '▲' : '▼' }}{{ stockPrice.pct }}%)
+                <span class="stock-change" :class="{ up: stockPrice.trend == 1, flat: stockPrice.trend == 0, down: stockPrice.trend == -1 }">
+                    {{ stockPrice.trend == -1 ? '-' : '+' }}{{ stockPrice.change }}
+                    ({{ stockPrice.trend == 1 ? '▲' : stockPrice.trend == -1 ? '▼' : '' }}{{ stockPrice.pct }}%)
                 </span>
             </template>
         </span>
@@ -50,7 +50,7 @@ let liveInfoInterval = null; // 保存 interval id
 
 // 計算屬性，從全域狀態取得資料
 const stockName = computed(() => currentStock.value?.stockName || '');
-const stockPrice = computed(() => currentStock.value?.stockPrice || { price: 0, change: 0, pct: 0, trend: true });
+const stockPrice = computed(() => currentStock.value?.stockPrice || { price: 0, change: 0, pct: 0, trend: 0 });
 
 // 執行股票資料更新
 async function updateStock() {
@@ -141,6 +141,10 @@ watch(
 
 .stock-change.down {
     color: var(--darkBear);
+}
+
+.stock-change.flat {
+  color: var(--pill);
 }
 
 .watchlist-btn {
