@@ -7,7 +7,7 @@
             unknown: probState === 'unknown'
         }">
             <div v-if="probState === 'unknown'" class="prob-text">--</div>
-            <div v-else class="prob-text">{{ props.probability }}%</div>
+            <div v-else class="prob-text">{{ formattedProb }}%</div>
         </div>
     </div>
 </template>
@@ -21,6 +21,10 @@ const props = defineProps({
     probability: { type: Number, default: null }
 })
 
+const formattedProb = computed(() => {
+    if (props.probability === null) return null
+    return props.probability.toFixed(1).replace(/\.?0+$/, '')
+})
 
 // 回傳狀態：unknown / up / down
 const probState = computed(() => {
