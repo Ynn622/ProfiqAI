@@ -212,4 +212,11 @@ watch([() => props.chipData, () => props.segmentValue], () => {
     color: #999;
     font-size: 16px;
 }
+
+@media (max-width: 768px) {
+    .chip-chart-container{
+        height: 400px;
+        margin-top: 5px;
+    }
+}
 </style>

@@ -324,11 +324,12 @@ onMounted(async () => {
 
 @media (max-width: 900px) {
     .analysis-detail {
-        grid-template-columns: 1fr;
+        display: flex;
+        flex-direction: column;
     }
     
     .segment-section {
-        padding: 12px 22px;
+        padding: 14px 20px;
     }
 }
 </style>
