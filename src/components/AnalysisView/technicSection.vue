@@ -3,7 +3,7 @@
         <div class="analysis-container">
             <div class="analysis-left">
                 <h3>技術面分析</h3>
-                <ProbCircle :score="techScore" />
+                <Bias :score="techScore" variant="circle" />
             </div>
             <div class="analysis-right">
                 <SquareData 
@@ -25,7 +25,7 @@ import { getTechStatusColor } from '@/utils/colorHelper.js';
 
 // 組件
 import SquareData from '../SquareData.vue';
-import ProbCircle from '../Common/probCircle.vue';
+import Bias from '../Common/Bias.vue';
 
 // Props
 const props = defineProps({

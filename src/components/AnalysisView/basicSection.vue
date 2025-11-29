@@ -3,7 +3,7 @@
         <div class="analysis-container">
             <div class="analysis-left">
                 <h3>基本面分析</h3>
-                <ProbCircle :score="basicScore" />
+                <Bias :score="basicScore" variant="circle" />
             </div>
             <div class="analysis-right">
                 <SquareData title="EPS" 
@@ -39,7 +39,7 @@
 <script setup>
 // 組件
 import SquareData from '../SquareData.vue';
-import ProbCircle from '../Common/probCircle.vue';
+import Bias from '../Common/Bias.vue';
 
 // 工具 & 套件
 import { computed } from 'vue';

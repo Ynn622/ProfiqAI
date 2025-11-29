@@ -3,27 +3,48 @@
     <!-- 載入中 spinner -->
     <LoadingMask v-if="loading" />
     <Nav />
-    <div class="main-content">
-      <div>
-        <Aside :selected="1" />
-      </div>
-      <div class="content">
-        <PriceBar :stockId="stockId" @updateStockData="handleStockDataUpdate"/>
-        <div class="main-bottom">
-          <KChart :k-data="kData" :loading="loading" />
-          <div class="other">
-            <RiseProbability :probability="prob" />
-            <BacktestingDesc />
-            <div class="analysis-factors">
-              <AnalysisFactors :factor="'技術'" :direction="0" />
-              <AnalysisFactors :factor="'籌碼'" :direction="-1" />
-              <AnalysisFactors :factor="'消息'" :direction="0" />
-              <AnalysisFactors :factor="'基本'" :direction="1" />
-            </div>
-          </div>
+<div class="main-content">
+  <div>
+    <Aside :selected="1" />
+  </div>
+  <div class="content">
+    <PriceBar :stockId="stockId" @updateStockData="handleStockDataUpdate"/>
+    <div class="main-bottom">
+      <KChart :k-data="kData" :loading="loading" />
+      <div class="other">
+        <RiseProbability :probability="prob" />
+        <div class="analysis-factors">
+          <FactorCard
+            title="技術面"
+            :score="techScore"
+            type="indicatorList"
+            :indicators="techIndicators"
+          />
+          <FactorCard
+            title="籌碼面"
+            :score="chipScore"
+            type="stackedBar"
+            :segments="chipSegments"
+          />
+          <FactorCard
+            title="消息面"
+            :score="newsScore"
+            type="stackedBar"
+            :segments="newsSegments"
+            :bar-show-plus="false"
+            bar-value-suffix="%"
+          />
+          <FactorCard
+            title="基本面"
+            :score="fundamentalScore"
+            type="indicatorList"
+            :indicators="fundamentalIndicators"
+          />
         </div>
       </div>
     </div>
+  </div>
+</div>
   </div>
 </template>
 
@@ -32,10 +53,9 @@
 import Aside from '@/components/Common/Aside.vue';
 import Nav from '@/components/Common/Nav.vue';
 import RiseProbability from '@/components//SummaryView/RiseProbability.vue';
+import FactorCard from '@/components/SummaryView/FactorCard.vue';
 import PriceBar from '@/components/Common/PriceBar.vue';
 import KChart from '@/components//SummaryView/KChart.vue';
-import BacktestingDesc from '@/components//SummaryView/BacktestingDesc.vue';
-import AnalysisFactors from '@/components//SummaryView/AnalysisFactors.vue';
 import LoadingMask from '@/components/Common/loadingMask.vue'; 
 
 // 工具 & 套件
@@ -59,6 +79,34 @@ const kData = ref([]);
 
 // 隔日上漲機率
 const prob = ref(null);
+
+// 因子預設資料
+const techScore = ref(2);
+const chipScore = ref(1);
+const newsScore = ref(-1);
+const fundamentalScore = ref(-2);
+
+const techIndicators = [
+  { label: 'EMA、 RSI', direction: 'up' },
+  { label: 'ROC', direction: 'down' },
+];
+
+const fundamentalIndicators = [
+  { label: 'EPS、 ROE', direction: 'up' },
+  { label: 'P/E Ratio', direction: 'down' },
+];
+
+const chipSegments = [
+  { label: '外資', value: -1000, color: '#7da8f5' }, // blue
+  { label: '投信', value: -2000, color: '#f3c45c' }, // amber
+  { label: '自營', value: 1000, color: '#a88cf3' }, // purple
+];
+
+const newsSegments = [
+  { label: '負面', value: 20, color: '#7bef83' },
+  { label: '中立', value: 40, color: '#ffe666' },
+  { label: '正面', value: 20, color: '#f9acb0' },
+];
 
 // 處理從 PriceBar 回傳的股票資料
 function handleStockDataUpdate(data) {
@@ -188,7 +236,7 @@ watch(
 .other {
   display: flex;
   flex-direction: column;
-  gap: 30px;
+  gap: 16px;
   width: 300px;
   margin-right: 20px;
   margin-top: 10px;
@@ -196,14 +244,14 @@ watch(
 
 .analysis-factors {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  grid-template-rows: auto auto;
-  gap: 12px;
+  grid-template-columns: 1fr;
+  gap: 14px;
+  width: 100%;
 }
 
 @media (max-width: 1200px) {
   .other {  
-    width: 250px;
+    width: 280px;
   }
 }
 

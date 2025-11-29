@@ -3,7 +3,7 @@
         <div class="analysis-container">
             <div class="analysis-left">
                 <h3>消息面分析</h3>
-                <ProbCircle :score="newsScore" />
+                <Bias :score="newsScore" variant="circle" />
             </div>
             <div class="analysis-right">
                 <h3>個股新聞</h3>
@@ -27,7 +27,7 @@
 <script setup>
 // 組件
 import NewsRow from '../newsRow.vue';
-import ProbCircle from '../Common/probCircle.vue';
+import Bias from '../Common/Bias.vue';
 import LoadingMask from '../Common/loadingMask.vue';
 
 // 工具 & 套件

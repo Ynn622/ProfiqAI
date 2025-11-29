@@ -3,7 +3,7 @@
         <div class="pill">{{ factor }}面分析</div>
         <div class="analysis-section">
             <div>
-                <ProbCircle :score="direction" />
+                <Bias :score="direction" variant="circle" />
             </div>
             <div class="analysis-desc" v-html="description">
             </div>
@@ -13,7 +13,7 @@
 
 <script setup>
 // 組件
-import ProbCircle from '../Common/probCircle.vue';
+import Bias from '../Common/Bias.vue';
 
 // Props
 const props = defineProps({

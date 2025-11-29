@@ -3,7 +3,7 @@
         <div class="analysis-container">
             <div class="analysis-left">
                 <h3>籌碼面分析</h3>
-                <ProbCircle :score="chipScore" />
+                <Bias :score="chipScore" variant="circle" />
             </div>
             <div class="analysis-right">
                 <div v-if="loading">
@@ -24,7 +24,7 @@
 import ChipChart from '../chipChart.vue';
 import ChipTable from '../chipTable.vue';
 import LoadingMask from '../Common/loadingMask.vue';
-import ProbCircle from '../Common/probCircle.vue';
+import Bias from '../Common/Bias.vue';
 
 // 工具 & 套件
 import { ref, onMounted, computed } from 'vue';
