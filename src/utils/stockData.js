@@ -1,6 +1,8 @@
 import { ref, computed } from 'vue';
 import { callAPI } from '@/utils/apiConfig';
 
+const defaultStockPrice = { close: 0, change: 0, pct: 0, trend: 0 };
+
 // 全域股票資料狀態
 const stocksData = ref(new Map());
 const currentStockId = ref('');
@@ -22,7 +24,7 @@ export function useStockData() {
       stocksData.value.set(stockId, {
         stockId,
         stockName: '',
-        stockPrice: { price: 0, change: 0, pct: 0, trend: true },
+        stockPrice: { ...defaultStockPrice },
         lastUpdate: null,
         isLoading: false
       });
@@ -63,27 +65,19 @@ export function useStockData() {
         params: { stock_id: stockId },
         funcName: 'fetchLiveStockInfo'
       });
+      const liveInfo = response?.info ?? {};
+      const normalizedInfo = { ...defaultStockPrice, ...liveInfo };
 
       // 更新全域狀態
       updateStockData(stockId, {
-        stockName: response.info.StockName,
-        stockPrice: {
-          price: response.info.Close,
-          change: response.info.Change,
-          pct: response.info.ChangePct,
-          trend: response.info.Trend
-        }
+        stockName: normalizedInfo.stockName,
+        stockPrice: normalizedInfo
       });
 
       return {
-        stockName: response.info.StockName,
-        stockPrice: {
-          price: response.info.Close,
-          change: response.info.Change,
-          pct: response.info.ChangePct,
-          trend: response.info.Trend
-        },
-        liveInfo: response.info
+        stockName: normalizedInfo.stockName,
+        stockPrice: normalizedInfo,
+        liveInfo: normalizedInfo
       };
     } catch (err) {
       // 錯誤已經在 callAPI 中記錄

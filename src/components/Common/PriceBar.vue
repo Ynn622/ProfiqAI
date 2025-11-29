@@ -5,11 +5,11 @@
 
         <!-- 價格與漲跌 -->
         <span class="stock-price">
-            <template v-if="stockPrice.price === 0">
+            <template v-if="stockPrice.close === 0">
                 {{ isTaiwanMarketOpen() ? '目前價格' : '收盤價' }}：<span class="no-data">{{ stockError ? '載入失敗' : '載入中' }}</span>
             </template>
             <template v-else>
-                {{ isTaiwanMarketOpen() ? '目前價格' : '收盤價' }}：{{ stockPrice.price }}
+                {{ isTaiwanMarketOpen() ? '目前價格' : '收盤價' }}：{{ stockPrice.close || stockPrice.preClose }}
                 <span class="stock-change" :class="{ up: stockPrice.trend == 1, flat: stockPrice.trend == 0, down: stockPrice.trend == -1 }">
                     {{ stockPrice.trend == -1 ? '-' : '+' }}{{ stockPrice.change }}
                     ({{ stockPrice.trend == 1 ? '▲' : stockPrice.trend == -1 ? '▼' : '' }}{{ stockPrice.pct }}%)
@@ -63,7 +63,7 @@ const stockName = computed(() => {
   if (liveName) return liveName;
   return stockNameMap.get(props.stockId) || '';
 });
-const stockPrice = computed(() => currentStock.value?.stockPrice || { price: 0, change: 0, pct: 0, trend: 0 });
+const stockPrice = computed(() => currentStock.value?.stockPrice || { close: 0, change: 0, pct: 0, trend: 0 });
 
 // 執行股票資料更新
 async function updateStock() {
@@ -71,7 +71,7 @@ async function updateStock() {
     const data = await fetchLiveStockInfo(props.stockId);
     
     // 透過 emit 回傳資料給父元件
-    emit('updateStockData', data.liveInfo);
+    emit('updateStockData', data.stockPrice);
     stockError.value = false;
   } catch (err) {
     stockError.value = true;

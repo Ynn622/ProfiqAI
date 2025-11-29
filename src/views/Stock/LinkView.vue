@@ -34,7 +34,7 @@ const loading = ref(false);
 
 // Emits: 處理從 PriceBar 回傳的股票資料
 function handleStockDataUpdate(data) {
-    stockName.value = data.StockName;
+    stockName.value = data.stockName;
 }
 
 // 監聽股票代碼變化

@@ -264,7 +264,7 @@ async function fetchChipScore() {
 
 // Emits: 處理從 PriceBar 回傳的股票資料
 function handleStockDataUpdate(data) {
-    stockName.value = data.StockName;
+    stockName.value = data.stockName;
 }
 
 // 頁面載入時取得各面分數

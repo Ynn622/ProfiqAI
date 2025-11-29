@@ -52,7 +52,7 @@ const stockId = computed(() => route.params.stock);
 
 // 從 PriceBar 接收的資料
 const stockName = ref('');
-const stockPrice = ref({ price: 0, change: 0, pct: 0, trend: true });
+const stockPrice = ref({ close: 0, change: 0, pct: 0, trend: 0 });
 
 // K 線資料 (由 SummaryView 自己管理)
 const kData = ref([]);
@@ -63,7 +63,7 @@ const prob = ref(null);
 // 處理從 PriceBar 回傳的股票資料
 function handleStockDataUpdate(data) {
   stockName.value = data.stockName;
-  stockPrice.value = data.stockPrice;
+  stockPrice.value = data;
   updateKData(data);
 }
 
@@ -110,17 +110,19 @@ function updateKData(newData) {
   if (kData.value.length === 0) return
   const dates = kData.value.Date
   const lastIndex = dates.length - 1
+  const newDate = newData.date
+  if (!newDate) return
   
   // 檢查最後一筆是不是同一天
-  if (lastIndex >= 0 && dates[lastIndex] === newData.Date) {
+  if (lastIndex >= 0 && dates[lastIndex] === newDate) {
     // 覆蓋最後一筆
-    kData.value.OHLC[lastIndex] = [newData.Open, newData.High, newData.Low, newData.Close]
-    kData.value.Volume[lastIndex] = newData.Volume
+    kData.value.OHLC[lastIndex] = [newData.open, newData.high, newData.low, newData.close]
+    kData.value.Volume[lastIndex] = newData.volume
   } else {
     // 新增
-    kData.value.Date.push(newData.Date)
-    kData.value.OHLC.push([newData.Open, newData.High, newData.Low, newData.Close])
-    kData.value.Volume.push(newData.Volume)
+    kData.value.Date.push(newDate)
+    kData.value.OHLC.push([newData.open, newData.high, newData.low, newData.close])
+    kData.value.Volume.push(newData.volume)
   }
 }
 
