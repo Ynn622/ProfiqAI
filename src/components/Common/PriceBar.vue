@@ -23,27 +23,32 @@
 
                 <transition name="detail">
                     <div v-if="showDetail && stockPrice.close !== 0" class="detail-card">
-                        <div class="detail-row">
-                            <span class="label">開盤</span>
-                            <span class="value" :class="priceClass(stockPrice.open)">{{ stockPrice.open ?? '-' }}</span>
-                        </div>
-                        <div class="detail-row">
-                            <span class="label">最高</span>
-                            <span class="value" :class="priceClass(stockPrice.high)">{{ stockPrice.high ?? '-' }}</span>
-                        </div>
-                        <div class="detail-row">
-                            <span class="label">最低</span>
-                            <span class="value" :class="priceClass(stockPrice.low)">{{ stockPrice.low ?? '-' }}</span>
-                        </div>
-                        <div class="detail-row">
-                            <span class="label">收盤</span>
-                            <span class="value" :class="priceClass(stockPrice.close ?? stockPrice.preClose)">
-                                {{ stockPrice.close ?? stockPrice.preClose ?? '-' }}
-                            </span>
-                        </div>
-                        <div class="detail-row">
-                            <span class="label">成交量</span>
-                            <span class="value">{{ formattedVolume }}</span>
+                        <div class="detail-content">
+                            <Candlestick class="detail-kbar" :ohlc="ohlcData" />
+                            <div class="detail-rows">
+                                <div class="detail-row">
+                                    <span class="label">開盤</span>
+                                    <span class="value" :class="priceClass(stockPrice.open)">{{ stockPrice.open ?? '-' }}</span>
+                                </div>
+                                <div class="detail-row">
+                                    <span class="label">最高</span>
+                                    <span class="value" :class="priceClass(stockPrice.high)">{{ stockPrice.high ?? '-' }}</span>
+                                </div>
+                                <div class="detail-row">
+                                    <span class="label">最低</span>
+                                    <span class="value" :class="priceClass(stockPrice.low)">{{ stockPrice.low ?? '-' }}</span>
+                                </div>
+                                <div class="detail-row">
+                                    <span class="label">收盤</span>
+                                    <span class="value" :class="priceClass(stockPrice.close ?? stockPrice.preClose)">
+                                        {{ stockPrice.close ?? stockPrice.preClose ?? '-' }}
+                                    </span>
+                                </div>
+                                <div class="detail-row">
+                                    <span class="label">成交量</span>
+                                    <span class="value">{{ formattedVolume }}</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </transition>
@@ -61,6 +66,7 @@
 import { useStockData } from '@/utils/stockData';
 import { watch, onMounted, onUnmounted, computed, ref } from 'vue';
 import stockList from '@/data/stockList.json';
+import Candlestick from '@/components/Candlestick.vue';
 
 // Props
 const props = defineProps({
@@ -103,6 +109,12 @@ const stockPrice = computed(() => {
   return { ...emptyPrice, ...currentStock.value.stockPrice };
 });
 const preClose = computed(() => Number(stockPrice.value.preClose) || 0);
+const ohlcData = computed(() => ({
+  open: stockPrice.value.open,
+  high: stockPrice.value.high,
+  low: stockPrice.value.low,
+  close: stockPrice.value.close
+}));
 const formattedVolume = computed(() => {
   const volume = stockPrice.value?.volume;
   if (typeof volume === 'number') return volume.toLocaleString('en-US');
@@ -300,15 +312,26 @@ watch(
     top: calc(100% + 8px);
     right: 0;
     z-index: 5;
-    min-width: 210px;
+    min-width: 260px;
     padding: 12px 14px;
     background: #ffffff;
     border-radius: 12px;
     box-shadow: 0 8px 30px rgba(0,0,0,0.12), inset 0 0 0 1px rgba(0,0,0,0.05);
+    display: block;
+    font-size: 14px;
+}
+
+.detail-content {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.detail-rows {
     display: flex;
     flex-direction: column;
+    flex: 1;
     gap: 6px;
-    font-size: 14px;
 }
 
 .detail-row {
