@@ -10,7 +10,7 @@
 
     <!-- 主內容 -->
     <section class="main-section">
-      <img class="logo-img" src="/logo.png" alt="AI 投資智聊 logo" />
+      <img class="logo-img" src="/icons/logo.png" alt="AI 投資智聊 logo" />
 
       <h1>個股全面向健檢，快速搜出好股！</h1>
       <SearchBar design="home" />

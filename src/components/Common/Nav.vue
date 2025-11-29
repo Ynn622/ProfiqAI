@@ -1,7 +1,7 @@
 <template>
     <div class="nav-bar" :class="{ phone: isMobile }">
         <div class="nav-left">
-            <img class="logo-img" src="/logo.png" alt="AI 投資智聊 logo" @click="tapLogo" />
+            <img class="logo-img" src="/icons/logo.png" alt="AI 投資智聊 logo" @click="tapLogo" />
             <SearchBar 
               v-if="!isMobile || showMobileSearch" 
               :is-mobile-expanded="showMobileSearch"

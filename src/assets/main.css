@@ -8,12 +8,12 @@
  /* 股市 */
   --lightBull: #ffb3b3;          /* 偏多：粉紅 */
   --lightBull-hover: #ff8a8a;      /* 比粉紅深一點 */
-  --darkBull: #fc7979;           /* 偏多：紅 */
-  --darkBull-hover: #fb5858;       /* 紅色變亮一點 */
+  --darkBull: #fe7171;           /* 偏多：紅 */
+  --darkBull-hover: #f96161;       /* 紅色變亮一點 */
 
   --lightBear: #bdfcc0;          /* 偏空：淺綠 */
   --lightBear-hover: #92f29b;      /* 比淺綠深一點 */
-  --darkBear: #00c046;           /* 偏空：綠 */
+  --darkBear: #52ed55;           /* 偏空：綠 */
   --darkBear-hover: #26d264;       /* 綠色變亮一點 */
 
   --lightFlat: #f7ffa2;          /* 平盤：淺黃 */
