@@ -1,46 +1,32 @@
 <template>
     <div class="nav-bar" :class="{ phone: isMobile }">
         <div class="nav-left">
-            <img class="logo-img" src="/logo.png" alt="AI 投資智聊 logo" @click="tapLogo" />
-            <SearchBar 
-              v-if="!isMobile || showMobileSearch" 
-              :is-mobile-expanded="showMobileSearch"
-              @close-search="toggleMobileSearch"
-            />
             <i 
-                v-if="isMobile && !showMobileSearch" 
-                class="fa-solid fa-magnifying-glass search-icon" 
-                @click="toggleMobileSearch"
-            ></i>
-        </div>
-
-        <div class="nav-right">
-            <ChatBotButton 
-              design="small" 
-              :class="{ 'compact': isMobile && showMobileSearch }" 
-            />
-            <i 
-                v-if="(isMobile && showMobileSearch)" 
-                class="fa-solid fa-arrow-left back-icon" 
-                @click="toggleMobileSearch"
-            ></i>
-            <UserProfile 
-              v-else-if="!isMobile"
-            />
-            <i 
-              v-else-if="showMenu" 
+              v-if="isMobile &&showMenu" 
               class="fa-solid fa-bars" 
               @click="toggleMenu"
             ></i>
+            <img class="logo-img" src="/logo.png" alt="AI 投資智聊 logo" @click="tapLogo" />
+            <SearchBar 
+              v-if="!isMobile || isMobile" 
+              :is-mobile-expanded="showMobileSearch"
+              @close-search="toggleMobileSearch"
+            />
+        </div>
+        <!-- 手機版選單 -->
+        <div v-if="isMobile && showMenu" class="nav-bar-menu" :class="{ open: expandMenu }">
+            <div v-for="(value, key) in PageDict" :key="key" @click="asidePage(key)">
+                <div class="menu-item">{{ key }}</div>
+            </div>
+        </div>
+
+        <div class="nav-right">
+            <ChatBotButton v-if="!isMobile && showMobileSearch"/>
+            <UserProfile />
         </div>
     </div>
 
-    <!-- 手機版選單 -->
-    <div v-if="expandMenu && isMobile && showMenu" class="nav-bar-menu">
-        <div v-for="(value, key) in PageDict" :key="key" @click="asidePage(key)">
-            <div class="menu-item">{{ key }}</div>
-        </div>
-    </div>
+    
 </template>
 
 <script setup>
@@ -67,7 +53,8 @@ const showMobileSearch = ref(false);
 const PageDict = {
     '股票速覽': 'stock-summary',
     '分析儀表': 'stock-analysis',
-    '新聞股雲': 'stock-linked'
+    '新聞股雲': 'stock-linked',
+    '智聊AI' :'chat-bot',
 };
 
 function tapLogo() {
@@ -107,6 +94,10 @@ function asidePage(page) {
     gap: 20px;
     align-items: center;
     flex: 2;
+}
+
+.nav-bar.phone .nav-left {
+    gap: 10px;
 }
 
 .nav-right {
@@ -161,7 +152,7 @@ function asidePage(page) {
 
 .nav-bar.phone .search.mobile-expanded {
     position: absolute;
-    left: 75px; /* Start from the right edge of the logo (55px + 20px gap) */
+    left: 119px; /* Start from the right edge of the logo */
     right: 10px;
     top: 50%;
     transform: translateY(-50%);
@@ -180,23 +171,43 @@ function asidePage(page) {
 }
 
 .nav-bar-menu {
-    position: absolute;
-    top: 70px;
-    right: 10px;
+    position: fixed;
+    top: 69px;
+    left: 0;
+    height: calc(100% - 70px);
+    width: 240px;
     background-color: white;
-    border: 1px solid rgba(0, 0, 0, 0.1);
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    border-radius: 8px;
+    border-right: 1px solid rgba(0, 0, 0, 0.1);
+    box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
+    border-radius: 0 20px 20px 0;
     z-index: 1000;
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    padding: 14px 0;
+}
+
+.nav-bar-menu.open {
+    transform: translateX(0);
+    padding-top: 0px;
+    padding-bottom: 774px;
 }
 
 .menu-item {
-    padding: 12px 16px;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    padding: 12px 18px;
+    border-left: 4px solid transparent;
     cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    color: #333;
+    transition: background-color 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 10px;
 }
 
 .menu-item:hover {
-    background-color: rgba(0, 0, 0, 0.05);
+    background-color: #f3f3f6;
 }
 </style>
