@@ -2,6 +2,7 @@
     <div class="screen">
         <Nav :show-menu="false" />
         <div class="chat-layout">
+            <!-- 聊天選單 -->
             <aside class="conversation-list" :class="{ open: sideOpen }">
                 <div class="list-header">
                     <h3>投資智聊 AI</h3>
@@ -21,6 +22,7 @@
                     <button class="new-chat" @click="newConversation">+ 新會話</button>
                 </div>
             </aside>
+            <!-- 聊天室 -->
             <div class="chat-wrapper">
                 <header class="chat-header">
                     <button class="hamburger" @click="toggleSide" v-if="isMobile">
