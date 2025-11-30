@@ -11,7 +11,7 @@ import { computed } from 'vue';
 const props = defineProps({
   score: {
     type: Number,
-    default: 1,
+    default: -99,
     validator: (value) => (value >= -2 && value <= 2) || value === -99,
   },
   variant: {

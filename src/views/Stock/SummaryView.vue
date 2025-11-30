@@ -63,6 +63,7 @@ import { callAPI } from '@/utils/apiConfig';
 import { logger } from '@/utils/logger';
 import { ref, computed, watch, onMounted } from 'vue';
 import { useRoute } from 'vue-router'
+import { fetchBasicAnalysis, fetchTechAnalysis, fetchNewsAnalysis, fetchChipAnalysis } from '@/services/analysisService';
 
 const route = useRoute();
 const loading = ref(false);
@@ -81,32 +82,71 @@ const kData = ref([]);
 const prob = ref(null);
 
 // 因子預設資料
-const techScore = ref(2);
-const chipScore = ref(1);
-const newsScore = ref(-1);
-const fundamentalScore = ref(-2);
+const techScore = ref(-99);
+const chipScore = ref(-99);
+const newsScore = ref(-99);
+const fundamentalScore = ref(-99);
 
-const techIndicators = [
-  { label: 'EMA、 RSI', direction: 'up' },
-  { label: 'ROC', direction: 'down' },
-];
+const techIndicators = ref([
+  { label: '分析中...', direction: 'up' },
+  { label: '分析中...', direction: 'down' },
+]);
 
-const fundamentalIndicators = [
-  { label: 'EPS、 ROE', direction: 'up' },
-  { label: 'P/E Ratio', direction: 'down' },
-];
+const fundamentalIndicators = ref([
+  { label: '分析中...', direction: 'up' },
+  { label: '分析中...', direction: 'down' },
+]);
 
-const chipSegments = [
-  { label: '外資', value: -1000, color: '#7da8f5' }, // blue
-  { label: '投信', value: -2000, color: '#f3c45c' }, // amber
-  { label: '自營', value: 1000, color: '#a88cf3' }, // purple
-];
+const chipSegments = ref([
+  { label: '外資', value: 0, color: '#7da8f5' }, // blue
+  { label: '投信', value: 0, color: '#f3c45c' }, // amber
+  { label: '自營', value: 0, color: '#a88cf3' }, // purple
+]);
 
-const newsSegments = [
-  { label: '負面', value: 20, color: '#7bef83' },
-  { label: '中立', value: 40, color: '#ffe666' },
-  { label: '正面', value: 20, color: '#f9acb0' },
-];
+const newsSegments = ref([
+  { label: '負面', value: 33, color: '#7bef83' },
+  { label: '中立', value: 33, color: '#ffe666' },
+  { label: '正面', value: 33, color: '#f9acb0' },
+]);
+
+// 分析資料暫存，後續可直接餵給卡片
+const basicData = ref(null);
+const techData = ref(null);
+const newsAnalysis = ref(null);
+const chipAnalysis = ref(null);
+
+function toPercent(value) {
+  if (value === null || value === undefined) return 0;
+  if (typeof value === 'number' && value <= 1) return Math.round(value * 100);
+  return Math.round(value);
+}
+
+function buildIndicators(scoreDistribution = {}) {
+  const positives = scoreDistribution.positive || [];
+  const negatives = scoreDistribution.negative || [];
+
+  const result = [];
+
+  const positiveLabels = positives.slice(0, 2).filter(Boolean);
+  const negativeLabels = negatives.slice(0, 2).filter(Boolean);
+
+  if (positiveLabels.length) {
+    result.push({ label: positiveLabels.join('、'), direction: 'up' });
+  }
+  if (negativeLabels.length) {
+    result.push({ label: negativeLabels.join('、'), direction: 'down' });
+  }
+
+  // 保留至少兩筆，避免空畫面
+  if (!result.length) {
+    return [
+      { label: '暫無資料', direction: 'up' },
+      { label: '暫無資料', direction: 'down' },
+    ];
+  }
+
+  return result;
+}
 
 // 處理從 PriceBar 回傳的股票資料
 function handleStockDataUpdate(data) {
@@ -174,10 +214,51 @@ function updateKData(newData) {
   }
 }
 
+async function fetchAnalysisData() {
+  const [basic, tech, news, chip] = await Promise.all([
+    fetchBasicAnalysis(stockId.value),
+    fetchTechAnalysis(stockId.value),
+    fetchNewsAnalysis(stockId.value),
+    fetchChipAnalysis(stockId.value),
+  ]);
+
+  fundamentalScore.value = basic.direction ?? -99;
+  techScore.value = tech.direction ?? -99;
+  newsScore.value = news.direction ?? -99;
+  chipScore.value = chip.direction ?? -99;
+
+  basicData.value = basic.basicData ?? null;
+  techData.value = tech.technicalData ?? null;
+  newsAnalysis.value = news;
+  chipAnalysis.value = chip;
+
+  // 技術面／基本面指標 (取前 2 個正向 + 前 2 個負向)
+  techIndicators.value = buildIndicators(tech?.technicalData?.score_distribution);
+  fundamentalIndicators.value = buildIndicators(basic?.basicData?.score_distribution);
+
+  const chipData = chip?.chipData || {};
+  chipSegments.value = [
+    { label: '外資', value: chipData.foreign ?? 0, color: '#7da8f5' },
+    { label: '投信', value: chipData.dealer ?? 0, color: '#f3c45c' },
+    { label: '自營', value: chipData.investor ?? 0, color: '#a88cf3' },
+  ];
+
+  const newsData = news?.newsData || {};
+  newsSegments.value = [
+    { label: '負面', value: toPercent(newsData.negative), color: '#7bef83' },
+    { label: '中立', value: toPercent(newsData.neutral), color: '#ffe666' },
+    { label: '正面', value: toPercent(newsData.positive), color: '#f9acb0' },
+  ];
+}
+
 const loadData = async () => {
   loading.value = true;
-  fetchStockPredict(stockId.value);
-  await fetchStockData(stockId.value);
+  const predictPromise = fetchStockPredict(stockId.value);
+  await Promise.all([
+    fetchStockData(stockId.value),
+    fetchAnalysisData(),
+    predictPromise
+  ]);
   loading.value = false;
 };
 

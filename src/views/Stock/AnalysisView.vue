@@ -47,8 +47,7 @@ import technicSection from '@/components/AnalysisView/technicSection.vue';
 // 工具 & 套件
 import { ref, onMounted, computed, reactive } from 'vue';
 import { useRoute } from 'vue-router';
-import { callAPI } from '@/utils/apiConfig.js';
-import { saveToLocalStorage, shouldCallAPI } from '@/utils/localStorageTool.js';
+import { fetchBasicAnalysis, fetchTechAnalysis, fetchNewsAnalysis, fetchChipAnalysis } from '@/services/analysisService';
 
 // 取得路由參數
 const route = useRoute();
@@ -94,192 +93,42 @@ const techScore = computed(() => analysis.technical.direction ?? -99);
 const newsScore = computed(() => analysis.news.direction ?? -99);
 const chipScore = computed(() => analysis.chip.direction ?? -99);
 
-/** 
- * API: 取得基本面分數和資料
- */
-async function fetchBasicScore() {
-    const STORAGE_KEY = `basicScore_${stockId.value}`;
-    
-    // 檢查是否需要重新打 API
-    if (!shouldCallAPI(STORAGE_KEY)) {
-        // 從 localStorage 載入
-        const storedData = localStorage.getItem(STORAGE_KEY);
-        if (storedData) {
-            const parsedData = JSON.parse(storedData);
-            const direction = parsedData.direction ?? -99;
-            analysis.basic.direction = direction;
-            analysis.basic.description = parsedData?.basicData?.ai_insight ?? 'AI 未提供分析內容';
-            basicData.value = parsedData.basicData ?? null;
-            return;
-        }
-    }
-    
-    try {
-        const response = await callAPI({
-            url: '/basic/score',
-            params: { stock_id: stockId.value },
-            funcName: 'fetchBasicScore'
-        });
-        
-        const direction = response?.basicData?.direction ?? -99;
-        analysis.basic.direction = direction;
-        analysis.basic.description = response?.basicData?.ai_insight ?? 'AI 未提供分析內容';
-        basicData.value = response?.basicData ?? null;
-        
-        // 儲存到 localStorage
-        saveToLocalStorage(STORAGE_KEY, {
-            direction,
-            basicData: response?.basicData
-        });
-    } catch (error) {
-        // 錯誤已經在 callAPI 中記錄
-        analysis.basic.direction = -99;
-        basicData.value = null;
-    }
-}
-
-/** 
- * API: 取得技術面分數
- */
-async function fetchTechScore() {
-    const STORAGE_KEY = `techScore_${stockId.value}`;
-
-    // 檢查是否需要重新打 API
-    if (!shouldCallAPI(STORAGE_KEY)) {
-        const storedData = localStorage.getItem(STORAGE_KEY);
-        if (storedData) {
-            const parsedData = JSON.parse(storedData);
-            const direction = parsedData.direction ?? -99;
-            analysis.technical.direction = direction;
-            analysis.technical.description = parsedData?.technical_data?.ai_insight ?? 'AI 未提供分析內容';
-            techData.value = parsedData?.technical_data ?? null;
-            return;
-        }
-    }
-
-    try {
-        const response = await callAPI({
-            url: '/tech/score',
-            params: { stock_id: stockId.value },
-            funcName: 'fetchTechScore'
-        });
-        
-        const techResponse = response?.technical_data ?? null;
-        const direction = techResponse?.direction ?? -99;
-        analysis.technical.direction = direction;
-        analysis.technical.description = techResponse?.ai_insight ?? 'AI 未提供分析內容';
-        techData.value = techResponse;
-
-        // 儲存到 localStorage
-        saveToLocalStorage(STORAGE_KEY, {
-            direction,
-            technical_data: techResponse
-        });
-    } catch (error) {
-        // 錯誤已經在 callAPI 中記錄
-        analysis.technical.direction = -99;
-        techData.value = null;
-    }
-}
-
-/** 
- * API: 取得消息面分數
- */
-async function fetchNewsScore() {
-    const STORAGE_KEY = `newsScore_${stockId.value}`;
-
-    // 檢查是否需要重新打 API
-    if (!shouldCallAPI(STORAGE_KEY)) {
-        const storedData = localStorage.getItem(STORAGE_KEY);
-        if (storedData) {
-            const parsedData = JSON.parse(storedData);
-            const direction = parsedData.direction ?? -99;
-            analysis.news.direction = direction;
-            analysis.news.description = parsedData.ai_insight ?? 'AI 未提供分析內容';
-            return;
-        }
-    }
-
-    try {
-        const response = await callAPI({
-            url: '/news/score',
-            params: { stock_id: stockId.value },
-            funcName: 'fetchNewsScore'
-        });
-
-        const direction = response?.direction ?? -99;
-        analysis.news.direction = direction;
-        analysis.news.description = response?.ai_insight ?? 'AI 未提供分析內容';
-
-        // 儲存到 localStorage
-        saveToLocalStorage(STORAGE_KEY, {
-            direction,
-            ai_insight: response?.ai_insight
-        });
-    } catch (error) {
-        // 錯誤已經在 callAPI 中記錄
-        analysis.news.direction = -99;
-    }
-}
-
-/** 
- * API: 取得籌碼面分數
- */
-async function fetchChipScore() {
-    const STORAGE_KEY = `chipScore_${stockId.value}`;
-    
-    // 檢查是否需要重新打 API
-    if (!shouldCallAPI(STORAGE_KEY)) {
-        // 從 localStorage 載入
-        const storedData = localStorage.getItem(STORAGE_KEY);
-        if (storedData) {
-            const parsedData = JSON.parse(storedData);
-            analysis.chip.direction = parsedData.direction ?? -99;
-            analysis.chip.description = parsedData?.chip_data?.ai_insight ?? 'AI 未提供分析內容';
-            return;
-        }
-    }
-    
-    try {
-        const response = await callAPI({
-            url: '/chip/score',
-            params: { stock_id: stockId.value },
-            funcName: 'fetchChipScore'
-        });
-        
-        const direction = response?.chip_data?.direction ?? -99;
-        analysis.chip.direction = direction;
-        analysis.chip.description = response?.chip_data?.ai_insight ?? 'AI 未提供分析內容';
-        
-        // 儲存到 localStorage
-        saveToLocalStorage(STORAGE_KEY, {
-            direction,
-            chip_data: response?.chip_data
-        });
-    } catch (error) {
-        // 錯誤已經在 callAPI 中記錄
-        analysis.chip.direction = -99;
-    }
-}
-
 // Emits: 處理從 PriceBar 回傳的股票資料
 function handleStockDataUpdate(data) {
     stockName.value = data.stockName;
 }
 
-// 頁面載入時取得各面分數
-onMounted(async () => {
+async function loadAnalysis() {
     loading.value = true;
     try {
-        await Promise.all([
-            fetchBasicScore(),
-            fetchTechScore(),
-            fetchNewsScore(),
-            fetchChipScore()
+        const [basic, tech, news, chip] = await Promise.all([
+            fetchBasicAnalysis(stockId.value),
+            fetchTechAnalysis(stockId.value),
+            fetchNewsAnalysis(stockId.value),
+            fetchChipAnalysis(stockId.value)
         ]);
+
+        analysis.basic.direction = basic.direction;
+        analysis.basic.description = basic.description;
+        basicData.value = basic.basicData ?? null;
+
+        analysis.technical.direction = tech.direction;
+        analysis.technical.description = tech.description;
+        techData.value = tech.technicalData ?? null;
+
+        analysis.news.direction = news.direction;
+        analysis.news.description = news.description;
+
+        analysis.chip.direction = chip.direction;
+        analysis.chip.description = chip.description;
     } finally {
         loading.value = false;
     }
+}
+
+// 頁面載入時取得各面分數
+onMounted(async () => {
+    await loadAnalysis();
 });
 
 </script>
