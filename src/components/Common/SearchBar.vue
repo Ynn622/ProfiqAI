@@ -10,14 +10,6 @@
       @focus="showDropdown = true"
       @blur="handleBlur"
     />
-    <button 
-      v-if="isMobileExpanded" 
-      class="back-icon" 
-      aria-label="返回" 
-      @click="closeSearch"
-    >
-      <i class="fa-solid fa-arrow-left"></i>
-    </button>
     <button class="icon" aria-label="搜尋" @click="searchStock">
       <i class="fa-solid fa-magnifying-glass"></i>
     </button>
@@ -211,7 +203,7 @@ function normalizeHistoryEntry(entry) {
   gap: 8px;
   background: #fff;
   border-radius: 20px;
-  padding: 10px 14px;
+  padding: 7px 14px;
   border: 1px solid rgba(0,0,0,0.08);
   box-shadow: 0 6px 16px rgba(0,0,0,0.08);
   max-width: 560px;
@@ -226,7 +218,7 @@ function normalizeHistoryEntry(entry) {
   box-shadow: 0 4px 12px rgba(0,0,0,0.1);
   border-radius: 16px;
   min-height: 40px;
-  width: calc(100% - 75px - 10px);
+  width: calc(76% - 75px - 10px);
   z-index: 100; 
 }
 
@@ -234,10 +226,10 @@ function normalizeHistoryEntry(entry) {
   flex: 1;
   border: none;
   outline: none;
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 600;
   background: transparent;
-  margin-left: 10px;
+  margin-left: 6px;
   width: 100%;
 }
 
@@ -358,7 +350,7 @@ function normalizeHistoryEntry(entry) {
 
 .dropdown-header {
   padding: 12px 16px 8px;
-  font-size: 14px;
+  font-size: 12px;
   font-weight: 600;
   color: #666;
   border-bottom: 1px solid rgba(0,0,0,0.05);
