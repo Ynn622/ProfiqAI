@@ -90,7 +90,7 @@ function asidePage(item) {
 }
 
 .nav-bar.phone .nav-left {
-    gap: 10px;
+    gap: 6px;
 }
 
 .nav-right {
@@ -130,17 +130,19 @@ function asidePage(item) {
 
 /* 手機版樣式 */
 .nav-bar.phone {
-    padding: 20px 10px;
+    padding: 6px;
+    height: 60px;
     margin-bottom: 3px;
     border: 1px solid rgba(0, 0, 0, 0.08);
     background-color: rgba(255, 255, 255, 0.6);
     backdrop-filter: blur(10px);
     color: #2c3e50;
-    position: relative;
+    position: fixed;
+    width: 100%;
 }
 
 .nav-bar.phone .logo-img {
-    max-width: 55px;
+    max-width: 48px;
 }
 
 .nav-bar.phone .search.mobile-expanded {
@@ -165,10 +167,10 @@ function asidePage(item) {
 
 .nav-bar-menu {
     position: fixed;
-    top: 69px;
+    top: 59px;
     left: 0;
-    height: calc(100vh - 70px);
-    width: 55dvw;
+    height: calc(100dvh - 60px);
+    width: 240px;
     background-color: white;
     border-right: 1px solid rgba(0, 0, 0, 0.1);
     box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
@@ -178,7 +180,6 @@ function asidePage(item) {
     transition: transform 0.3s ease;
     display: flex;
     flex-direction: column;
-    padding: 14px 0;
 }
 
 .nav-bar-menu.open {

@@ -58,11 +58,14 @@
 // 工具 & 套件
 import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
+import { isMobileView } from '@/utils/userInterface.js';
 import stockList from '@/data/stockList.json';
+
+const { isMobile } = isMobileView();
 
 // Props
 const props = defineProps({
-  design: { type: String, default: '' },
+  design: { type: String, default: 'nav', validator: (value) => ['home', 'nav'].includes(value) },
   isMobileExpanded: { type: Boolean, default: false }
 })
 
@@ -196,46 +199,33 @@ function normalizeHistoryEntry(entry) {
 </script>
 
 <style scoped>
-/* 搜尋區塊 */
+/* ===== 基礎搜尋區塊 ===== */
 .search {
   display: flex;
   align-items: center;
   gap: 8px;
   background: #fff;
   border-radius: 20px;
-  padding: 7px 14px;
+  padding: 10px 14px;
+  min-height: 44px;
   border: 1px solid rgba(0,0,0,0.08);
   box-shadow: 0 6px 16px rgba(0,0,0,0.08);
   max-width: 560px;
   width: 100%;
   box-sizing: border-box;
-  position: relative; /* 為下拉選單提供相對定位 */
-  z-index: 100; 
-}
-
-.search.mobile-expanded {
-  padding: 8px 12px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-  border-radius: 16px;
-  min-height: 40px;
-  width: calc(76% - 75px - 10px);
-  z-index: 100; 
+  position: relative;
+  z-index: 100;
 }
 
 .search input {
   flex: 1;
   border: none;
   outline: none;
-  font-size: 16px;
+  font-size: 18px;
   font-weight: 600;
   background: transparent;
-  margin-left: 6px;
+  margin-left: 10px;
   width: 100%;
-}
-
-.search.mobile-expanded input {
-  font-size: 16px;
-  margin-left: 8px;
 }
 
 .search .icon {
@@ -251,83 +241,77 @@ function normalizeHistoryEntry(entry) {
   flex-shrink: 0;
 }
 
-.search.mobile-expanded .icon {
-  width: 32px;
-  height: 32px;
-  min-width: 32px;
+/* ===== Home 樣式 (桌面版) ===== */
+.search.home {
+  max-width: 560px;
+  width: 80vw;
 }
 
-/* 返回按鈕 */
-.back-icon {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  border: none;
-  background: #e9eef3;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  margin-right: 8px;
+/* ===== Nav 樣式 (桌面版) ===== */
+.search.nav {
+  flex: 2;
 }
 
-.search.mobile-expanded .back-icon {
-  width: 32px;
-  height: 32px;
-  min-width: 32px;
+/* ===== 手機版樣式 ===== */
+@media (max-width: 768px) {
+  /* Home 手機版 */
+  .search.home {
+    width: 90vw;
+    max-width: 90vw;
+  }
+  
+  /* Nav 手機版 - 預設狀態 */
+  .search.nav {
+    flex: 1;
+    padding: 6px 8px;
+    border-radius: 16px;
+    margin-left: 2px
+  }
+  
+  /* Nav 手機版 - 展開狀態 */
+  .search.nav.mobile-expanded {
+    position: absolute;
+    left: 119px;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    padding: 8px 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    border-radius: 16px;
+    min-height: 40px;
+    max-width: none;
+    z-index: 100;
+    width: auto;
+  }
+  
+  .search.mobile-expanded input {
+    font-size: 16px;
+    margin-left: 8px;
+  }
+  
+  .search.mobile-expanded .icon {
+    width: 32px;
+    height: 32px;
+    min-width: 32px;
+  }
 }
 
-.home {
-    width: 80vw;
-}
-
-/* 平板樣式 */
-@media (max-width: 1024px) and (min-width: 769px) {
-    .search {
-        max-width: 400px;
-        padding: 8px 12px;
-        min-height: 40px;
-    }
-    
-    .search input {
-        font-size: 16px;
-        margin-left: 8px;
-    }
-    
-    .search .icon {
-        width: 32px;
-        height: 32px;
-    }
-    
-    .back-icon {
-        width: 32px;
-        height: 32px;
-    }
-}
-
-/* 桌面版樣式 */
-@media (min-width: 1025px) {
-    .search {
-        max-width: 560px;
-        padding: 10px 14px;
-        min-height: 44px;
-    }
-    
-    .search input {
-        font-size: 18px;
-        margin-left: 10px;
-    }
-    
-    .search .icon {
-        width: 36px;
-        height: 36px;
-    }
-    
-    .back-icon {
-        width: 36px;
-        height: 36px;
-    }
+@media (max-width: 480px) {
+  .search.home {
+    width: 85vw;
+    max-width: 85vw;
+    padding: 8px 12px;
+    min-height: 40px;
+  }
+  
+  .search.home input {
+    font-size: 16px;
+  }
+  
+  .search.home .icon {
+    width: 32px;
+    height: 32px;
+  }
 }
 
 /* 下拉選單 */

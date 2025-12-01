@@ -84,8 +84,10 @@
       class="backdrop" 
       @click="closePanel"
     ></div>
+  </div>
 
-    <!-- 個人設定彈窗 -->
+  <!-- 個人設定彈窗 (移到容器外) -->
+  <Teleport to="body">
     <transition name="modal-fade">
       <div v-if="showSettingsModal" class="modal-overlay" @click="closeSettingsModal">
         <div class="modal-container" @click.stop>
@@ -144,7 +146,7 @@
         </div>
       </div>
     </transition>
-  </div>
+  </Teleport>
 </template>
 
 <script setup>
@@ -593,7 +595,7 @@ function fallbackCopyToClipboard(text) {
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 999;
+  z-index: 9999;
   padding: 20px;
 }
 
