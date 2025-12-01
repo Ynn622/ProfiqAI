@@ -46,11 +46,12 @@ function normalizeTech(source = {}) {
 }
 
 function normalizeNews(source = {}) {
-  const direction = source?.direction ?? -99;
+  const newsData = source?.news_data ?? null;
+  const direction = source?.direction ?? newsData?.direction ?? -99;
   return {
     direction,
-    description: source?.ai_insight ?? DEFAULT_DESCRIPTION,
-    newsData: source || null,
+    description: newsData?.ai_insight ?? DEFAULT_DESCRIPTION,
+    newsData,
   };
 }
 
@@ -126,11 +127,9 @@ export function fetchBasicAnalysis(stockId) {
         funcName: 'fetchBasicScore',
       }),
     normalizeBasic,
-    (storageKey, normalized) => {
-      saveToLocalStorage(storageKey, {
-        direction: normalized.direction,
-        basicData: normalized.basicData,
-      });
+    (storageKey, normalized, response) => {
+      // 儲存原始 API 回應,讓 normalizer 可以正確處理
+      saveToLocalStorage(storageKey, response);
     }
   );
 }
@@ -146,11 +145,9 @@ export function fetchTechAnalysis(stockId) {
         funcName: 'fetchTechScore',
       }),
     normalizeTech,
-    (storageKey, normalized) => {
-      saveToLocalStorage(storageKey, {
-        direction: normalized.direction,
-        technical_data: normalized.technicalData,
-      });
+    (storageKey, normalized, response) => {
+      // 儲存原始 API 回應,讓 normalizer 可以正確處理
+      saveToLocalStorage(storageKey, response);
     }
   );
 }
@@ -166,12 +163,9 @@ export function fetchNewsAnalysis(stockId) {
         funcName: 'fetchNewsScore',
       }),
     normalizeNews,
-    (storageKey, normalized) => {
-      saveToLocalStorage(storageKey, {
-        direction: normalized.direction,
-        ai_insight: normalized.description,
-        newsData: normalized.newsData,
-      });
+    (storageKey, normalized, response) => {
+      // 儲存原始 API 回應,讓 normalizer 可以正確處理
+      saveToLocalStorage(storageKey, response);
     }
   );
 }
@@ -187,11 +181,9 @@ export function fetchChipAnalysis(stockId) {
         funcName: 'fetchChipScore',
       }),
     normalizeChip,
-    (storageKey, normalized) => {
-      saveToLocalStorage(storageKey, {
-        direction: normalized.direction,
-        chip_data: normalized.chipData,
-      });
+    (storageKey, normalized, response) => {
+      // 儲存原始 API 回應,讓 normalizer 可以正確處理
+      saveToLocalStorage(storageKey, response);
     }
   );
 }

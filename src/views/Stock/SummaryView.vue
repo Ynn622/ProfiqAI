@@ -104,9 +104,9 @@ const chipSegments = ref([
 ]);
 
 const newsSegments = ref([
-  { label: '負面', value: 33, color: '#7bef83' },
-  { label: '中立', value: 33, color: '#ffe666' },
-  { label: '正面', value: 33, color: '#f9acb0' },
+  { label: '負面', value: 0, color: '#7bef83' },
+  { label: '中立', value: 0, color: '#ffe666' },
+  { label: '正面', value: 0, color: '#f9acb0' },
 ]);
 
 // 分析資料暫存，後續可直接餵給卡片
