@@ -6,8 +6,7 @@
         "formula": "EPS = 稅後淨利 ÷ 流通在外普通股股數",
         "bullish": "EPS 連續幾季成長、穩定高於同業，或公司每年穩定配息，顯示獲利結構健康。",
         "bearish": "EPS 連續下滑、轉負、波動大，或成長來自一次性收益，表示獲利不穩定。",
-        "chartType": "bar",
-        "trend": "年度趨勢圖"
+        "trend": "EPS 趨勢圖"
     },
     "P/E Ratio": {
         "title": "本益比（P/E Ratio）",
@@ -16,8 +15,7 @@
         "formula": "本益比 = 股價 ÷ 每股盈餘（EPS）",
         "bullish": "本益比偏低（如 <10）且獲利穩定，或本益比上升但 EPS 同步增長，顯示市場信心提升。",
         "bearish": "本益比過高（如 >40）但獲利無成長支撐，或本益比持續下降，代表市場對未來轉保守。",
-        "chartType": "line",
-        "trend": "歷史趨勢分析"
+        "trend": "本益比趨勢分析"
     },
     "ROE": {
         "title": "股東權益報酬率（ROE）",
@@ -26,8 +24,7 @@
         "formula": "ROE = 稅後淨利 ÷ 股東權益",
         "bullish": "ROE > 15% 或呈現連續上升，代表獲利能力強、資金運用效率高。",
         "bearish": "ROE 長期低於 5%、下滑或波動大，顯示獲利結構不佳或負債壓力大。",
-        "chartType": "line",
-        "trend": "年度績效表現"
+        "trend": "ROE 年度績效表現"
     },
     "ROA": {
         "title": "總資產報酬率（ROA）",
@@ -36,15 +33,13 @@
         "formula": "ROA = 稅後淨利 ÷ 總資產",
         "bullish": "ROA 高於 10% 或持續上升，表示資產運用效率佳、公司整體經營健康。",
         "bearish": "ROA 長期低於 5% 或呈現下滑，代表資產報酬偏低，獲利或資源利用效率下降。",
-        "chartType": "line",
-        "trend": "年度 ROA 變化趨勢"
+        "trend": "ROA 年度變化趨勢"
     },
     "現金股利": {
         "title": "現金股利",
         "fullName": "Dividend",
         "description": "公司將賺到的錢，以「現金」的方式分配給股東。是股東最直接的投資報酬來源。",
         "formula": "現金股利 = 每股發放的現金金額 × 持股數\n例：若每股配發 3 元、你持有 1,000 股 → 可領到 3,000 元。",
-        "chartType": "bar",
         "trend": "歷年配息記錄"
     },
     "營收 (YoY)": {
@@ -54,8 +49,7 @@
         "formula": "營收 = 銷售數量 × 單價",
         "bullish": "YoY 持續為正且上升，MoM 連續成長，顯示需求強勁、營運改善。",
         "bearish": "YoY 為負或連續下滑、MoM 連續轉弱，表示成長動能減弱或進入淡季。",
-        "chartType": "bar",
-        "trend": "月度/季度營收趨勢"
+        "trend": "營收趨勢"
     },
     "EMA": {
         "title": "EMA5 / EMA10",
@@ -64,7 +58,6 @@
         "formula": "EMAₜ = 當日收盤價 × α + 前一日 EMA × (1 - α)，α = 2 / (N + 1)",
         "bullish": "EMA5 上穿 EMA10（黃金交叉）→ 短期趨勢轉強，偏多訊號。",
         "bearish": "EMA5 下穿 EMA10（死亡交叉）→ 短期疲弱，偏空訊號。",
-        "chartType": "line",
         "trend": "短期均線交叉趨勢"
     },
     "MACD": {
@@ -74,7 +67,6 @@
         "formula": "MACD = EMA(12) - EMA(26)，Signal = MACD 的 9 日 EMA",
         "bullish": "MACD 線由下往上突破 Signal 線 → 多頭訊號，趨勢轉強。",
         "bearish": "MACD 線由上往下跌破 Signal 線 → 空頭訊號，趨勢轉弱。",
-        "chartType": "line",
         "trend": "趨勢強度與轉折觀察"
     },
     "KD": {
@@ -84,7 +76,6 @@
         "formula": "K = 前 K × 2/3 + RSV × 1/3；D = 前 D × 2/3 + K × 1/3；RSV = (今日收盤 - 9日最低) ÷ (9日最高 - 最低) × 100",
         "bullish": "K 值上穿 D 值（黃金交叉），或 KD < 20 反彈 → 短期偏多。",
         "bearish": "K 值下穿 D 值（死亡交叉），或 KD > 80 下彎 → 短期偏空。",
-        "chartType": "line",
         "trend": "短線超買超賣狀態"
     },
     "RSI": {
@@ -94,7 +85,6 @@
         "formula": "RSI = 上漲平均值 ÷ (上漲平均值 + 下跌平均值) × 100",
         "bullish": "RSI < 30 後反彈 → 超賣、可能反彈。",
         "bearish": "RSI > 70 後下滑 → 超買、可能修正。",
-        "chartType": "line",
         "trend": "短期動能與超買超賣"
     },
     "ROC": {
@@ -104,7 +94,6 @@
         "formula": "ROC = [(今日收盤價 - N 日前收盤價) ÷ N 日前收盤價] × 100%",
         "bullish": "ROC 由負轉正 → 動能增強、股價可能開始上漲。",
         "bearish": "ROC 由正轉負 → 動能轉弱、可能進入修正。",
-        "chartType": "line",
         "trend": "價格動能變化"
     },
     "BIAS": {
@@ -114,7 +103,6 @@
         "formula": "BIAS = (收盤價 − 移動平均線) ÷ 移動平均線 × 100%",
         "bullish": "BIAS < -5% → 股價短線跌深，有機會反彈。",
         "bearish": "BIAS > +5% → 股價短線漲多，可能拉回修正。",
-        "chartType": "line",
         "trend": "短期乖離與反轉訊號"
     }
 }

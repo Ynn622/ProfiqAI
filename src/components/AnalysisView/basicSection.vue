@@ -9,7 +9,8 @@
                 <SquareData title="EPS" 
                             :value="displayData?.eps?.toFixed(2)" 
                             :change="displayData?.epsGap"
-                            :color="getColorByValue('eps', displayData?.eps)" />
+                            :color="getColorByValue('eps', displayData?.eps)"
+                            :basicData="props.basicData" />
                 <SquareData :title="'P/E Ratio'" 
                             :value="displayData?.PE_ratio"
                             :valueSuffix="' 倍'"
@@ -69,7 +70,6 @@ const displayData = computed(() => props.basicData || {
     "stockSplits": null,
     "dateDividend": null
 });
-
 </script>
 
 <style scoped>

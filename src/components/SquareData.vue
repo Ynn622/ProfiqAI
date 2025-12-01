@@ -18,6 +18,7 @@
         :valueSuffix="valueSuffix"
         :change="change"
         :color="color"
+        :basicData="basicData"
     />
 </template>
 
@@ -51,6 +52,10 @@ const props = defineProps({
     color: { 
         type: String, 
         default: ''
+    },
+    basicData: {
+        type: Object,
+        default: null
     }
 });
 

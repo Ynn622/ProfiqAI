@@ -46,20 +46,15 @@
                                 <p v-if="detailData?.bearish" class="bias-line"><span class="bias-label bear"><i class="fa-solid fa-arrow-trend-down"></i> 偏空：</span>{{ detailData.bearish }}</p>
                             </div>
                         </div>
-                        <!-- 圖表區域（預留空間） -->
-                        <div class="chart-section">
-                            <h3 class="section-title">
-                                <i class="fa-solid fa-chart-line"></i>
-                                {{ detailData?.trend || '趨勢圖表' }}
-                            </h3>
-                            <div class="chart-placeholder">
-                                <i class="fa-solid fa-chart-area chart-icon"></i>
-                                <p>圖表區域預留空間</p>
-                                <p class="chart-type" v-if="detailData?.chartType">
-                                    圖表類型：{{ getChartTypeName(detailData.chartType) }}
-                                </p>
-                            </div>
-                        </div>
+                        <!-- EPS 圖表區域 -->
+                        <TimeSeriesChart 
+                            v-if="title === 'EPS' && hasEpsData" 
+                            :chartData="epsChartData"
+                            :chartTitle="detailData?.trend || 'EPS 趨勢圖'"
+                            chartType="bar"
+                            yAxisName="EPS"
+                            seriesName="EPS"
+                        />
                     </div>
                 </div>
             </div>
@@ -70,6 +65,7 @@
 <script setup>
 import { ref, computed, watch } from 'vue';
 import squareDescData from '@/data/squareDesc.json';
+import TimeSeriesChart from '@/components/Common/EpsChart.vue';
 
 const props = defineProps({
     visible: {
@@ -99,6 +95,10 @@ const props = defineProps({
     color: {
         type: String,
         default: ''
+    },
+    basicData: {
+        type: Object,
+        default: null
     }
 });
 
@@ -133,19 +133,22 @@ const changeClass = computed(() => {
     return '';
 });
 
+// EPS 圖表資料
+const hasEpsData = computed(() => {
+    return props.basicData?.eps_trend?.quarter?.length > 0 && props.basicData?.eps_trend?.eps?.length > 0;
+});
+
+const epsChartData = computed(() => {
+    if (!hasEpsData.value) return { labels: [], values: [] };
+    return {
+        labels: [...props.basicData.eps_trend.quarter].reverse(),
+        values: [...props.basicData.eps_trend.eps].reverse()
+    };
+});
+
 function formatValue(val) {
     if (val === null || val === undefined) return '';
     return `${val}`;
-}
-
-function getChartTypeName(type) {
-    const types = {
-        'bar': '柱狀圖',
-        'line': '折線圖',
-        'pie': '圓餅圖',
-        'area': '面積圖'
-    };
-    return types[type] || type;
 }
 
 function closeModal() {
@@ -290,54 +293,8 @@ function handleOverlayClick() {
     padding: 10px 40px;
 }
 
-/* 圖表區域 */
-.chart-section {
-    margin-bottom: 30px;
-}
-
-.section-title {
-    font-size: 20px;
-    font-weight: 700;
-    color: #333;
-    margin: 6px 0;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
 .section-title i {
     color: var(--primary-color, #1976d2);
-}
-
-.chart-placeholder {
-    background: linear-gradient(135deg, #f5f7fa 0%, #e9ecef 100%);
-    border: 2px dashed #ccc;
-    border-radius: 12px;
-    padding: 60px 40px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-    min-height: 300px;
-}
-
-.chart-icon {
-    font-size: 64px;
-    color: #aaa;
-    margin-bottom: 10px;
-}
-
-.chart-placeholder p {
-    margin: 0;
-    color: #666;
-    font-size: 16px;
-}
-
-.chart-type {
-    font-size: 14px !important;
-    color: #888 !important;
-    font-style: italic;
 }
 
 /* 文字說明區 */
@@ -434,15 +391,6 @@ function handleOverlayClick() {
         font-size: 18px;
     }
 
-    .chart-placeholder {
-        padding: 40px 20px;
-        min-height: 200px;
-    }
-
-    .chart-icon {
-        font-size: 48px;
-    }
-
     .description-item {
         padding: 15px;
     }
@@ -471,15 +419,6 @@ function handleOverlayClick() {
 
     .change-value {
         font-size: 18px;
-    }
-
-    .chart-placeholder {
-        padding: 30px 15px;
-        min-height: 180px;
-    }
-
-    .chart-icon {
-        font-size: 40px;
     }
 }
 </style>
