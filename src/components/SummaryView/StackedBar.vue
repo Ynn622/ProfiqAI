@@ -1,14 +1,23 @@
 <template>
   <div class="stacked-bar">
     <div class="stacked-bar__track" :style="{ borderRadius: rounded ? '10px' : '4px', height: `${height}px` }">
-      <div
+      <a-tooltip
         v-for="(segment, idx) in normalizedSegments"
         :key="idx"
-        class="stacked-bar__segment"
-        :style="{ width: `${segment.percentage}%`, backgroundColor: segment.color || '#d1d5db', color: '#111' }"
+        :title="`${segment.label}: ${formatValue(segment)}`"
+        placement="top"
       >
-        <span class="stacked-bar__value">{{ formatValue(segment) }}</span>
-      </div>
+        <div
+          class="stacked-bar__segment"
+          :class="{ 'stacked-bar__segment--small': segment.percentage < minDisplayWidth }"
+          :style="{ width: `${segment.percentage}%`, backgroundColor: segment.color || '#d1d5db', color: '#111' }"
+        >
+          <span v-if="segment.percentage >= minDisplayWidth" class="stacked-bar__value">
+            {{ formatValue(segment) }}
+          </span>
+          <span v-else class="stacked-bar__question"></span>
+        </div>
+      </a-tooltip>
     </div>
     <div v-if="showLabels" class="stacked-bar__labels">
       <div
@@ -25,6 +34,7 @@
 
 <script setup>
 import { computed } from 'vue';
+import { Tooltip as ATooltip } from 'ant-design-vue';
 
 const props = defineProps({
   segments: {
@@ -40,6 +50,7 @@ const props = defineProps({
   showLabels: { type: Boolean, default: true },
   valueSuffix: { type: String, default: '' },
   showPlus: { type: Boolean, default: true },
+  minDisplayWidth: { type: Number, default: 15 }, // 最小顯示數值的寬度百分比
 });
 
 const normalizedSegments = computed(() => {
@@ -86,6 +97,7 @@ const formatValue = (segment) => {
   width: 100%;
   overflow: hidden;
   display: flex;
+  gap: 2px;
   box-shadow: var(--shadow-small);
 }
 
@@ -96,13 +108,20 @@ const formatValue = (segment) => {
   font-weight: 800;
   font-size: 14px;
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.12);
+  transition: opacity 0.2s;
+}
+
+.stacked-bar__segment:hover {
+  opacity: 0.85;
 }
 
 .stacked-bar__labels {
   display: flex;
+  gap: 4px;
   font-size: 14px;
   font-weight: 700;
   color: #4b5563;
+  line-height: normal;
 }
 
 .stacked-bar__label {
@@ -111,5 +130,11 @@ const formatValue = (segment) => {
 
 .stacked-bar__value {
   white-space: nowrap;
+}
+
+.stacked-bar__question {
+  font-size: 16px;
+  font-weight: 700;
+  opacity: 0.7;
 }
 </style>
