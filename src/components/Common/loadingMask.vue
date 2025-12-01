@@ -2,7 +2,7 @@
     <div :class="wrapperClass">
         <a-spin size="large" />
         <div class="loading-message">
-            載入中...
+            {{ props.loadingText }}
         </div>
     </div>
 </template>
@@ -16,6 +16,10 @@ const props = defineProps({
         type: String,
         default: 'full', // full | small
         validator: (value) => ['full', 'small'].includes(value)
+    },
+    loadingText: {
+        type: String,
+        default: '載入中...'
     }
 })
 
@@ -45,7 +49,6 @@ const wrapperClass = computed(() => {
 }
 
 .loading-small {
-    padding: 15vh;
     width: 100%;
     height: 100%;
     background: rgba(233, 233, 233, 0.4);

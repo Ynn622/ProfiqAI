@@ -6,7 +6,7 @@
                 <Bias :score="chipScore" variant="circle" />
             </div>
             <div class="analysis-right">
-                <div v-if="loading">
+                <div v-if="loading" class="loading-section">
                     <LoadingMask type="small"/>
                 </div>
                 <div v-else class="segment">
@@ -106,6 +106,11 @@ onMounted(async () => {
 /* Ant Design Segmented */
 .ant-segmented {
     background-color: #cfcfcf;
+}
+
+.loading-section {
+    height: 30vh;
+    display: flex;
 }
 
 @media (max-width: 665px) {

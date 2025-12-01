@@ -14,32 +14,38 @@
       <div class="other">
         <RiseProbability :probability="prob" />
         <div class="analysis-factors">
-          <FactorCard
-            title="技術面"
-            :score="techScore"
-            type="indicatorList"
-            :indicators="techIndicators"
-          />
-          <FactorCard
-            title="籌碼面"
-            :score="chipScore"
-            type="stackedBar"
-            :segments="chipSegments"
-          />
-          <FactorCard
-            title="消息面"
-            :score="newsScore"
-            type="stackedBar"
-            :segments="newsSegments"
-            :bar-show-plus="false"
-            bar-value-suffix="%"
-          />
-          <FactorCard
-            title="基本面"
-            :score="fundamentalScore"
-            type="indicatorList"
-            :indicators="fundamentalIndicators"
-          />
+          <!-- 四面向分析的獨立 loading -->
+          <div v-if="analysisLoading" class="loading-section">
+            <LoadingMask type="small" loadingText="4面向資料擷取分析中..." />
+          </div>
+          <template v-else>
+            <FactorCard
+              title="技術面"
+              :score="techScore"
+              type="indicatorList"
+              :indicators="techIndicators"
+            />
+            <FactorCard
+              title="籌碼面"
+              :score="chipScore"
+              type="stackedBar"
+              :segments="chipSegments"
+            />
+            <FactorCard
+              title="消息面"
+              :score="newsScore"
+              type="stackedBar"
+              :segments="newsSegments"
+              :bar-show-plus="false"
+              bar-value-suffix="%"
+            />
+            <FactorCard
+              title="基本面"
+              :score="fundamentalScore"
+              type="indicatorList"
+              :indicators="fundamentalIndicators"
+            />
+          </template>
         </div>
       </div>
     </div>
@@ -67,6 +73,7 @@ import { fetchBasicAnalysis, fetchTechAnalysis, fetchNewsAnalysis, fetchChipAnal
 
 const route = useRoute();
 const loading = ref(false);
+const analysisLoading = ref(false); // 四面向分析專用的 loading
 
 // 基本資料
 const stockId = computed(() => route.params.stock);
@@ -160,6 +167,7 @@ function handleStockDataUpdate(data) {
  */
 async function fetchStockData(stockId) {
   try {
+    loading.value = true;
     const response = await callAPI({
       url: '/stock/stockData',
       params: { stock_id: stockId },
@@ -173,6 +181,8 @@ async function fetchStockData(stockId) {
     }
   } catch (err) {
     // 錯誤已經在 callAPI 中記錄
+  } finally {
+    loading.value = false;
   }
 }
 
@@ -215,6 +225,7 @@ function updateKData(newData) {
 }
 
 async function fetchAnalysisData() {
+  analysisLoading.value = true;
   const [basic, tech, news, chip] = await Promise.all([
     fetchBasicAnalysis(stockId.value),
     fetchTechAnalysis(stockId.value),
@@ -249,17 +260,15 @@ async function fetchAnalysisData() {
     { label: '中立', value: toPercent(newsData.neutral), color: '#ffe666' },
     { label: '正面', value: toPercent(newsData.positive), color: '#f9acb0' },
   ];
+  analysisLoading.value = false;
 }
 
 const loadData = async () => {
-  loading.value = true;
-  const predictPromise = fetchStockPredict(stockId.value);
   await Promise.all([
     fetchStockData(stockId.value),
-    fetchAnalysisData(),
-    predictPromise
+    fetchStockPredict(stockId.value),
+    fetchAnalysisData()
   ]);
-  loading.value = false;
 };
 
 // 進入頁面時執行
@@ -328,6 +337,12 @@ watch(
   grid-template-columns: 1fr;
   gap: 14px;
   width: 100%;
+  height: 100%;
+}
+
+.loading-section {
+  background-color: var(--card);
+  border-radius: 10px;
 }
 
 @media (max-width: 1200px) {
@@ -342,6 +357,9 @@ watch(
   }
   .other {
     width: 100%;
+  }
+  .loading-section {
+    height: 250px;
   }
 }
 </style>
