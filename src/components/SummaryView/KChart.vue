@@ -413,8 +413,8 @@ const chartOption = computed(() => {
     // 圖例配置
     legend: {
       type: 'scroll',   // 可滾動
-      top: isMobile ? 5 : 10,
-      left: isMobile ? 15 : 30,
+      top: isMobile.value ? 5 : 10,
+      left: isMobile.value ? 15 : 30,
       data: legendData,
       textStyle: { color: '#fafafa' },
       itemGap: 12,
@@ -497,14 +497,14 @@ const chartOption = computed(() => {
     
     grid: [
       {
-        left: isMobile ? '50px' : '60px',
-        right: isMobile ? '20px' : '30px',
+        left: isMobile.value ? '50px' : '60px',
+        right: isMobile.value ? '20px' : '30px',
         top: '8%',
         height: '64%'
       },
       {
-        left: isMobile ? '50px' : '60px',
-        right: isMobile ? '20px' : '30px',
+        left: isMobile.value ? '50px' : '60px',
+        right: isMobile.value ? '20px' : '30px',
         top: '80%',
         height: '12%'
       }
@@ -527,7 +527,10 @@ const chartOption = computed(() => {
         axisPointer: { show: true },
         axisLine: { lineStyle: { color: '#999' } },
         splitLine: { show: false },
-        axisLabel: { show: false }
+        axisLabel: {
+          show: false, 
+          interval: 10, // 控制標籤密度
+        }
       }
     ],
     
