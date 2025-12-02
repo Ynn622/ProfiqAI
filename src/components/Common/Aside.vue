@@ -20,6 +20,7 @@
 import { useRouter, useRoute } from 'vue-router';
 import { useWindowSize } from '@vueuse/core';
 import { computed, ref } from 'vue';
+import { message } from 'ant-design-vue';
 
 // Props
 const props = defineProps({
@@ -58,7 +59,7 @@ function asidePage(page) {
         logger.msg(`Aside導航至: ${PageDict[page]}, Stock: ${stock}`);
         router.push({ name: PageDict[page], params: { stock } });
     } else {
-        alert('請先搜尋股票');
+        message.warning('請先搜尋股票');
     }
   }
 }

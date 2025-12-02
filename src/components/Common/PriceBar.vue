@@ -67,6 +67,7 @@ import { useStockData } from '@/utils/stockData';
 import { watch, onMounted, onUnmounted, computed, ref } from 'vue';
 import stockList from '@/data/stockList.json';
 import Candlestick from '@/components/Candlestick.vue';
+import { message } from 'ant-design-vue';
 
 // Props
 const props = defineProps({
@@ -144,7 +145,7 @@ async function updateStock() {
 }
 
 function addToWatchlist() {
-    alert('已加入自選');
+    message.success('已加入自選');
 }
 
 function toggleDetail() {

@@ -60,6 +60,7 @@ import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { isMobileView } from '@/utils/userInterface.js';
 import stockList from '@/data/stockList.json';
+import { message } from 'ant-design-vue';
 
 const { isMobile } = isMobileView();
 
@@ -119,13 +120,13 @@ function handleBlur() {
 
 function searchStock(useFirstMatch = false) {
   if (!stockId.value) {
-    alert('請輸入股票代碼!')
+    message.warning('請輸入股票代碼!')
     return
   }
 
   const match = findMatchedStock(stockId.value, useFirstMatch);
   if (!match) {
-    alert('找不到符合的股票');
+    message.warning('找不到符合的股票');
     return;
   }
 
