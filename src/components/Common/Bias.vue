@@ -1,6 +1,6 @@
 <template>
   <span v-if="variant === 'badge'" class="badge" :class="badgeClass">{{ label }}</span>
-  <div v-else class="bias-circle" :class="circleClass">
+  <div v-else class="bias-circle bias-circle-flow" :class="circleClass">
     <div class="bias-circle__text">{{ label }}</div>
   </div>
 </template>
@@ -115,39 +115,113 @@ const circleClass = computed(() => {
   box-shadow: var(--shadow);
   display: grid;
   place-items: center;
-  transition: background-color 0.3s ease-in-out;
+  transition: all 0.3s ease-in-out;
   max-width: 100%;
   margin: 10px 20px;
+  position: relative;
+  overflow: hidden;
+}
+
+.bias-circle::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-size: 200% 100%;
+  animation: liquid-flow-right 3s linear infinite;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.bias-circle:hover {
+  box-shadow: var(--shadow-hover);
+  transform: scale(1.05);
 }
 
 .bias-circle__text {
   font-size: clamp(20px, 2.5vw, 30px);
   font-weight: 800;
   padding: 25px;
+  position: relative;
+  z-index: 1;
 }
 
 .circle--flat {
   background: var(--lightFlat);
 }
 
+.circle--flat::before {
+  background: linear-gradient(
+    90deg,
+    var(--lightFlat) 0%,
+    var(--lightFlat-hover) 50%,
+    var(--lightFlat) 100%
+  );
+}
+
 .circle--bull {
   background: var(--lightBull);
+}
+
+.circle--bull::before {
+  background: linear-gradient(
+    90deg,
+    var(--lightBull) 0%,
+    var(--lightBull-hover) 50%,
+    var(--lightBull) 100%
+  );
 }
 
 .circle--extreme-bull {
   background: var(--darkBull);
 }
 
+.circle--extreme-bull::before {
+  background: linear-gradient(
+    90deg,
+    var(--darkBull) 0%,
+    var(--darkBull-hover) 50%,
+    var(--darkBull) 100%
+  );
+}
+
 .circle--bear {
   background: var(--lightBear);
+}
+
+.circle--bear::before {
+  background: linear-gradient(
+    90deg,
+    var(--lightBear) 0%,
+    var(--lightBear-hover) 50%,
+    var(--lightBear) 100%
+  );
 }
 
 .circle--extreme-bear {
   background: var(--darkBear);
 }
 
+.circle--extreme-bear::before {
+  background: linear-gradient(
+    90deg,
+    var(--darkBear) 0%,
+    var(--darkBear-hover) 50%,
+    var(--darkBear) 100%
+  );
+}
+
 .circle--neutral {
   background: var(--gray);
+}
+
+.circle--neutral::before {
+  background: linear-gradient(
+    90deg,
+    var(--gray) 0%,
+    var(--gray-hover) 50%,
+    var(--gray) 100%
+  );
 }
 
 @media (max-width: 900px) {
