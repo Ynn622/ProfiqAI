@@ -47,7 +47,7 @@ const showMobileSearch = ref(false);
 const menuItems = [
     { title: '股票速覽', routeName: 'stock-summary', icon: 'fa-chart-column' },
     { title: '分析儀表', routeName: 'stock-analysis', icon: 'fa-gauge' },
-    { title: '新聞股雲', routeName: 'stock-linked', icon: 'fa-cloud' },
+    { title: '新聞股雲', routeName: 'stock-wordcloud', icon: 'fa-cloud' },
     { title: '智聊AI', routeName: 'chat-bot', icon: 'fa-robot' }
 ];
 

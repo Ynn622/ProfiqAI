@@ -37,7 +37,7 @@ function asidePage(page) {
   const PageDict = {
     1: 'stock-summary',
     2: 'stock-analysis',
-    3: 'stock-linked'
+    3: 'stock-wordcloud'
   };
   
   // 嘗試從當前路由獲取 stock 參數

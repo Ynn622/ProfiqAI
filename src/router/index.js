@@ -22,9 +22,9 @@ const router = createRouter({
       component: () => import('../views/Stock/AnalysisView.vue'),
     },
     {
-      path: '/stock/:stock/Linked',
-      name: 'stock-linked',
-      component: () => import('../views/Stock/LinkView.vue'),
+      path: '/stock/:stock/WordCloud',
+      name: 'stock-wordcloud',
+      component: () => import('../views/Stock/WordCloudView.vue'),
     },
     {
       path: '/chatBot',
