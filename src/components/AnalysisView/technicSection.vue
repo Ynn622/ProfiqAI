@@ -65,6 +65,7 @@ const indicatorTiles = computed(() => {
     gap: 30px;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
     height: 100%;
+    margin-top: 30px;
 }
 
 @media (max-width: 665px) {
@@ -77,6 +78,7 @@ const indicatorTiles = computed(() => {
     .analysis-right {
         grid-template-columns: 2fr 2fr;
         gap: 20px;
+        margin-top: 0;
     }
 }
 </style>

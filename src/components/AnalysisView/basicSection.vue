@@ -98,5 +98,8 @@ const displayData = computed(() => props.basicData || {
         grid-template-columns: 2fr 2fr;
         gap: 20px;
     }
+    .analysis-right {
+        margin-top: 0;
+    }
 }
 </style>
