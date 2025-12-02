@@ -5,33 +5,25 @@
                 <h3>基本面分析</h3>
                 <Bias :score="basicScore" variant="circle" />
             </div>
+            <!-- SquareData 區塊（上方） -->
             <div class="analysis-right">
-                <SquareData title="EPS" 
-                            :value="displayData?.eps?.toFixed(2)" 
-                            :change="displayData?.epsGap"
-                            :color="getColorByValue('eps', displayData?.eps)"
-                            :basicData="props.basicData" />
-                <SquareData :title="'P/E Ratio'" 
-                            :value="displayData?.PE_ratio"
-                            :valueSuffix="' 倍'"
-                            :color="getColorByValue('pe', displayData?.PE_ratio)" />
-                <SquareData :title="'營收 (YoY)'" 
-                            :value="displayData?.MoM"
-                            :valuePrefix="(displayData?.MoM > 0) ? '+' : ''"
-                            :valueSuffix="' %'"
-                            :color="getColorByValue('mom', displayData?.MoM)" />
-                <SquareData :title="'現金股利'" 
-                            :value="displayData?.stockSplits" 
-                            :valueSuffix="' 元'"
-                            :color="getColorByValue('dividend', displayData?.stockSplits)" />
-                <SquareData :title="'ROA'" 
-                            :value="displayData?.ROA"
-                            :valueSuffix="' %'"
-                            :color="getColorByValue('roa', displayData?.ROA)" />
-                <SquareData :title="'ROE'" 
-                            :value="displayData?.ROE"
-                            :valueSuffix="' %'"
-                            :color="getColorByValue('roe', displayData?.ROE)" />
+                <div class="analysis-right-square">
+                    <SquareData title="EPS" :value="displayData?.eps?.toFixed(2)" :change="displayData?.epsGap"
+                        :color="getColorByValue('eps', displayData?.eps)" :basicData="props.basicData" />
+                    <SquareData :title="'P/E Ratio'" :value="displayData?.PE_ratio" :valueSuffix="' 倍'"
+                        :color="getColorByValue('pe', displayData?.PE_ratio)" />
+                    <SquareData :title="'營收 (YoY)'" :value="displayData?.MoM"
+                        :valuePrefix="(displayData?.MoM > 0) ? '+' : ''" :valueSuffix="' %'"
+                        :color="getColorByValue('mom', displayData?.MoM)" />
+                    <SquareData :title="'現金股利'" :value="displayData?.stockSplits" :valueSuffix="' 元'"
+                        :color="getColorByValue('dividend', displayData?.stockSplits)" />
+                    <SquareData :title="'ROA'" :value="displayData?.ROA" :valueSuffix="' %'"
+                        :color="getColorByValue('roa', displayData?.ROA)" />
+                    <SquareData :title="'ROE'" :value="displayData?.ROE" :valueSuffix="' %'"
+                        :color="getColorByValue('roe', displayData?.ROE)" />
+                </div>
+                <!-- 歷年同月股價分析圖表（下方） -->
+                <MonthlyReturnChart :stockId="props.stockId" />
             </div>
         </div>
     </div>
@@ -41,6 +33,7 @@
 // 組件
 import SquareData from '../SquareData.vue';
 import Bias from '../Common/Bias.vue';
+import MonthlyReturnChart from '../MonthlyReturnChart.vue';
 
 // 工具 & 套件
 import { computed } from 'vue';
@@ -83,6 +76,12 @@ const displayData = computed(() => props.basicData || {
 
 .analysis-right {
     flex: 1;
+    display: flex;
+    flex-direction: column;
+    margin-top: 30px;
+}
+
+.analysis-right-square {
     display: grid;
     gap: 30px;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -95,7 +94,7 @@ const displayData = computed(() => props.basicData || {
     }
 }
 @media (max-width: 480px) {
-    .analysis-right {
+    .analysis-right-square {
         grid-template-columns: 2fr 2fr;
         gap: 20px;
     }
