@@ -47,14 +47,18 @@
                             </div>
                         </div>
                         <!-- EPS 圖表區域 -->
-                        <TimeSeriesChart 
-                            v-if="title === 'EPS' && hasEpsData" 
-                            :chartData="epsChartData"
-                            :chartTitle="detailData?.trend || 'EPS 趨勢圖'"
-                            chartType="bar"
-                            yAxisName="EPS"
-                            seriesName="EPS"
-                        />
+                        <div v-if="title === 'EPS' && hasEpsData" class="chart-section">
+                            <h3 class="section-title">
+                                <i class="fa-solid fa-chart-line"></i>
+                                {{ detailData?.trend || 'EPS 趨勢圖' }}
+                            </h3>
+                            <TimeSeriesChart 
+                                :chartData="epsChartData"
+                                chartType="bar"
+                                yAxisName="EPS"
+                                seriesName="EPS"
+                            />
+                        </div>
                     </div>
                 </div>
             </div>
@@ -65,7 +69,7 @@
 <script setup>
 import { ref, computed, watch } from 'vue';
 import squareDescData from '@/data/squareDesc.json';
-import TimeSeriesChart from '@/components/Common/EpsChart.vue';
+import TimeSeriesChart from '@/components/SquareDetailChart.vue';
 
 const props = defineProps({
     visible: {
@@ -290,6 +294,9 @@ function handleOverlayClick() {
 
 /* 內容區 */
 .modal-content {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
     padding: 10px 40px;
 }
 

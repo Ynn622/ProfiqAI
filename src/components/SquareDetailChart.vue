@@ -1,9 +1,5 @@
 <template>
     <div class="time-series-chart-container">
-        <h3 class="section-title">
-            <i class="fa-solid fa-chart-line"></i>
-            {{ chartTitle }}
-        </h3>
         <v-chart class="chart" :option="chartOption" autoresize />
     </div>
 </template>
@@ -20,6 +16,9 @@ import {
     LegendComponent
 } from 'echarts/components';
 import VChart from 'vue-echarts';
+import { isMobileView } from '@/utils/userInterface.js';
+
+const { isMobile } = isMobileView();
 
 // 註冊 ECharts 組件
 use([
@@ -39,10 +38,6 @@ const props = defineProps({
         validator: (value) => {
             return value?.labels?.length > 0 && value?.values?.length > 0;
         }
-    },
-    chartTitle: {
-        type: String,
-        default: '趨勢圖'
     },
     chartType: {
         type: String,
@@ -71,7 +66,7 @@ const chartOption = computed(() => {
             },
             formatter: (params) => {
                 const data = params[0];
-                return `${data.name}<br/>${props.seriesName || props.yAxisName}: ${data.value}`;
+                return `<b>${data.name}</b><br/>${props.seriesName || props.yAxisName}: ${data.value}`;
             }
         },
         grid: {
@@ -85,7 +80,7 @@ const chartOption = computed(() => {
             data: labels,
             axisLabel: {
                 rotate: 45,
-                fontSize: 12
+                fontSize: isMobile.value ? 10 : 12
             }
         },
         yAxis: {
@@ -113,7 +108,7 @@ const chartOption = computed(() => {
                         show: true,
                         position: 'insideTop',
                         formatter: '{c}',
-                        fontSize: 13
+                        fontSize: isMobile.value ? 11 : 13
                     }
                 }),
                 ...(props.chartType === 'line' && {
@@ -132,7 +127,7 @@ const chartOption = computed(() => {
 
 <style scoped>
 .time-series-chart-container {
-    margin-bottom: 30px;
+    margin-bottom: 10px;
 }
 
 .section-title {
@@ -151,7 +146,7 @@ const chartOption = computed(() => {
 
 .chart {
     width: 100%;
-    height: 400px;
+    height: 350px;
 }
 
 @media (max-width: 768px) {
