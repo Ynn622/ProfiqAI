@@ -703,14 +703,15 @@ onMounted(() => {
     .chat-layout {
         position: relative;
         margin: 5px;
-        max-height: calc(100dvh - 80px);
+        margin-top: 60px;
+        max-height: calc(100dvh - 60px)
     }
     
     .conversation-list {
         position: fixed;
-        top: 70px;
+        top: 60px;
         left: 0;
-        height: calc(100% - 70px);
+        height: calc(100% - 60px);
         z-index: 30;
         transform: translateX(-100%);
         opacity: 0;
