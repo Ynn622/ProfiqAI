@@ -235,7 +235,7 @@ async function handleLogout() {
 // 處理導航到自選清單
 function handleWatchlist() {
   closePanel()
-  router.push({ name: 'watchlist' })
+  message.info('此功能目前僅提供VIP,敬請期待!')
 }
 
 // 處理導航到個人設定
