@@ -52,13 +52,13 @@
                         <div class="bubble"><span class="dot" v-for="n in 3" :key="n"></span></div>
                     </div>
                 </div>
+                <!-- 免責聲明 -->
+                <p class="disclaimer">投資有風險，敬請謹慎評估，並查核重要資訊。</p>
                 <form class="input-bar" @submit.prevent="send">
-                    <textarea ref="textareaRef" v-model="userInput" :placeholder="activeLoading ? '等待機器人回應中...' : '請輸入文字...'" 
-                        rows="1" 
-                        @keydown.enter.exact.prevent="handleEnterKey" 
-                        @input="autoResize" 
-                        @compositionstart="handleCompositionStart"
-                        @compositionend="handleCompositionEnd"
+                    <textarea ref="textareaRef" v-model="userInput"
+                        :placeholder="activeLoading ? '等待機器人回應中...' : '請輸入文字...'" rows="1"
+                        @keydown.enter.exact.prevent="handleEnterKey" @input="autoResize"
+                        @compositionstart="handleCompositionStart" @compositionend="handleCompositionEnd"
                         :disabled="activeLoading"></textarea>
                     <button type="submit" :disabled="!userInput.trim() || activeLoading" class="send-btn"><i
                             class="fa-solid fa-paper-plane"></i></button>
@@ -807,5 +807,17 @@ onMounted(() => {
         font-size: 12px;
         padding: 4px 8px;
     }
+}
+
+/* 📝 免責聲明 */
+.disclaimer {
+    margin: 8px 12px;
+    padding: 8px 16px;
+    font-size: 12px;
+    color: rgba(15, 23, 42, 0.5);
+    text-align: center;
+    background: rgba(255, 255, 255, 0.6);
+    border-radius: 12px;
+    backdrop-filter: blur(5px);
 }
 </style>

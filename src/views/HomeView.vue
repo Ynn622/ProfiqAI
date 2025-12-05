@@ -29,6 +29,9 @@
       </div>
 
       <chat-bot-btn />
+      
+      <!-- 免責聲明 -->
+      <p class="disclaimer">本平台提供的所有資訊僅供參考，不構成投資建議。</p>
     </section>
   </div>
 </template>
@@ -197,5 +200,13 @@ h1 {
     min-width: 180px;
     max-width: 90vw;
   }
+}
+
+/* 📝 免責聲明 */
+.disclaimer {
+  margin-top: 30px;
+  font-size: 12px;
+  color: rgba(15, 23, 42, 0.5);
+  text-align: center;
 }
 </style>

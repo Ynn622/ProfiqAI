@@ -27,6 +27,9 @@
                                     :basicData="basicData" :techData="techData" :newsScore="newsScore" />
                     </keep-alive>
                 </div>
+                
+                <!-- 免責聲明 -->
+                <p class="disclaimer">本平台提供的所有資訊僅供參考，不構成投資建議。</p>
             </div>
         </div>
     </div>
@@ -180,5 +183,14 @@ onMounted(async () => {
     .segment-section {
         padding: 14px 20px;
     }
+}
+
+/* 📝 免責聲明 */
+.disclaimer {
+    margin-top: 6px;
+    margin-bottom: 4px;
+    font-size: 12px;
+    color: rgba(15, 23, 42, 0.4);
+    text-align: center;
 }
 </style>
