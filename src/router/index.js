@@ -76,4 +76,23 @@ router.beforeEach(async (to, from, next) => {
   next()
 })
 
+// 🔄 處理動態載入錯誤 (chunk load error)
+router.onError((error) => {
+  const isChunkLoadError = error.message?.includes('Failed to fetch dynamically imported module') ||
+                          error.message?.includes('Unable to preload CSS')
+  
+  if (isChunkLoadError) {
+    const hasReloaded = sessionStorage.getItem('chunk-load-error-reloaded')
+    
+    if (!hasReloaded) {
+      console.warn('⚠️ 檢測到資源過期,自動重新載入頁面...')
+      sessionStorage.setItem('chunk-load-error-reloaded', 'true')
+      window.location.reload()
+    } else {
+      console.error('❌ 重新載入後仍然失敗,請清除快取或聯絡支援')
+      sessionStorage.removeItem('chunk-load-error-reloaded')
+    }
+  }
+})
+
 export default router
