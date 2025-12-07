@@ -24,8 +24,12 @@
             <option value="dealer">自營商</option>
             <option value="three">三大法人</option>
           </optgroup>
-          <optgroup label="主力">
-            <option value="major">主力買賣超</option>
+          <optgroup label="技術指標">
+            <option value="kd">KD</option>
+            <option value="macd">MACD</option>
+            <option value="rsi">RSI</option>
+            <option value="dmi">DMI</option>
+            <option value="bias">BIAS</option>
           </optgroup>
         </select>
       </label>
@@ -57,7 +61,8 @@ import {
   DataZoomComponent,
   AxisPointerComponent
 } from 'echarts/components'
-import { isMobileView } from '@/utils/userInterface.js';
+import { isMobileView } from '@/utils/userInterface.js'
+import { MACD, RSI, EMA } from 'trading-signals'
 
 // 註冊 ECharts 組件
 use([
@@ -97,7 +102,11 @@ const BOTTOM_LABEL_MAP = {
   trust: '投信', 
   dealer: '自營商',
   three: '三大法人',
-  major: '主力買賣超'
+  kd: 'KD 指標',
+  macd: 'MACD',
+  rsi: 'RSI',
+  dmi: 'DMI',
+  bias: 'BIAS'
 }
 
 // 檢查是否為空資料（初始狀態）
@@ -143,7 +152,8 @@ const processedData = computed(() => {
     dealerData: [],
     majorData: [],
     threeData: [],
-    closePrices: []
+    closePrices: [],
+    ohlcRaw: []  // 原始 OHLC 資料 [open, high, low, close]
   }
   
   const dataLength = Math.min(dates.length, ohlc.length, volumes.length)
@@ -155,6 +165,7 @@ const processedData = computed(() => {
       
       result.dates.push(dates[i])
       result.candleData.push([open, close, low, high]) // ECharts 格式
+      result.ohlcRaw.push([open, high, low, close])    // 原始 OHLC 格式
       result.closePrices.push(close)
       
       // 成交量資料
@@ -248,11 +259,253 @@ const calculateBOLL = (data, period = 20, multiplier = 2) => {
   })
 }
 
+// KD 指標計算（手動實作）
+const calculateKD = (ohlcRawData, kPeriod = 9, dPeriod = 3) => {
+  const kValues = []
+  const dValues = []
+  const rsvValues = []
+  
+  // 計算 RSV (Raw Stochastic Value)
+  for (let i = 0; i < ohlcRawData.length; i++) {
+    if (i < kPeriod - 1) {
+      rsvValues.push(null)
+      kValues.push(null)
+      dValues.push(null)
+      continue
+    }
+    
+    // 取得過去 kPeriod 天的資料
+    const periodData = ohlcRawData.slice(i - kPeriod + 1, i + 1)
+    
+    // 找出最高價和最低價
+    let highestHigh = -Infinity
+    let lowestLow = Infinity
+    periodData.forEach(ohlc => {
+      if (Array.isArray(ohlc) && ohlc.length >= 4) {
+        const [, high, low] = ohlc
+        if (high > highestHigh) highestHigh = high
+        if (low < lowestLow) lowestLow = low
+      }
+    })
+    
+    // 當前收盤價
+    const currentClose = ohlcRawData[i][3]
+    
+    // 計算 RSV = (今收 - N日最低) / (N日最高 - N日最低) * 100
+    const rsv = highestHigh !== lowestLow 
+      ? ((currentClose - lowestLow) / (highestHigh - lowestLow)) * 100 
+      : 50
+    rsvValues.push(rsv)
+    
+    // 計算 K 值 (使用 SMA)
+    if (i === kPeriod - 1) {
+      // 第一個 K 值 = 第一個 RSV
+      kValues.push(Number(rsv.toFixed(2)))
+    } else {
+      // K = 前一日K * 2/3 + 今日RSV * 1/3
+      const prevK = kValues[i - 1]
+      const k = prevK !== null ? (prevK * 2/3 + rsv * 1/3) : rsv
+      kValues.push(Number(k.toFixed(2)))
+    }
+    
+    // 計算 D 值
+    if (i < kPeriod + dPeriod - 2) {
+      dValues.push(null)
+    } else if (i === kPeriod + dPeriod - 2) {
+      // 第一個 D 值 = 前 dPeriod 個 K 值的平均
+      const kSlice = kValues.slice(i - dPeriod + 1, i + 1).filter(v => v !== null)
+      const d = kSlice.reduce((sum, v) => sum + v, 0) / kSlice.length
+      dValues.push(Number(d.toFixed(2)))
+    } else {
+      // D = 前一日D * 2/3 + 今日K * 1/3
+      const prevD = dValues[i - 1]
+      const currentK = kValues[i]
+      const d = prevD !== null && currentK !== null 
+        ? (prevD * 2/3 + currentK * 1/3) 
+        : currentK
+      dValues.push(Number(d.toFixed(2)))
+    }
+  }
+  
+  return { k: kValues, d: dValues }
+}
+
+// MACD 指標計算（使用 trading-signals）
+const calculateMACD = (closePrices) => {
+  const macd = new MACD({
+    indicator: EMA,
+    shortInterval: 12,
+    longInterval: 26,
+    signalInterval: 9
+  })
+  
+  const macdLine = []
+  const signalLine = []
+  const histogram = []
+  
+  closePrices.forEach(price => {
+    try {
+      macd.update(price)
+      if (macd.isStable) {
+        const result = macd.getResult()
+        macdLine.push(Number(result.macd.toFixed(4)))
+        signalLine.push(Number(result.signal.toFixed(4)))
+        histogram.push(Number(result.histogram.toFixed(4)))
+      } else {
+        macdLine.push(null)
+        signalLine.push(null)
+        histogram.push(null)
+      }
+    } catch (e) {
+      macdLine.push(null)
+      signalLine.push(null)
+      histogram.push(null)
+    }
+  })
+  
+  return { macd: macdLine, signal: signalLine, histogram }
+}
+
+// RSI 指標計算（使用 trading-signals）
+const calculateRSI = (closePrices, period = 14) => {
+  const rsi = new RSI(period)
+  const rsiValues = []
+  
+  closePrices.forEach(price => {
+    try {
+      rsi.update(price)
+      if (rsi.isStable) {
+        rsiValues.push(Number(rsi.getResult().toFixed(2)))
+      } else {
+        rsiValues.push(null)
+      }
+    } catch (e) {
+      rsiValues.push(null)
+    }
+  })
+  
+  return rsiValues
+}
+
+// DMI 指標計算（方向性移動指標）
+const calculateDMI = (ohlcRawData, period = 14) => {
+  const pdiValues = []
+  const mdiValues = []
+  const adxValues = []
+  const trList = []
+  const plusDMList = []
+  const minusDMList = []
+  
+  for (let i = 0; i < ohlcRawData.length; i++) {
+    if (i === 0) {
+      pdiValues.push(null)
+      mdiValues.push(null)
+      adxValues.push(null)
+      continue
+    }
+    
+    const [prevOpen, prevHigh, prevLow, prevClose] = ohlcRawData[i - 1]
+    const [open, high, low, close] = ohlcRawData[i]
+    
+    // 計算 TR (True Range)
+    const tr = Math.max(
+      high - low,
+      Math.abs(high - prevClose),
+      Math.abs(low - prevClose)
+    )
+    trList.push(tr)
+    
+    // 計算方向性移動
+    const upMove = high - prevHigh
+    const downMove = prevLow - low
+    const plusDM = (upMove > downMove && upMove > 0) ? upMove : 0
+    const minusDM = (downMove > upMove && downMove > 0) ? downMove : 0
+    plusDMList.push(plusDM)
+    minusDMList.push(minusDM)
+    
+    if (i < period) {
+      pdiValues.push(null)
+      mdiValues.push(null)
+      adxValues.push(null)
+      continue
+    }
+    
+    // 計算平滑後的 TR、+DM、-DM
+    const trSum = trList.slice(i - period + 1, i + 1).reduce((a, b) => a + b, 0)
+    const plusDMSum = plusDMList.slice(i - period + 1, i + 1).reduce((a, b) => a + b, 0)
+    const minusDMSum = minusDMList.slice(i - period + 1, i + 1).reduce((a, b) => a + b, 0)
+    
+    // 計算 +DI 和 -DI
+    const pdi = trSum > 0 ? (plusDMSum / trSum) * 100 : 0
+    const mdi = trSum > 0 ? (minusDMSum / trSum) * 100 : 0
+    pdiValues.push(Number(pdi.toFixed(2)))
+    mdiValues.push(Number(mdi.toFixed(2)))
+    
+    // 計算 ADX
+    if (i < period * 2 - 1) {
+      adxValues.push(null)
+    } else {
+      const dxList = []
+      for (let j = i - period + 1; j <= i; j++) {
+        const pdiVal = pdiValues[j]
+        const mdiVal = mdiValues[j]
+        if (pdiVal !== null && mdiVal !== null) {
+          const diSum = pdiVal + mdiVal
+          const dx = diSum > 0 ? (Math.abs(pdiVal - mdiVal) / diSum) * 100 : 0
+          dxList.push(dx)
+        }
+      }
+      const adx = dxList.length > 0 ? dxList.reduce((a, b) => a + b, 0) / dxList.length : 0
+      adxValues.push(Number(adx.toFixed(2)))
+    }
+  }
+  
+  return { pdi: pdiValues, mdi: mdiValues, adx: adxValues }
+}
+
+// BIAS 指標計算（乖離率）
+const calculateBIAS = (closePrices) => {
+  const bias6 = []
+  const bias12 = []
+  const bias24 = []
+  
+  closePrices.forEach((price, i) => {
+    // BIAS6
+    if (i < 5) {
+      bias6.push(null)
+    } else {
+      const ma6 = closePrices.slice(i - 5, i + 1).reduce((a, b) => a + b, 0) / 6
+      const biasVal = ma6 > 0 ? ((price - ma6) / ma6) * 100 : 0
+      bias6.push(Number(biasVal.toFixed(2)))
+    }
+    
+    // BIAS12
+    if (i < 11) {
+      bias12.push(null)
+    } else {
+      const ma12 = closePrices.slice(i - 11, i + 1).reduce((a, b) => a + b, 0) / 12
+      const biasVal = ma12 > 0 ? ((price - ma12) / ma12) * 100 : 0
+      bias12.push(Number(biasVal.toFixed(2)))
+    }
+    
+    // BIAS24
+    if (i < 23) {
+      bias24.push(null)
+    } else {
+      const ma24 = closePrices.slice(i - 23, i + 1).reduce((a, b) => a + b, 0) / 24
+      const biasVal = ma24 > 0 ? ((price - ma24) / ma24) * 100 : 0
+      bias24.push(Number(biasVal.toFixed(2)))
+    }
+  })
+  
+  return { bias6, bias12, bias24 }
+}
+
 // 技術指標計算
 const indicators = computed(() => {
   if (!processedData.value) return {}
   
-  const { closePrices } = processedData.value
+  const { closePrices, ohlcRaw } = processedData.value
   
   return {
     MA5: calculateMA(closePrices, 5),
@@ -267,7 +520,14 @@ const indicators = computed(() => {
     EMA60: calculateEMA(closePrices, 60),
     EMA120: calculateEMA(closePrices, 120),
     EMA240: calculateEMA(closePrices, 240),
-    BOLL: calculateBOLL(closePrices, 20, 2)
+    BOLL: calculateBOLL(closePrices, 20, 2),
+    KD: calculateKD(ohlcRaw, 9),
+    MACD: calculateMACD(closePrices),
+    RSI5: calculateRSI(closePrices, 5),
+    RSI10: calculateRSI(closePrices, 10),
+    RSI14: calculateRSI(closePrices, 14),
+    DMI: calculateDMI(ohlcRaw, 14),
+    BIAS: calculateBIAS(closePrices)
   }
 })
 
@@ -280,8 +540,7 @@ const bottomChartData = computed(() => {
     foreign: processedData.value.foreignData,
     trust: processedData.value.trustData,
     dealer: processedData.value.dealerData,
-    three: processedData.value.threeData,
-    major: processedData.value.majorData
+    three: processedData.value.threeData
   }
   
   return dataMap[bottomMode.value] || processedData.value.volumeData
@@ -386,14 +645,223 @@ const chartOption = computed(() => {
   }
   
   // 添加底部圖表
-  series.push({
-    name: BOTTOM_LABEL_MAP[bottomMode.value],
-    type: 'bar',
-    xAxisIndex: 1,
-    yAxisIndex: 1,
-    data: bottomChartData.value
-  })
-  legendData.push(BOTTOM_LABEL_MAP[bottomMode.value])
+  if (bottomMode.value === 'kd') {
+    // KD 指標使用雙線圖 + 超買超賣輔助線
+    const kdData = indicators.value.KD
+    series.push(
+      {
+        name: 'K',
+        type: 'line',
+        xAxisIndex: 1,
+        yAxisIndex: 1,
+        data: kdData.k,
+        smooth: true,
+        showSymbol: false,
+        lineStyle: { width: 2, color: '#3b82f6' }
+      },
+      {
+        name: 'D',
+        type: 'line',
+        xAxisIndex: 1,
+        yAxisIndex: 1,
+        data: kdData.d,
+        smooth: true,
+        showSymbol: false,
+        lineStyle: { width: 2, color: '#f59e0b' }
+      },
+      {
+        name: '超買線(80)',
+        type: 'line',
+        xAxisIndex: 1,
+        yAxisIndex: 1,
+        data: Array(kdData.k.length).fill(80),
+        lineStyle: { width: 1, color: '#ef4444', type: 'dashed' },
+        showSymbol: false
+      },
+      {
+        name: '超賣線(20)',
+        type: 'line',
+        xAxisIndex: 1,
+        yAxisIndex: 1,
+        data: Array(kdData.k.length).fill(20),
+        lineStyle: { width: 1, color: '#22c55e', type: 'dashed' },
+        showSymbol: false
+      }
+    )
+    legendData.push('K', 'D', '超買線(80)', '超賣線(20)')
+  } else if (bottomMode.value === 'macd') {
+    // MACD 指標：MACD 線、Signal 線和柱狀圖
+    const macdData = indicators.value.MACD
+    series.push(
+      {
+        name: 'MACD',
+        type: 'line',
+        xAxisIndex: 1,
+        yAxisIndex: 1,
+        data: macdData.macd,
+        smooth: true,
+        showSymbol: false,
+        lineStyle: { width: 2, color: '#3b82f6' }
+      },
+      {
+        name: 'Signal',
+        type: 'line',
+        xAxisIndex: 1,
+        yAxisIndex: 1,
+        data: macdData.signal,
+        smooth: true,
+        showSymbol: false,
+        lineStyle: { width: 2, color: '#f59e0b' }
+      },
+      {
+        name: 'Histogram',
+        type: 'bar',
+        xAxisIndex: 1,
+        yAxisIndex: 1,
+        data: macdData.histogram.map(val => ({
+          value: val,
+          itemStyle: { color: val >= 0 ? '#d60000' : '#00aa55' }
+        }))
+      }
+    )
+    legendData.push('MACD', 'Signal', 'Histogram')
+  } else if (bottomMode.value === 'rsi') {
+    // RSI 指標：5日、10日 + 超買超賣參考線
+    const rsi5Data = indicators.value.RSI5
+    const rsi10Data = indicators.value.RSI10
+    series.push(
+      {
+        name: '5 RSI',
+        type: 'line',
+        xAxisIndex: 1,
+        yAxisIndex: 1,
+        data: rsi5Data,
+        smooth: true,
+        showSymbol: false,
+        lineStyle: { width: 2, color: '#3b82f6' }
+      },
+      {
+        name: '10 RSI',
+        type: 'line',
+        xAxisIndex: 1,
+        yAxisIndex: 1,
+        data: rsi10Data,
+        smooth: true,
+        showSymbol: false,
+        lineStyle: { width: 2, color: '#f59e0b' }
+      },
+      {
+        name: '超買線(80)',
+        type: 'line',
+        xAxisIndex: 1,
+        yAxisIndex: 1,
+        data: Array(rsi5Data.length).fill(80),
+        lineStyle: { width: 0.7, color: '#ef4444', type: 'dashed' },
+        showSymbol: false
+      },
+      {
+        name: '超賣線(20)',
+        type: 'line',
+        xAxisIndex: 1,
+        yAxisIndex: 1,
+        data: Array(rsi5Data.length).fill(20),
+        lineStyle: { width: 0.7, color: '#22c55e', type: 'dashed' },
+        showSymbol: false
+      }
+    )
+    legendData.push('5 RSI', '10 RSI', '超買線(80)', '超賣線(20)')
+  } else if (bottomMode.value === 'dmi') {
+    // DMI 指標：+DI、-DI、ADX
+    const dmiData = indicators.value.DMI
+    series.push(
+      {
+        name: '+DI',
+        type: 'line',
+        xAxisIndex: 1,
+        yAxisIndex: 1,
+        data: dmiData.pdi,
+        smooth: true,
+        showSymbol: false,
+        lineStyle: { width: 1, color: '#22c55e' }
+      },
+      {
+        name: '-DI',
+        type: 'line',
+        xAxisIndex: 1,
+        yAxisIndex: 1,
+        data: dmiData.mdi,
+        smooth: true,
+        showSymbol: false,
+        lineStyle: { width: 1, color: '#ef4444' }
+      },
+      {
+        name: 'ADX',
+        type: 'line',
+        xAxisIndex: 1,
+        yAxisIndex: 1,
+        data: dmiData.adx,
+        smooth: true,
+        showSymbol: false,
+        lineStyle: { width: 1, color: '#3b82f6' }
+      }
+    )
+    legendData.push('+DI', '-DI', 'ADX')
+  } else if (bottomMode.value === 'bias') {
+    // BIAS 指標：6日、12日、24日乖離率
+    const biasData = indicators.value.BIAS
+    series.push(
+      {
+        name: 'BIAS6',
+        type: 'line',
+        xAxisIndex: 1,
+        yAxisIndex: 1,
+        data: biasData.bias6,
+        smooth: true,
+        showSymbol: false,
+        lineStyle: { width: 2, color: '#3b82f6' }
+      },
+      {
+        name: 'BIAS12',
+        type: 'line',
+        xAxisIndex: 1,
+        yAxisIndex: 1,
+        data: biasData.bias12,
+        smooth: true,
+        showSymbol: false,
+        lineStyle: { width: 2, color: '#f59e0b' }
+      },
+      {
+        name: 'BIAS24',
+        type: 'line',
+        xAxisIndex: 1,
+        yAxisIndex: 1,
+        data: biasData.bias24,
+        smooth: true,
+        showSymbol: false,
+        lineStyle: { width: 2, color: '#a855f7' }
+      },
+      {
+        name: '零軸',
+        type: 'line',
+        xAxisIndex: 1,
+        yAxisIndex: 1,
+        data: Array(biasData.bias6.length).fill(0),
+        lineStyle: { width: 1, color: '#666', type: 'dashed' },
+        showSymbol: false
+      }
+    )
+    legendData.push('BIAS6', 'BIAS12', 'BIAS24', '零軸')
+  } else {
+    // 原有的成交量、籌碼等柱狀圖
+    series.push({
+      name: BOTTOM_LABEL_MAP[bottomMode.value],
+      type: 'bar',
+      xAxisIndex: 1,
+      yAxisIndex: 1,
+      data: bottomChartData.value
+    })
+    legendData.push(BOTTOM_LABEL_MAP[bottomMode.value])
+  }
   
   return {
     animation: true,
@@ -477,21 +945,61 @@ const chartOption = computed(() => {
         const indicatorLine = indicatorItems.length ? indicatorItems.map(i => i.label).join('<br/>') : '—'
 
         // 組合 HTML 內容
-        return [
+        const htmlParts = [
           `<div style="font-weight:600;margin-bottom:4px;">${dateStr}</div>`,
           `<div>開盤：<span style="font-weight:600;color:#ffd166;">${fmtPrice(open)}</span></div>`,
           `<div>收盤：<span style="font-weight:600;color:#ffffff;">${fmtPrice(close)}</span></div>`,
           `<div>最高：<span style="font-weight:600;color:#ff7f50;">${fmtPrice(high)}</span></div>`,
           `<div>最低：<span style="font-weight:600;color:#6bc1ff;">${fmtPrice(low)}</span></div>`,
-          `<div><span style="font-weight:600;">${indicatorLine}</span></div><hr/>`,
-          (() => {
-            const bottomObj = (bottomChartData.value && bottomChartData.value[idx]) || null
-            const bottomRaw = bottomObj && typeof bottomObj === 'object' ? bottomObj.value : bottomObj
-            const label = BOTTOM_LABEL_MAP[bottomMode.value] || '下方'
-            const color = bottomMode.value === 'volume' ? '#ffd166' : (Number(bottomRaw) >= 0 ? '#d60000' : '#00aa55')
-            return `<div>${label}：<span style="font-weight:600;color:${color};">${fmtNum(bottomRaw)}</span></div>`
-          })()
-        ].join('')
+          `<div><span style="font-weight:600;">${indicatorLine}</span></div><hr/>`
+        ]
+
+        // 添加底部指標資訊
+        if (bottomMode.value === 'kd') {
+          const kdData = indicatorData.KD
+          const kVal = kdData.k[idx]
+          const dVal = kdData.d[idx]
+          htmlParts.push(`<div>K值：<span style="font-weight:600;color:#3b82f6;">${fmtPrice(kVal)}</span></div>`)
+          htmlParts.push(`<div>D值：<span style="font-weight:600;color:#f59e0b;">${fmtPrice(dVal)}</span></div>`)
+        } else if (bottomMode.value === 'macd') {
+          const macdData = indicatorData.MACD
+          const macdVal = macdData.macd[idx]
+          const signalVal = macdData.signal[idx]
+          const histVal = macdData.histogram[idx]
+          htmlParts.push(`<div>MACD：<span style="font-weight:600;color:#3b82f6;">${fmtPrice(macdVal)}</span></div>`)
+          htmlParts.push(`<div>Signal：<span style="font-weight:600;color:#f59e0b;">${fmtPrice(signalVal)}</span></div>`)
+          htmlParts.push(`<div>Histogram：<span style="font-weight:600;color:${histVal >= 0 ? '#d60000' : '#00aa55'};">${fmtPrice(histVal)}</span></div>`)
+        } else if (bottomMode.value === 'rsi') {
+          const rsi5 = indicatorData.RSI5[idx]
+          const rsi10 = indicatorData.RSI10[idx]
+          htmlParts.push(`<div>5 RSI：<span style="font-weight:600;color:#3b82f6;">${fmtPrice(rsi5)}</span></div>`)
+          htmlParts.push(`<div>10 RSI：<span style="font-weight:600;color:#f59e0b;">${fmtPrice(rsi10)}</span></div>`)
+        } else if (bottomMode.value === 'dmi') {
+          const dmiData = indicatorData.DMI
+          const pdiVal = dmiData.pdi[idx]
+          const mdiVal = dmiData.mdi[idx]
+          const adxVal = dmiData.adx[idx]
+          htmlParts.push(`<div>+DI：<span style="font-weight:600;color:#22c55e;">${fmtPrice(pdiVal)}</span></div>`)
+          htmlParts.push(`<div>-DI：<span style="font-weight:600;color:#ef4444;">${fmtPrice(mdiVal)}</span></div>`)
+          htmlParts.push(`<div>ADX：<span style="font-weight:600;color:#3b82f6;">${fmtPrice(adxVal)}</span></div>`)
+        } else if (bottomMode.value === 'bias') {
+          const biasData = indicatorData.BIAS
+          const bias6Val = biasData.bias6[idx]
+          const bias12Val = biasData.bias12[idx]
+          const bias24Val = biasData.bias24[idx]
+          htmlParts.push(`<div>BIAS6：<span style="font-weight:600;color:#3b82f6;">${fmtPrice(bias6Val)}%</span></div>`)
+          htmlParts.push(`<div>BIAS12：<span style="font-weight:600;color:#f59e0b;">${fmtPrice(bias12Val)}%</span></div>`)
+          htmlParts.push(`<div>BIAS24：<span style="font-weight:600;color:#a855f7;">${fmtPrice(bias24Val)}%</span></div>`)
+        } else {
+          // 原有的成交量或籌碼資料
+          const bottomObj = (bottomChartData.value && bottomChartData.value[idx]) || null
+          const bottomRaw = bottomObj && typeof bottomObj === 'object' ? bottomObj.value : bottomObj
+          const label = BOTTOM_LABEL_MAP[bottomMode.value] || '下方'
+          const color = bottomMode.value === 'volume' ? '#ffd166' : (Number(bottomRaw) >= 0 ? '#d60000' : '#00aa55')
+          htmlParts.push(`<div>${label}：<span style="font-weight:600;color:${color};">${fmtNum(bottomRaw)}</span></div>`)
+        }
+
+        return htmlParts.join('')
       }
     },
     
@@ -528,8 +1036,7 @@ const chartOption = computed(() => {
         axisLine: { lineStyle: { color: '#999' } },
         splitLine: { show: false },
         axisLabel: {
-          show: false, 
-          interval: 10, // 控制標籤密度
+          show: false
         }
       }
     ],
@@ -542,8 +1049,10 @@ const chartOption = computed(() => {
         axisLabel: { color: '#666' }
       },
       {
-        scale: true,
+        scale: bottomMode.value !== 'rsi' && bottomMode.value !== 'kd',
         gridIndex: 1,
+        min: (bottomMode.value === 'rsi' || bottomMode.value === 'kd') ? 0 : undefined,
+        max: (bottomMode.value === 'rsi' || bottomMode.value === 'kd') ? 100 : undefined,
         axisLine: { lineStyle: { color: '#999' } },
         splitLine: { show: false },
         axisLabel: { color: '#666' }
