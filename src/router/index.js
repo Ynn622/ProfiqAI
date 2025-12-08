@@ -79,18 +79,26 @@ router.beforeEach(async (to, from, next) => {
 // 🔄 處理動態載入錯誤 (chunk load error)
 router.onError((error) => {
   const isChunkLoadError = error.message?.includes('Failed to fetch dynamically imported module') ||
-                          error.message?.includes('Unable to preload CSS')
+                          error.message?.includes('Unable to preload CSS') ||
+                          error.message?.includes('Failed to load') ||
+                          error.message?.includes('404')
   
   if (isChunkLoadError) {
-    const hasReloaded = sessionStorage.getItem('chunk-load-error-reloaded')
+    const reloadCount = parseInt(sessionStorage.getItem('chunk-load-error-count') || '0')
     
-    if (!hasReloaded) {
-      console.warn('⚠️ 檢測到資源過期,自動重新載入頁面...')
-      sessionStorage.setItem('chunk-load-error-reloaded', 'true')
+    if (reloadCount < 2) {
+      console.warn(`⚠️ 檢測到資源過期 (嘗試 ${reloadCount + 1}/2),自動重新載入頁面...`)
+      sessionStorage.setItem('chunk-load-error-count', String(reloadCount + 1))
+      // 清除所有快取並強制重新載入
+      if ('caches' in window) {
+        caches.keys().then(names => {
+          names.forEach(name => caches.delete(name))
+        })
+      }
       window.location.reload()
     } else {
-      console.error('❌ 重新載入後仍然失敗,請清除快取或聯絡支援')
-      sessionStorage.removeItem('chunk-load-error-reloaded')
+      console.error('❌ 多次重新載入後仍然失敗,請手動清除瀏覽器快取 (Ctrl+Shift+Delete / Cmd+Shift+Delete)')
+      sessionStorage.removeItem('chunk-load-error-count')
     }
   }
 })

@@ -19,20 +19,30 @@ async function bootstrap() {
   await router.isReady()
   app.mount('#app')
   
-  // 成功載入後清除重新載入標記
-  sessionStorage.removeItem('chunk-load-error-reloaded')
+  // 成功載入後清除重試計數器
+  sessionStorage.removeItem('chunk-load-error-count')
 }
 
 // 全域錯誤處理
 app.config.errorHandler = (err, instance, info) => {
   console.error('Vue 錯誤:', err, info)
   
-  // 檢查是否為 chunk load error
-  if (err.message?.includes('Failed to fetch dynamically imported module')) {
-    const hasReloaded = sessionStorage.getItem('chunk-load-error-reloaded')
-    if (!hasReloaded) {
-      console.warn('⚠️ 檢測到資源過期,自動重新載入頁面...')
-      sessionStorage.setItem('chunk-load-error-reloaded', 'true')
+  // 檢查是否為 chunk load error 或 404 資源錯誤
+  const isResourceError = err.message?.includes('Failed to fetch dynamically imported module') ||
+                         err.message?.includes('Failed to load') ||
+                         err.message?.includes('404')
+  
+  if (isResourceError) {
+    const reloadCount = parseInt(sessionStorage.getItem('chunk-load-error-count') || '0')
+    if (reloadCount < 2) {
+      console.warn(`⚠️ 檢測到資源過期 (嘗試 ${reloadCount + 1}/2),自動重新載入頁面...`)
+      sessionStorage.setItem('chunk-load-error-count', String(reloadCount + 1))
+      // 清除 Service Worker 快取
+      if ('caches' in window) {
+        caches.keys().then(names => {
+          names.forEach(name => caches.delete(name))
+        })
+      }
       window.location.reload()
     }
   }
