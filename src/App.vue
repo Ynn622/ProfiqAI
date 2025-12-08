@@ -9,8 +9,8 @@ onMounted(() => {
   startVersionCheck(() => {
     // 檢測到新版本時顯示提示
     message.info({
-      content: '檢測到新版本，建議重新載入頁面以獲得最佳體驗',
-      duration: 10,
+      content: '檢測到新版本。請重新載入頁面，以獲得最佳體驗！',
+      duration: 30,
       onClick: () => {
         forceReload()
       }
