@@ -26,7 +26,7 @@ const STORAGE_KEYS = {
 const DEFAULT_DESCRIPTION = 'AI 未提供分析內容';
 
 function normalizeBasic(source = {}) {
-  const basicData = source?.basicData ?? null;
+  const basicData = source?.data ?? null;
   const direction = source?.direction ?? basicData?.direction ?? -99;
   return {
     direction,
@@ -36,7 +36,7 @@ function normalizeBasic(source = {}) {
 }
 
 function normalizeTech(source = {}) {
-  const technicalData = source?.technical_data ?? null;
+  const technicalData = source?.data ?? null;
   const direction = source?.direction ?? technicalData?.direction ?? -99;
   return {
     direction,
@@ -46,7 +46,7 @@ function normalizeTech(source = {}) {
 }
 
 function normalizeNews(source = {}) {
-  const newsData = source?.news_data ?? null;
+  const newsData = source?.data ?? null;
   const direction = source?.direction ?? newsData?.direction ?? -99;
   return {
     direction,
@@ -56,7 +56,7 @@ function normalizeNews(source = {}) {
 }
 
 function normalizeChip(source = {}) {
-  const chipData = source?.chip_data ?? null;
+  const chipData = source?.data ?? null;
   const direction = source?.direction ?? chipData?.direction ?? -99;
   return {
     direction,
