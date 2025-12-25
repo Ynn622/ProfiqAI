@@ -1,6 +1,10 @@
 <template>
     <div>
-        <div class="pill">隔日上漲機率</div>
+        <a-tooltip :title="functionDesc.riseProbability" placement="bottom">
+            <div class="pill clickable">
+                隔日上漲機率
+            </div>
+        </a-tooltip>
         <div class="prob-circle" :class="{
             up: probState === 'up',
             down: probState === 'down',
@@ -15,6 +19,7 @@
 <script setup>
 // 工具 & 套件
 import { computed } from 'vue'
+import functionDesc from '@/data/functionDesc.json'
 
 // Props
 const props = defineProps({
@@ -37,6 +42,11 @@ const probState = computed(() => {
 
 <style scoped>
 @import '/src/assets/main.css';
+
+.clickable {
+    cursor: pointer;
+    user-select: none;
+}
 
 .prob-circle {
     aspect-ratio: 1/1;
@@ -66,6 +76,11 @@ const probState = computed(() => {
 @media (max-width: 768px) {
     .prob-circle {
         width: 40vw;
+    }
+    
+    .tooltip {
+        max-width: 250px;
+        font-size: 13px;
     }
 }
 </style>

@@ -1,6 +1,8 @@
 <template>
     <div class="analysis-card">
-        <div class="pill">{{ factor }}面分析</div>
+        <a-tooltip :title="tooltipText" placement="bottom" :z-index="100">
+            <div class="pill clickable">{{ factor }}面分析</div>
+        </a-tooltip>
         <div class="analysis-section">
             <div>
                 <Bias :score="direction" variant="circle" />
@@ -14,6 +16,8 @@
 <script setup>
 // 組件
 import Bias from '../Common/Bias.vue';
+import { computed } from 'vue';
+import functionDesc from '@/data/functionDesc.json';
 
 // Props
 const props = defineProps({
@@ -31,10 +35,26 @@ const props = defineProps({
     }
 });
 
+// 根據 factor 取得對應的 tooltip 文字
+const tooltipText = computed(() => {
+    const mapping = {
+        '技術': functionDesc.technical,
+        '消息': functionDesc.news,
+        '基本': functionDesc.basic,
+        '籌碼': functionDesc.chip
+    };
+    return mapping[props.factor] || '';
+});
+
 </script>
 
 <style scoped>
 @import '/src/assets/main.css';
+
+.clickable {
+    cursor: pointer;
+    user-select: none;
+}
 
 .analysis-section {
     display: flex;
