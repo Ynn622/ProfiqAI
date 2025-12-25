@@ -45,7 +45,7 @@ const wrapperClass = computed(() => {
     right: 0;
     bottom: 0;
     background: rgba(255, 255, 255, 0.8);
-    z-index: 9999;
+    z-index: 999;
 }
 
 .loading-small {
@@ -60,5 +60,11 @@ const wrapperClass = computed(() => {
     font-size: 1rem;
     color: #1677ff;
     margin-top: 10px;
+}
+
+@media (max-width: 768px) {
+    .loading-full {
+        top: 60px; /* 考慮到手機頂部導覽列 */
+    }
 }
 </style>

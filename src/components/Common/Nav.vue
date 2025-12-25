@@ -139,6 +139,7 @@ function asidePage(item) {
     color: #2c3e50;
     position: fixed;
     width: 100%;
+    z-index: 1001;
 }
 
 .nav-bar.phone .logo-img {
