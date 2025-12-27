@@ -269,12 +269,12 @@ function handleOverlayClick() {
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
 }
 /* 將顏色套用到整個容器 */
-.modal-container.bg-red { background-color: var(--lightBull); }
-.modal-container.bg-dark-red { background-color: var(--darkBull); }
-.modal-container.bg-green { background-color: var(--lightBear); }
-.modal-container.bg-dark-green { background-color: var(--darkBear); }
-.modal-container.bg-yellow { background-color: var(--lightFlat); }
-.modal-container.bg-gray { background-color: var(--gray); }
+.modal-container.bg-red { background-color: var(--modalLightBull); }
+.modal-container.bg-dark-red { background-color: var(--modalDarkBull); }
+.modal-container.bg-green { background-color: var(--modalLightBear); }
+.modal-container.bg-dark-green { background-color: var(--modalDarkBear); }
+.modal-container.bg-yellow { background-color: var(--modalFlat); }
+.modal-container.bg-gray { background-color: var(--modalGray); }
 
 /* 關閉按鈕 */
 .close-button {

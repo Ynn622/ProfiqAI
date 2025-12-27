@@ -8,19 +8,27 @@
  /* 股市 */
   --lightBull: #ffb3b3;          /* 偏多：粉紅 */
   --lightBull-hover: #ff8a8a;      /* 比粉紅深一點 */
-  --darkBull: #fe7171;           /* 偏多：紅 */
+  --modalLightBull: #ffc4c4;     /* Modal 專用：更淺的粉紅 */
+  
+  --darkBull: #fe7171;           /* 極多：紅 */
   --darkBull-hover: #f96161;       /* 紅色變亮一點 */
+  --modalDarkBull: #fe8e8e;      /* Modal 專用：更淺的紅 */
 
   --lightBear: #bdfcc0;          /* 偏空：淺綠 */
   --lightBear-hover: #92f29b;      /* 比淺綠深一點 */
-  --darkBear: #47c462;           /* 偏空：綠 */
+  --modalLightBear: #cdfdd0;     /* Modal 專用：更淺的淺綠 */
+  
+  --darkBear: #47c462;           /* 極空：綠 */
   --darkBear-hover: #26d264;       /* 綠色變亮一點 */
+  --modalDarkBear: #65d07c;      /* Modal 專用：更淺的綠 */
 
   --lightFlat: #f7ffa2;          /* 平盤：淺黃 */
   --lightFlat-hover: #f0fa63;      /* 淺黃深一點 */
+  --modalFlat: #f9ffb8;          /* Modal 專用：更淺的黃 */
 
   --gray: #bbbbbc;              /* 沒資料：灰 */
   --gray-hover: #9e9ea0;          /* 灰色深一點 */
+  --modalGray: #cfcfd0;          /* Modal 專用：更淺的灰 */
 
   --pill: #bbbbbc;
   --text: #111;
