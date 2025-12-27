@@ -7,7 +7,7 @@
             </div>
             <div class="analysis-right">
                 <div v-if="loading" class="loading-section">
-                    <LoadingMask type="small"/>
+                    <LoadingMask type="small" loadingText="籌碼資料載入中..." />
                 </div>
                 <div v-else class="segment">
                     <a-segmented class="segment" v-model:value="segmentValue" :options="segmentOptions" />

@@ -7,7 +7,9 @@
             </div>
             <div class="analysis-right">
                 <h3>個股新聞</h3>
-                <LoadingMask v-if="loading" type="small"/>
+                <div v-if="loading" class="loading-section">
+                    <LoadingMask type="small" />
+                </div>
                 <div v-else-if="!newsDataList.length" class="no-data">截取新聞失敗，請稍後再試！</div>
                 <div v-else class="news-list">
                     <NewsRow v-for="(news, idx) in newsDataList" 
@@ -112,6 +114,11 @@ onMounted(async () => {
     height: 100%;
     color: #999;
     font-size: 16px;
+}
+
+.loading-section {
+    height: 30vh;
+    display: flex;
 }
 
 @media (max-width: 665px) {

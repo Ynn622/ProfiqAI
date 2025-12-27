@@ -1,6 +1,6 @@
 <template>
     <b>最後更新時間：{{ updateTime }} （整點更新）</b>
-    <div v-if="loading" class="word-cloud-container"><loadingMask type="small"/></div>
+    <div v-if="loading" class="word-cloud-container"><loadingMask type="small" loadingText="新聞截取分析中..." /></div>
     <div v-else-if="wordCounts === null" class="no-data word-cloud-container">資料異常，請稍後再試！</div>
     <div v-else-if="Object.keys(wordCounts).length === 0" class="no-data word-cloud-container">新聞不足，文字雲無資料！</div>
     <div v-else ref="wordCloudContainer" class="word-cloud-container"></div>
