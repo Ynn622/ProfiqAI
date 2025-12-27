@@ -14,9 +14,9 @@
                         :color="getColorByValue('pe', displayData?.PE_ratio)" />
                     <SquareData :title="'營收 (YoY)'" :value="displayData?.MoM"
                         :valuePrefix="(displayData?.MoM > 0) ? '+' : ''" :valueSuffix="' %'"
-                        :color="getColorByValue('mom', displayData?.MoM)" />
+                        :color="getColorByValue('mom', displayData?.MoM)" :basicData="props.basicData" />
                     <SquareData :title="'現金股利'" :value="displayData?.stockSplits" :valueSuffix="' 元'"
-                        :color="getColorByValue('dividend', displayData?.stockSplits)" />
+                        :color="getColorByValue('dividend', displayData?.stockSplits)" :basicData="props.basicData" />
                     <SquareData :title="'ROA'" :value="displayData?.ROA" :valueSuffix="' %'"
                         :color="getColorByValue('roa', displayData?.ROA)" />
                     <SquareData :title="'ROE'" :value="displayData?.ROE" :valueSuffix="' %'"

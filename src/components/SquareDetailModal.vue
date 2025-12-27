@@ -46,17 +46,45 @@
                                 <p v-if="detailData?.bearish" class="bias-line"><span class="bias-label bear"><i class="fa-solid fa-arrow-trend-down"></i> 偏空：</span>{{ detailData.bearish }}</p>
                             </div>
                         </div>
-                        <!-- EPS 圖表區域 -->
+                        <!-- 圖表區域 -->
                         <div v-if="title === 'EPS' && hasEpsData" class="chart-section">
                             <h3 class="section-title">
                                 <i class="fa-solid fa-chart-line"></i>
-                                {{ detailData?.trend || 'EPS 趨勢圖' }}
+                                {{ detailData?.trend || '趨勢圖' }}
                             </h3>
                             <TimeSeriesChart 
                                 :chartData="epsChartData"
                                 chartType="bar"
                                 yAxisName="EPS"
                                 seriesName="EPS"
+                            />
+                        </div>
+
+                        <!-- 營收 YoY/MoM 圖表 -->
+                        <div v-if="title === '營收 (YoY)' && hasRevenueData" class="chart-section">
+                            <h3 class="section-title">
+                                <i class="fa-solid fa-chart-line"></i>
+                                {{ detailData?.trend || '趨勢圖' }}
+                            </h3>
+                            <TimeSeriesChart 
+                                :chartData="revenueChartData"
+                                chartType="line"
+                                yAxisName="增長率 (%)"
+                                :multiSeries="true"
+                            />
+                        </div>
+
+                        <!-- 現金股利 & 股票股利圖表 -->
+                        <div v-if="title === '現金股利' && hasDividendData" class="chart-section">
+                            <h3 class="section-title">
+                                <i class="fa-solid fa-chart-column"></i>
+                                {{ detailData?.trend || '趨勢圖' }}
+                            </h3>
+                            <TimeSeriesChart 
+                                :chartData="dividendChartData"
+                                chartType="bar"
+                                yAxisName="股利 (元)"
+                                :multiSeries="true"
                             />
                         </div>
                     </div>
@@ -147,6 +175,53 @@ const epsChartData = computed(() => {
     return {
         labels: [...props.basicData.eps_trend.quarter].reverse(),
         values: [...props.basicData.eps_trend.eps].reverse()
+    };
+});
+
+// 營收 YoY/MoM 圖表資料
+const hasRevenueData = computed(() => {
+    return props.basicData?.revenue?.month?.length > 0 && 
+           props.basicData?.revenue?.yoy?.length > 0 && 
+           props.basicData?.revenue?.mom?.length > 0;
+});
+
+const revenueChartData = computed(() => {
+    if (!hasRevenueData.value) return { labels: [], series: [] };
+    // 取最近12個月的資料並反轉（從舊到新）
+    const labels = [...props.basicData.revenue.month].reverse();
+    const yoyValues = [...props.basicData.revenue.yoy].reverse();
+    const momValues = [...props.basicData.revenue.mom].reverse();
+    
+    return {
+        labels: labels,
+        series: [
+            { name: 'YoY (%)', data: yoyValues },
+            { name: 'MoM (%)', data: momValues }
+        ]
+    };
+});
+
+// 現金股利 & 股票股利圖表資料
+const hasDividendData = computed(() => {
+    return props.basicData?.dividend?.date?.length > 0 && 
+           props.basicData?.dividend?.capitalGains?.length > 0 && 
+           props.basicData?.dividend?.stockSplits?.length > 0;
+});
+
+const dividendChartData = computed(() => {
+    if (!hasDividendData.value) return { labels: [], series: [] };
+    // 取最近20筆資料並反轉
+    const maxPoints = 20;
+    const labels = [...props.basicData.dividend.date].slice(0, maxPoints).reverse();
+    const capitalGains = [...props.basicData.dividend.capitalGains].slice(0, maxPoints).reverse().map(v => parseFloat(v) || 0);
+    const stockSplits = [...props.basicData.dividend.stockSplits].slice(0, maxPoints).reverse().map(v => parseFloat(v) || 0);
+    
+    return {
+        labels: labels,
+        series: [
+            { name: '現金股利 (元)', data: capitalGains },
+            { name: '股票股利 (元)', data: stockSplits }
+        ]
     };
 });
 
@@ -302,6 +377,10 @@ function handleOverlayClick() {
 
 .section-title i {
     color: var(--primary-color, #1976d2);
+}
+
+.section-title {
+    margin-bottom: 5px;
 }
 
 /* 文字說明區 */

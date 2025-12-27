@@ -36,7 +36,9 @@ const props = defineProps({
         type: Object,
         required: true,
         validator: (value) => {
-            return value?.labels?.length > 0 && value?.values?.length > 0;
+            // 支援單系列 (values) 或多系列 (series)
+            return value?.labels?.length > 0 && 
+                   (value?.values?.length > 0 || value?.series?.length > 0);
         }
     },
     chartType: {
@@ -51,11 +53,78 @@ const props = defineProps({
     seriesName: {
         type: String,
         default: ''
+    },
+    multiSeries: {
+        type: Boolean,
+        default: false
     }
 });
 
 const chartOption = computed(() => {
     const labels = props.chartData.labels;
+    const isMultiSeries = props.multiSeries && props.chartData.series;
+
+    // 多系列圖表配置
+    if (isMultiSeries) {
+        const series = props.chartData.series.map((s, index) => {
+            const colors = ['#1976d2', '#9c27b0', '#ff9800', '#00acc1', '#7cb342'];
+            return {
+                name: s.name,
+                type: props.chartType,
+                data: s.data,
+                itemStyle: {
+                    color: colors[index % colors.length]
+                },
+                ...(props.chartType === 'line' && {
+                    smooth: true,
+                    lineStyle: { width: 2 },
+                    symbol: 'circle',
+                    symbolSize: 6
+                })
+            };
+        });
+
+        return {
+            tooltip: {
+                trigger: 'axis',
+                axisPointer: {
+                    type: props.chartType === 'line' ? 'cross' : 'shadow'
+                }
+            },
+            legend: {
+                data: props.chartData.series.map(s => s.name),
+                top: 0,
+                textStyle: {
+                    fontSize: isMobile.value ? 11 : 13
+                }
+            },
+            grid: {
+                left: '3%',
+                right: '4%',
+                bottom: '3%',
+                top: '12%',
+                containLabel: true
+            },
+            xAxis: {
+                type: 'category',
+                data: labels,
+                axisLabel: {
+                    rotate: 45,
+                    fontSize: isMobile.value ? 10 : 12
+                }
+            },
+            yAxis: {
+                type: 'value',
+                name: props.yAxisName,
+                axisLabel: {
+                    formatter: '{value}'
+                }
+            },
+            series: series
+        };
+    }
+
+    // 單系列圖表配置
     const values = props.chartData.values;
 
     return {
@@ -73,6 +142,7 @@ const chartOption = computed(() => {
             left: '3%',
             right: '4%',
             bottom: '3%',
+            top: '3%',
             containLabel: true
         },
         xAxis: {
