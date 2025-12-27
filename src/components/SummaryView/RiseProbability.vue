@@ -18,7 +18,7 @@
 
 <script setup>
 // 工具 & 套件
-import { computed } from 'vue'
+import { computed, ref, watch } from 'vue'
 import functionDesc from '@/data/functionDesc.json'
 
 // Props
@@ -26,9 +26,12 @@ const props = defineProps({
     probability: { type: Number, default: null }
 })
 
+const displayProb = ref(0)
+let animationFrame = null
+
 const formattedProb = computed(() => {
-    if (props.probability === null) return null
-    return props.probability.toFixed(1).replace(/\.?0+$/, '')
+    if (displayProb.value === null) return null
+    return displayProb.value.toFixed(1).replace(/\.?0+$/, '')
 })
 
 // 回傳狀態：unknown / up / down
@@ -37,6 +40,45 @@ const probState = computed(() => {
     if (props.probability > 50) return 'up'
     return 'down'
 })
+
+// 監聽 probability 變化，執行動畫
+watch(() => props.probability, (newVal, oldVal) => {
+    // 如果有進行中的動畫，取消它
+    if (animationFrame) {
+        cancelAnimationFrame(animationFrame)
+    }
+
+    // 如果新值是 null，直接設為 0
+    if (newVal === null) {
+        displayProb.value = 0
+        return
+    }
+
+    // 如果舊值是 null (從 unknown 狀態變成有值)，從 0 開始動畫
+    const startVal = (oldVal === null) ? 0 : displayProb.value
+    const targetVal = newVal
+    const duration = 2000 // 動畫時長 (ms)
+    const startTime = performance.now()
+
+    const animate = (currentTime) => {
+        const elapsed = currentTime - startTime
+        const progress = Math.min(elapsed / duration, 1)
+        
+        // 使用 easeOutCubic 緩動函數
+        const easeProgress = 1 - Math.pow(1 - progress, 10)
+        
+        displayProb.value = startVal + (targetVal - startVal) * easeProgress
+
+        if (progress < 1) {
+            animationFrame = requestAnimationFrame(animate)
+        } else {
+            displayProb.value = targetVal
+            animationFrame = null
+        }
+    }
+
+    animationFrame = requestAnimationFrame(animate)
+}, { immediate: true })
 
 </script>
 

@@ -284,6 +284,9 @@ watch(
   () => route.params.stock,
   async (newStock) => {
     logger.msg(`股票代碼變更: ${newStock}`);
+    // 清空資料
+    kData.value = [];
+    prob.value = null;
     await loadData();
   }
 );

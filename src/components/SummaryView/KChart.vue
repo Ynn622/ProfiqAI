@@ -38,7 +38,8 @@
     <!-- 圖表容器 -->
     <v-chart v-if="hasValidData" :option="chartOption" :autoresize="true" class="kchart-container" />
     <div v-else-if="props.loading" class="placeholder loading">
-      等待資料載入...
+      <i class="fa-solid fa-chart-line"></i>&nbsp;
+      K線圖資料載入中...
     </div>
     <div v-else class="placeholder error">
       K 線資料異常！
