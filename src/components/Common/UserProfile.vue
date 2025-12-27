@@ -150,17 +150,25 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { useAuthStore } from '@/utils/authStore'
 import { message } from 'ant-design-vue'
 import router from '@/router'
 
 // 使用 Auth Store
 const authStore = useAuthStore()
-const { isLoggedIn, userName, userAvatar, user, handleGoogleLogin: googleLogin, handleFacebookLogin: facebookLogin, handleLogout: logout, handleUpdateProfile } = authStore
+const { isLoggedIn, userName, userAvatar, user, shouldOpenLoginPanel, handleGoogleLogin: googleLogin, handleFacebookLogin: facebookLogin, handleLogout: logout, handleUpdateProfile, resetLoginPanelTrigger } = authStore
 
 // 顯示面板狀態
 const showPanel = ref(false)
+
+// 監聽 shouldOpenLoginPanel 狀態,自動開啟登入面板
+watch(shouldOpenLoginPanel, (newValue) => {
+  if (newValue && !isLoggedIn.value) {
+    showPanel.value = true
+    resetLoginPanelTrigger() // 重置觸發狀態
+  }
+})
 
 // 個人設定彈窗狀態
 const showSettingsModal = ref(false)

@@ -68,6 +68,10 @@ import { watch, onMounted, onUnmounted, computed, ref } from 'vue';
 import stockList from '@/data/stockList.json';
 import Candlestick from '@/components/Candlestick.vue';
 import { message } from 'ant-design-vue';
+import { useAuthStore } from '@/utils/authStore';
+
+// 使用 Auth Store
+const { isLoggedIn, triggerLoginPanel } = useAuthStore();
 
 // Props
 const props = defineProps({
@@ -145,6 +149,11 @@ async function updateStock() {
 }
 
 function addToWatchlist() {
+    if (!isLoggedIn.value) {
+        triggerLoginPanel();
+        message.info('請先登入以使用自選功能');
+        return;
+    }
     message.success('已加入自選');
 }
 

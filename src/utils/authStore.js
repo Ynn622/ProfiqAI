@@ -22,6 +22,7 @@ import {
 const user = ref(null)
 const isLoading = ref(true)
 const error = ref(null)
+const shouldOpenLoginPanel = ref(false) // 控制是否開啟登入面板
 let initPromise = null
 let authStateSubscribed = false
 
@@ -220,6 +221,20 @@ export async function handleUpdateProfile(updates) {
   return { success: true, error: null }
 }
 
+/**
+ * 觸發開啟登入面板
+ */
+export function triggerLoginPanel() {
+  shouldOpenLoginPanel.value = true
+}
+
+/**
+ * 重置登入面板狀態
+ */
+export function resetLoginPanelTrigger() {
+  shouldOpenLoginPanel.value = false
+}
+
 // 導出狀態和方法
 export function useAuthStore() {
   return {
@@ -227,6 +242,7 @@ export function useAuthStore() {
     user,
     isLoading,
     error,
+    shouldOpenLoginPanel,
     
     // 計算屬性
     isLoggedIn,
@@ -243,6 +259,8 @@ export function useAuthStore() {
     handleLogout,
     handleResetPassword,
     handleUpdatePassword,
-    handleUpdateProfile
+    handleUpdateProfile,
+    triggerLoginPanel,
+    resetLoginPanelTrigger
   }
 }
