@@ -56,23 +56,13 @@ export async function initAuthStore() {
 
     try {
       // 先嘗試從本地恢復 Session（避免重整後短暫變成未登入）
-      const { session, error: sessionError } = await getSession()
-      if (sessionError) {
-        console.error('恢復 Session 失敗:', sessionError)
-        error.value = sessionError
-      }
-
+      const { session } = await getSession()
       user.value = session?.user || null
 
       // 如果還沒有 user，再呼叫 getCurrentUser 做一次確認
       if (!user.value) {
-        const { user: currentUser, error: fetchError } = await getCurrentUser()
-        if (fetchError) {
-          console.error('初始化用戶狀態失敗:', fetchError)
-          error.value = fetchError
-        } else {
-          user.value = currentUser
-        }
+        const { user: currentUser } = await getCurrentUser()
+        user.value = currentUser
       }
     } catch (err) {
       console.error('初始化 Auth Store 失敗:', err)

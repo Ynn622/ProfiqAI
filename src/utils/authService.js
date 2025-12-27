@@ -120,11 +120,20 @@ export async function signOut() {
 export async function getCurrentUser() {
   try {
     const { data: { user }, error } = await supabase.auth.getUser()
-    if (error) throw error
+    if (error) {
+      // AuthSessionMissingError 表示未登入,這是正常狀態,不需要記錄錯誤
+      if (error.name === 'AuthSessionMissingError') {
+        return { user: null, error: null }
+      }
+      throw error
+    }
     return { user, error: null }
   } catch (error) {
-    console.error('獲取用戶資料失敗:', error)
-    return { user: null, error }
+    // 只記錄非預期的錯誤
+    if (error.name !== 'AuthSessionMissingError') {
+      console.error('獲取用戶資料失敗:', error)
+    }
+    return { user: null, error: null }
   }
 }
 
@@ -135,11 +144,20 @@ export async function getCurrentUser() {
 export async function getSession() {
   try {
     const { data: { session }, error } = await supabase.auth.getSession()
-    if (error) throw error
+    if (error) {
+      // AuthSessionMissingError 表示未登入,這是正常狀態
+      if (error.name === 'AuthSessionMissingError') {
+        return { session: null, error: null }
+      }
+      throw error
+    }
     return { session, error: null }
   } catch (error) {
-    console.error('獲取 Session 失敗:', error)
-    return { session: null, error }
+    // 只記錄非預期的錯誤
+    if (error.name !== 'AuthSessionMissingError') {
+      console.error('獲取 Session 失敗:', error)
+    }
+    return { session: null, error: null }
   }
 }
 
