@@ -68,7 +68,7 @@
                             <div class="duration loading-time" v-if="activeConversation?.loadingElapsed">
                                 <i class="fa-regular fa-clock"></i> {{ formatDuration(activeConversation.loadingElapsed) }}
                             </div>
-                            <div class="loading-hint" v-if="activeConversation?.loadingElapsed > 3000">
+                            <div class="loading-hint" v-if="activeConversation?.loadingElapsed > 30000">
                                 (個股分析中，請稍候...)
                             </div>
                         </div>
