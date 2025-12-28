@@ -56,7 +56,7 @@ export async function callAPI(options) {
 
     try {
         // 記錄 API 開始
-        logger.func.start(funcName, [params]);
+        logger.func.start(funcName, params ? [params] : []);
 
         // 構建完整 URL (有含 http 的話 -> 不加 base url)
         let fullUrl = url.startsWith('http') ? url : `${API_BASE_URL}${url}`;
@@ -99,13 +99,13 @@ export async function callAPI(options) {
         const data = await response.json();
 
         // 記錄成功
-        logger.func.success(funcName, [params]);
+        logger.func.success(funcName, params ? [params] : []);
 
         return data;
 
     } catch (error) {
         // 記錄錯誤
-        logger.func.error(funcName, [params]);
+        logger.func.error(funcName, params ? [params] : []);
         logger.error(`${funcName} API 錯誤:`, error);
 
         // 拋出錯誤，讓調用方可以選擇如何處理
