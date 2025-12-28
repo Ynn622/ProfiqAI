@@ -95,7 +95,7 @@ function asidePage(item) {
 
 .nav-right {
     display: flex;
-    gap: 20px;
+    gap: 14px;
     align-items: center;
 }
 

@@ -243,6 +243,10 @@ onMounted(() => {
 <style scoped>
 @import '/src/assets/main.css';
 
+.screen {
+    height: 100dvh;
+}
+
 .chat-layout {
     display: flex;
     flex: 1;
@@ -271,7 +275,7 @@ onMounted(() => {
 
 .conversation-list h3 {
     font-size: 16px;
-    letter-spacing: 1px;
+    letter-spacing: 0.8px;
 }
 
 .conversation-list ul {
@@ -365,7 +369,7 @@ onMounted(() => {
     display: flex;
     align-items: center;
     gap: 12px;
-    padding: 14px 18px 10px;
+    padding: 12px 18px 10px;
     border-bottom: 1px solid #cfcfcf;;
 }
 
@@ -404,10 +408,10 @@ onMounted(() => {
 .messages {
     flex: 1;
     overflow-y: auto;
-    padding: 18px 22px 10px;
+    padding: 16px 18px 8px;
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    gap: 16px;
     scroll-behavior: smooth;
 }
 
@@ -443,7 +447,7 @@ onMounted(() => {
 .bubble {
     max-width: min(720px, 80%);
     background: #e8f2ff;
-    padding: 14px 18px;
+    padding: 12px 18px;
     border-radius: 18px;
     line-height: 1.55;
     font-size: 15px;
@@ -555,7 +559,7 @@ onMounted(() => {
     content: "";
     position: absolute;
     top: 14px;
-    left: -7px;
+    left: -4px;
     width: 12px;
     height: 12px;
     background: inherit;
@@ -565,7 +569,7 @@ onMounted(() => {
 
 .msg-row.user .bubble::after {
     left: auto;
-    right: -7px;
+    right: -4px;
 }
 
 .loading .bubble {
@@ -618,7 +622,7 @@ onMounted(() => {
 .input-bar {
     display: flex;
     gap: 12px;
-    padding: 16px 20px 18px;
+    padding: 10px 16px;
     border-top: 1px solid #e2e6ee;
 }
 
@@ -673,6 +677,18 @@ onMounted(() => {
     transform: translateY(-2px);
 }
 
+/* 📝 免責聲明 */
+.disclaimer {
+    margin: 5px 12px;
+    padding: 8px 16px;
+    font-size: 11px;
+    color: rgba(15, 23, 42, 0.5);
+    text-align: center;
+    background: rgba(255, 255, 255, 0.6);
+    border-radius: 12px;
+    backdrop-filter: blur(5px);
+}
+
 @keyframes bounce {
     0%,
     80%,
@@ -725,6 +741,11 @@ onMounted(() => {
         opacity: 1;
     }
 
+    .chat-header {
+        gap: 6px;
+        padding: 12px 8px;
+    }
+    
     .chat-wrapper {
         background: transparent;
         box-shadow: none;
@@ -732,11 +753,11 @@ onMounted(() => {
     }
 
     .messages {
-        padding: 16px 14px 8px;
+        padding: 12px 12px 4px;
     }
 
     .bubble {
-        max-width: 100%;
+        max-width: 95%;
     }
 
     .input-bar {
@@ -807,17 +828,28 @@ onMounted(() => {
         font-size: 12px;
         padding: 4px 8px;
     }
+    
+    .messages {
+        gap: 15px;
+    }
+
+    .bubble {
+        max-width: 95%;
+        padding: 10px 16px;
+        font-size: 14px;
+    }
+    
+    .avatar {
+        width: 40px;
+        height: 40px;
+        font-size: 20px;
+    }
+
+    /* 📝 免責聲明 */
+    .disclaimer {
+        margin: 6px 8px;
+        font-size: 10px;
+    }
 }
 
-/* 📝 免責聲明 */
-.disclaimer {
-    margin: 8px 12px;
-    padding: 8px 16px;
-    font-size: 12px;
-    color: rgba(15, 23, 42, 0.5);
-    text-align: center;
-    background: rgba(255, 255, 255, 0.6);
-    border-radius: 12px;
-    backdrop-filter: blur(5px);
-}
 </style>
