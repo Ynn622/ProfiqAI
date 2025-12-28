@@ -56,7 +56,10 @@
             <span></span>
 
             <!-- 自選按鈕 -->
-            <button class="watchlist-btn" @click="addToWatchlist"><i class="fa-solid fa-plus" />自選</button>
+            <button class="watchlist-btn" @click="addToWatchlist">
+                <i class="fa-solid fa-star" />
+                <span>自選</span>
+            </button>
         </div>
     </div>
 </template>
@@ -225,6 +228,7 @@ watch(
 }
 
 .stock-info {
+    margin-left: 4px;
     font-weight: 900;
 }
 
@@ -286,19 +290,43 @@ watch(
 }
 
 .watchlist-btn {
-    padding: 5px 10px;
-    font-size: 18px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 7px 14px;
+    font-size: 16px;
     font-weight: 600;
-    letter-spacing: 0.5px;
-    border-radius: 10px;
+    letter-spacing: 0.3px;
+    border-radius: 12px;
     cursor: pointer;
-    background-color: lemonchiffon;
-    border: 0.5px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    transition: background 0.3s ease;
+    background: linear-gradient(180deg, #4489f7 0%, #3b75f3 100%);
+    border: none;
+    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.25), 0 1px 2px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    color: #ffffff;
 }
 .watchlist-btn:hover {
-    background-color: gold;
+    background: linear-gradient(180deg, #60a5fa 0%, #3b82f6 100%);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.35), 0 2px 4px rgba(0, 0, 0, 0.15);
+    transform: translateY(-1px);
+}
+
+.watchlist-btn:active {
+    transform: translateY(0);
+    box-shadow: 0 1px 4px rgba(102, 126, 234, 0.25);
+}
+
+.watchlist-btn i {
+    font-size: 18px;
+    transition: transform 0.3s ease;
+}
+
+.watchlist-btn:hover i {
+    transform: scale(1.05) rotate(8deg);
+}
+
+.watchlist-btn span {
+    font-weight: 700;
 }
 
 .no-data {
@@ -362,12 +390,27 @@ watch(
         flex-direction: column;
         align-items: flex-start;
         height: auto;
+        padding: 8px 14px;
     }
     .detail-card {
         left: 0;
         right: auto;
         width: 70dvw;
         max-width: 360px;
+    }
+
+    .price-bar {
+        position: relative;
+    }
+
+    .watchlist-btn {
+        position: absolute;
+        top: 15px;
+        right: 12px;
+        font-size: 14px;
+    }
+    .watchlist-btn i {
+        font-size: 16px;
     }
 }
 </style>
