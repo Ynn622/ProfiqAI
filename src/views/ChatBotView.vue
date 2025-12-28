@@ -45,11 +45,24 @@
                         <div class="avatar user" v-if="m.role === 'user'">
                             <i class="fa-solid fa-user"></i>
                         </div>
-                        <div class="bubble" v-html="processMarkdown(m.text)"></div>
+                        <div class="bubble-wrapper">
+                            <div class="bubble" v-html="processMarkdown(m.text)"></div>
+                            <div class="duration" v-if="m.role === 'bot' && m.duration">
+                                <i class="fa-regular fa-clock"></i> {{ m.duration }}
+                            </div>
+                        </div>
                     </div>
                     <div class="msg-row bot loading" v-if="activeLoading">
                         <div class="avatar"><i class="fa-solid fa-robot"></i></div>
-                        <div class="bubble"><span class="dot" v-for="n in 3" :key="n"></span></div>
+                        <div class="bubble-wrapper">
+                            <div class="bubble"><span class="dot" v-for="n in 3" :key="n"></span></div>
+                            <div class="duration loading-time" v-if="activeConversation?.loadingElapsed">
+                                <i class="fa-regular fa-clock"></i> {{ formatDuration(activeConversation.loadingElapsed) }}
+                            </div>
+                            <div class="loading-hint" v-if="activeConversation?.loadingElapsed > 3000">
+                                (個股分析中，請稍候...)
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <!-- 免責聲明 -->
@@ -76,7 +89,6 @@ import Nav from '@/components/Common/Nav.vue';
 import { ref, computed, onMounted, watch, nextTick } from 'vue';
 import { callAPI } from '@/utils/apiConfig.js';
 import { processMarkdown } from '@/utils/markdownParser.js';
-import { logger } from '@/utils/logger';
 
 
 const isMobile = ref(false);
@@ -86,6 +98,8 @@ const conversations = ref([{
     title: '智聊 AI',
     createdAt: formatTime(new Date()),
     loading: false,
+    loadingStartTime: null,
+    loadingElapsed: 0,
     messages: [{ role: 'bot', text: '嗨～我是**智聊機器人**，您的 AI 投資夥伴。今天有想討論的股市問題嗎？' }]
 }]);
 const activeId = ref(conversations.value[0]?.id || '');
@@ -132,14 +146,20 @@ function send() {
     // 重設輸入框高度
     resetTextareaHeight();
     
-    callChatBotAPI(text, modelSelected.value, convo);
+    // 記錄開始時間並啟動計時器
+    const startTime = Date.now();
+    convo.loadingStartTime = startTime;
+    convo.loadingElapsed = 0;
+    startLoadingTimer(convo);
+    
+    callChatBotAPI(text, modelSelected.value, convo, startTime);
     scrollBottom();
 }
 
 /** 
  * API: 聊天機器人回應
  */
-async function callChatBotAPI(prompt, model, convo) {
+async function callChatBotAPI(prompt, model, convo, startTime) {
     convo.loading = true;
     try {
         const response = await callAPI({
@@ -150,14 +170,20 @@ async function callChatBotAPI(prompt, model, convo) {
         });
 
         const botReply = response.response || '抱歉，我現在無法回答您的問題。';
-        convo.messages.push({ role: 'bot', text: botReply });
+        const duration = formatDuration(Date.now() - startTime);
+        convo.messages.push({ role: 'bot', text: botReply, duration });
     } catch (error) {
+        const duration = formatDuration(Date.now() - startTime);
         convo.messages.push({ 
             role: 'bot', 
-            text: '抱歉，系統暫時無法連接，請稍後再試。' 
+            text: '抱歉，系統暫時無法連接，請稍後再試。',
+            duration
         });
     } finally {
         convo.loading = false;
+        convo.loadingStartTime = null;
+        convo.loadingElapsed = 0;
+        stopLoadingTimer(convo);
         scrollBottom();
     }
 }
@@ -169,6 +195,8 @@ function newConversation() {
         title: '智聊 AI',
         createdAt: formatTime(new Date()),
         loading: false,
+        loadingStartTime: null,
+        loadingElapsed: 0,
         messages: [{
             role: 'bot', text: '嗨～我是**智聊機器人**，您的 AI 投資夥伴。今天有想討論的股市問題嗎？' }]
     });
@@ -229,6 +257,35 @@ function formatTime(date = new Date()) {
     const timeStr = date.toLocaleTimeString("zh-TW", { hour12: false });
 
     return `${dateStr} ${timeStr}`;
+}
+
+// 格式化耗時顯示
+function formatDuration(ms) {
+    return `${(ms / 1000).toFixed(1)}s`;
+}
+
+// 計時器管理
+let loadingTimers = {};
+
+function startLoadingTimer(convo) {
+    // 清除可能存在的舊計時器
+    if (loadingTimers[convo.id]) {
+        clearInterval(loadingTimers[convo.id]);
+    }
+    
+    // 每 100ms 更新一次經過時間
+    loadingTimers[convo.id] = setInterval(() => {
+        if (convo.loadingStartTime && convo.loading) {
+            convo.loadingElapsed = Date.now() - convo.loadingStartTime;
+        }
+    }, 100);
+}
+
+function stopLoadingTimer(convo) {
+    if (loadingTimers[convo.id]) {
+        clearInterval(loadingTimers[convo.id]);
+        delete loadingTimers[convo.id];
+    }
 }
 
 // 進入頁面時執行
@@ -444,8 +501,18 @@ onMounted(() => {
     background: linear-gradient(135deg, #4f4f59, #2c2c31);
 }
 
-.bubble {
+.loading .bubble {
+    width: 80px;
+}
+
+.bubble-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
     max-width: min(720px, 80%);
+}
+
+.bubble {
     background: #e8f2ff;
     padding: 12px 18px;
     border-radius: 18px;
@@ -454,6 +521,37 @@ onMounted(() => {
     position: relative;
     word-break: break-word;
     box-shadow: 0 2px 6px rgba(0, 0, 0, .06);
+}
+
+.duration {
+    font-size: 12px;
+    color: #888;
+    padding-left: 8px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    opacity: 0.8;
+}
+
+.duration.loading-time {
+    color: #6d7dff;
+    font-weight: 500;
+    animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 0.6;
+    }
+    50% {
+        opacity: 1;
+    }
+}
+
+.loading-hint {
+    padding-left: 6px;
+    color: #ff8c42;
+    font-size: 10px;
 }
 
 /* Markdown 樣式 */
@@ -575,11 +673,12 @@ onMounted(() => {
 .loading .bubble {
     display: flex;
     gap: 6px;
+    padding: 14px 18px;
 }
 
 .dot {
-    width: 10px;
-    height: 10px;
+    width: 12px;
+    height: 12px;
     background: #c1c9d8;
     border-radius: 50%;
     animation: bounce 1s infinite ease-in-out;
@@ -636,7 +735,7 @@ onMounted(() => {
     font-size: 16px;
     background: #fff;
     outline: none;
-    line-height: 1.5;
+    line-height: 1.4;
     box-shadow: inset 0 1px 2px rgba(0, 0, 0, .06);
     transition: border .25s, box-shadow .25s;
 }
@@ -756,10 +855,6 @@ onMounted(() => {
         padding: 12px 12px 4px;
     }
 
-    .bubble {
-        max-width: 95%;
-    }
-
     .input-bar {
         padding: 8px 10px;
         border-top: 1px solid #cfcfcf;
@@ -834,7 +929,6 @@ onMounted(() => {
     }
 
     .bubble {
-        max-width: 95%;
         padding: 10px 16px;
         font-size: 14px;
     }
