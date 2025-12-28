@@ -35,6 +35,15 @@
                                 {{ model }}
                             </option>
                         </select>
+                        <a-tooltip placement="bottom">
+                            <template #title>
+                                <div class="model-tooltip">
+                                    <div><strong>GPT-4</strong> 快速概覽分析 (平均耗時:30s)</div>
+                                    <div><strong>GPT-5</strong> 詳細價位分析 (平均耗時:1min)</div>
+                                </div>
+                            </template>
+                            <i class="fa-solid fa-circle-info model-info-icon"></i>
+                        </a-tooltip>
                     </div>
                 </header>
                 <div class="messages" ref="msgContainer">
@@ -84,6 +93,7 @@
 <script setup>
 // 組件
 import Nav from '@/components/Common/Nav.vue';
+import { Tooltip as ATooltip } from 'ant-design-vue';
 
 // 工具 & 套件
 import { ref, computed, onMounted, watch, nextTick } from 'vue';
@@ -453,6 +463,28 @@ onMounted(() => {
 .model-selector:hover {
     background: rgba(0, 0, 0, 0.05);
     border-radius: 4px;
+}
+
+.model-info-icon {
+    font-size: 11px;
+    color: #6d7dff;
+    cursor: help;
+    margin-left: 2px;
+    margin-bottom: 4px;
+    transition: color 0.3s;
+}
+
+.model-info-icon:hover {
+    color: #5d6ddd;
+}
+
+.model-tooltip {
+    font-size: 13px;
+    line-height: 1.3;
+}
+
+.model-tooltip div {
+    margin: 4px 0;
 }
 
 .hamburger {
