@@ -26,6 +26,12 @@ const props = defineProps({
     probability: { type: Number, default: null }
 })
 
+// 將 probability 限制在 5~95% 之間
+const boundedProbability = computed(() => {
+    if (props.probability === null) return null
+    return Math.max(5, Math.min(95, props.probability))
+})
+
 const displayProb = ref(0)
 let animationFrame = null
 
@@ -36,13 +42,13 @@ const formattedProb = computed(() => {
 
 // 回傳狀態：unknown / up / down
 const probState = computed(() => {
-    if (props.probability === null) return 'unknown'
-    if (props.probability > 50) return 'up'
+    if (boundedProbability.value === null) return 'unknown'
+    if (boundedProbability.value > 50) return 'up'
     return 'down'
 })
 
 // 監聽 probability 變化，執行動畫
-watch(() => props.probability, (newVal, oldVal) => {
+watch(() => boundedProbability.value, (newVal, oldVal) => {
     // 如果有進行中的動畫，取消它
     if (animationFrame) {
         cancelAnimationFrame(animationFrame)
