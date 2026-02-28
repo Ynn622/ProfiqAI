@@ -229,12 +229,17 @@ function updateKData(newData) {
 
 async function fetchAnalysisData() {
   analysisLoading.value = true;
-  const [basic, tech, news, chip] = await Promise.all([
+  const results = await Promise.allSettled([
     fetchBasicAnalysis(stockId.value),
     fetchTechAnalysis(stockId.value),
     fetchNewsAnalysis(stockId.value),
     fetchChipAnalysis(stockId.value),
   ]);
+
+  const basic = results[0].status === 'fulfilled' ? results[0].value : {};
+  const tech = results[1].status === 'fulfilled' ? results[1].value : {};
+  const news = results[2].status === 'fulfilled' ? results[2].value : {};
+  const chip = results[3].status === 'fulfilled' ? results[3].value : {};
 
   fundamentalScore.value = basic.direction ?? -99;
   techScore.value = tech.direction ?? -99;
@@ -267,7 +272,7 @@ async function fetchAnalysisData() {
 }
 
 const loadData = async () => {
-  await Promise.all([
+  await Promise.allSettled([
     fetchStockData(stockId.value),
     fetchStockPredict(stockId.value),
     fetchAnalysisData()

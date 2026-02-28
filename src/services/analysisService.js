@@ -189,12 +189,17 @@ export function fetchChipAnalysis(stockId) {
 }
 
 export async function fetchAllAnalysis(stockId) {
-  const [basic, tech, news, chip] = await Promise.all([
+  const results = await Promise.allSettled([
     fetchBasicAnalysis(stockId),
     fetchTechAnalysis(stockId),
     fetchNewsAnalysis(stockId),
     fetchChipAnalysis(stockId),
   ]);
+
+  const basic = results[0].status === 'fulfilled' ? results[0].value : {};
+  const tech = results[1].status === 'fulfilled' ? results[1].value : {};
+  const news = results[2].status === 'fulfilled' ? results[2].value : {};
+  const chip = results[3].status === 'fulfilled' ? results[3].value : {};
 
   return { basic, tech, news, chip };
 }

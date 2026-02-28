@@ -27,7 +27,8 @@
                 :autoresize="true"
                 class="chart"
             />
-            <div v-else class="loading">載入中...</div>
+            <div v-else-if="isLoading" class="loading">載入中...</div>
+            <div v-else class="loading">資料異常，請稍後再試！</div>
         </div>
     </div>
 </template>
@@ -67,6 +68,7 @@ const selectedMonth = ref(new Date().getMonth() + 1); // 預設本月
 const priceMode = ref('return'); // 'return': 報酬率模式, 'price': 價格模式
 const chartData = ref(null);
 const { isMobile } = isMobileView();
+const isLoading = ref(false);
 
 // 月份選項
 const months = [
@@ -92,6 +94,7 @@ const modeOptions = [
 
 // 獲取數據
 const fetchData = async () => {
+    isLoading.value = true;
     try {
         const response = await callAPI({
             url: '/stock/monthlyCumulativeReturn',
@@ -107,6 +110,8 @@ const fetchData = async () => {
     } catch (error) {
         logger.error('獲取歷年同月數據失敗:', error);
         chartData.value = null;
+    } finally {
+        isLoading.value = false;
     }
 };
 

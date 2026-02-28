@@ -104,12 +104,17 @@ function handleStockDataUpdate(data) {
 async function loadAnalysis() {
     loading.value = true;
     try {
-        const [basic, tech, news, chip] = await Promise.all([
+        const results = await Promise.allSettled([
             fetchBasicAnalysis(stockId.value),
             fetchTechAnalysis(stockId.value),
             fetchNewsAnalysis(stockId.value),
             fetchChipAnalysis(stockId.value)
         ]);
+
+        const basic = results[0].status === 'fulfilled' ? results[0].value : {};
+        const tech = results[1].status === 'fulfilled' ? results[1].value : {};
+        const news = results[2].status === 'fulfilled' ? results[2].value : {};
+        const chip = results[3].status === 'fulfilled' ? results[3].value : {};
 
         analysis.basic.direction = basic.direction;
         analysis.basic.description = basic.description;

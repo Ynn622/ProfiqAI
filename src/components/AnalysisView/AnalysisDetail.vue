@@ -27,7 +27,7 @@ const props = defineProps({
     },
     description: {
         type: String,
-        default: ''
+        default: 'AI 分析錯誤，請稍後再試！'
     },
     direction: {
         type: Number,
