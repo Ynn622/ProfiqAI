@@ -92,7 +92,7 @@ function renderWordCloud() {
                 type: 'wordCloud',
                 gridSize: 5,
                 sizeRange: isMobile.value ? [16, 50] : [30, 150],
-                rotationRange: [-45, 45],
+                rotationRange: [30, -30],
                 width: '100%',
                 height: '100%',
                 drawOutOfBound: false,
