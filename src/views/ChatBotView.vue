@@ -122,7 +122,7 @@ const activeMessages = computed(() => activeConversation.value?.messages || []);
 const activeLoading = computed(() => activeConversation.value?.loading || false);
 
 // 模型選擇
-const modelOptions = ['GPT-4.1-mini', 'GPT-4o-mini', 'GPT-5-mini']
+const modelOptions = ['GPT-4.1-mini', 'GPT-4o-mini', 'GPT-5-mini', 'GPT-5.4-mini']
 const modelSelected = ref('GPT-4.1-mini')
 
 function scrollBottom() {
