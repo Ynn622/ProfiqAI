@@ -6,6 +6,10 @@
   <img src="https://img.shields.io/badge/OpenAI-GPT--4o%20%26%205-FF6A00?logo=openai&logoColor=white" alt="OpenAI GPT">
   <img src="https://img.shields.io/badge/ECharts-5.5%2B-AA344D?logo=apache-echarts&logoColor=white" alt="ECharts">
 </p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Finvestchat.net%2Fversion.json&query=%24.version&label=Latest Version&color=9ecbff" alt="Version">
+</p>
 <p align="center">
   <strong>📈 個股全面向健檢，快速搜出好股！</strong>
 </p>
