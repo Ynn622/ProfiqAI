@@ -4,23 +4,27 @@
  */
 
 const VERSION_CHECK_INTERVAL = 10 * 60 * 1000 // 10 分鐘檢查一次
-const VERSION_KEY = 'app_version_hash'
+const VERSION_ENDPOINT = '/version.json'
+const APP_VERSION = typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : 'dev'
 let checkInterval = null
+let notifiedVersion = null
 
 /**
- * 取得當前版本 hash (從 index.html 的 meta 標籤或 JS bundle 名稱)
+ * 讀取遠端版本資訊
  */
-async function getCurrentVersion() {
+async function getRemoteVersionInfo() {
   try {
-    const response = await fetch('/', { 
-      cache: 'no-cache',
-      headers: { 'Cache-Control': 'no-cache' }
+    const response = await fetch(`${VERSION_ENDPOINT}?t=${Date.now()}`, {
+      cache: 'no-store',
+      headers: { 'Cache-Control': 'no-cache' },
     })
-    const html = await response.text()
-    
-    // 從 HTML 中提取 JS bundle 的 hash
-    const match = html.match(/index-([a-zA-Z0-9_-]+)\.js/)
-    return match ? match[1] : null
+
+    if (!response.ok) return null
+
+    const data = await response.json()
+    if (!data?.version) return null
+
+    return data
   } catch (error) {
     console.warn('版本檢查失敗:', error)
     return null
@@ -31,21 +35,20 @@ async function getCurrentVersion() {
  * 檢查是否有新版本
  */
 async function checkForNewVersion() {
-  const currentVersion = await getCurrentVersion()
-  if (!currentVersion) return false
-  
-  const savedVersion = localStorage.getItem(VERSION_KEY)
-  
-  if (savedVersion && savedVersion !== currentVersion) {
-    console.warn('🔄 檢測到新版本，建議重新載入')
+  // 開發模式不提示更新，避免本地開發時干擾
+  if (import.meta.env.DEV) return false
+
+  const remoteInfo = await getRemoteVersionInfo()
+  if (!remoteInfo) return false
+
+  if (remoteInfo.version !== APP_VERSION) {
+    if (notifiedVersion === remoteInfo.version) return false
+
+    notifiedVersion = remoteInfo.version
+    console.warn(`檢測到新版本: ${APP_VERSION} -> ${remoteInfo.version}`)
     return true
   }
-  
-  // 儲存當前版本
-  if (!savedVersion) {
-    localStorage.setItem(VERSION_KEY, currentVersion)
-  }
-  
+
   return false
 }
 
@@ -53,6 +56,8 @@ async function checkForNewVersion() {
  * 啟動版本檢查
  */
 export function startVersionCheck(onNewVersion) {
+  if (import.meta.env.DEV) return
+
   // 立即檢查一次
   checkForNewVersion().then(hasNewVersion => {
     if (hasNewVersion && onNewVersion) {
@@ -85,7 +90,5 @@ export function stopVersionCheck() {
  * 強制重新載入 (清除所有快取)
  */
 export function forceReload() {
-  localStorage.removeItem(VERSION_KEY)
-  sessionStorage.clear()
   window.location.reload()
 }
