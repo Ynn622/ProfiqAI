@@ -92,7 +92,9 @@ export async function callAPI(options) {
 
         // 檢查響應狀態
         if (!response.ok) {
-            throw new Error(`HTTP ${response.status} ${response.statusText}`);
+            const error = new Error(`HTTP ${response.status} ${response.statusText}`);
+            error.status = response.status;
+            throw error;
         }
 
         // 解析 JSON

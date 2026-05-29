@@ -39,10 +39,10 @@
                             </option>
                         </select>
                     </div>
-                    <a-tooltip placement="bottom">
+                    <a-tooltip placement="bottom" v-if="showDeleteChatButton">
                         <template #title>刪除目前聊天室</template>
                         <button class="delete-chat-btn" type="button" @click="deleteCurrentConversation"
-                            :disabled="!activeConversation || activeLoading || isDeletingConversation"
+                            :disabled="activeLoading || isDeletingConversation"
                             aria-label="delete current conversation">
                             <i class="fa-regular fa-trash-can"></i>
                         </button>
@@ -129,6 +129,7 @@ const activeConversation = computed(() => conversations.value.find(c => c.id ===
 const visibleConversations = computed(() => conversations.value.filter(c => c.persisted));
 const activeMessages = computed(() => activeConversation.value?.messages || []);
 const activeLoading = computed(() => activeConversation.value?.loading || false);
+const showDeleteChatButton = computed(() => isLoggedIn.value && !!activeConversation.value?.persisted);
 const isChatHistoryLoading = computed(() => {
     const convo = activeConversation.value;
     return isLoadingConversations.value || (isLoggedIn.value && !!convo && !convo.messagesLoaded);
@@ -539,29 +540,27 @@ async function loadMessages(id) {
 }
 
 async function callChatAPI(options) {
-    // 聊天相關 API 若遇到 token 過期，先 refresh session 後自動重試一次。
-    try {
-        return await callAPI({
-            ...options,
-            headers: await requestHeaders()
-        });
-    } catch (error) {
-        if (!isUnauthorizedError(error) || !isLoggedIn.value) {
-            throw error;
-        }
+    // 聊天相關 API 若遇到 token 過期，最多 refresh session 後重試 2 次。
+    const maxRetries = 2;
+    let lastError = null;
 
+    for (let attempt = 0; attempt <= maxRetries; attempt += 1) {
         try {
             return await callAPI({
                 ...options,
-                headers: await requestHeaders(true)
+                headers: await requestHeaders(attempt > 0)
             });
-        } catch (retryError) {
-            if (isUnauthorizedError(retryError)) {
-                await handleAuthExpired();
+        } catch (error) {
+            lastError = error;
+            if (!isUnauthorizedError(error) || !isLoggedIn.value) {
+                throw error;
             }
-            throw retryError;
+            if (attempt === maxRetries) break;
         }
     }
+
+    await handleAuthExpired();
+    throw lastError;
 }
 
 async function fetchChatStream(payload, forceRefresh = false) {
