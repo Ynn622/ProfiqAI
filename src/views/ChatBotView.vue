@@ -48,7 +48,8 @@
                         </button>
                     </a-tooltip>
                 </header>
-                <div class="messages" ref="msgContainer">
+                <div class="messages" ref="msgContainer" @scroll="handleMessagesScroll" @wheel.passive="handleMessagesWheel"
+                    @touchstart.passive="handleMessagesTouchStart" @touchmove.passive="handleMessagesTouchMove">
                     <div class="history-loading" v-if="isChatHistoryLoading">
                         <span class="dot" v-for="n in 3" :key="n"></span>
                     </div>
@@ -123,6 +124,8 @@ const userInput = ref('');
 const msgContainer = ref(null);
 const textareaRef = ref(null);
 const isComposing = ref(false);
+const isFollowingBottom = ref(true);
+const lastTouchY = ref(0);
 const isLoadingConversations = ref(false);
 const isDeletingConversation = ref(false);
 const activeConversation = computed(() => conversations.value.find(c => c.id === activeId.value));
@@ -178,9 +181,53 @@ function finalizeMessage(message) {
     message.html = processMarkdown(message.text || '');
 }
 
-function scrollBottom() {
-    // 等 DOM 更新後把訊息區滾到最底部。
-    nextTick(() => { if (msgContainer.value) { msgContainer.value.scrollTop = msgContainer.value.scrollHeight; } });
+const BOTTOM_SCROLL_THRESHOLD = 50;
+
+function isNearBottom(el = msgContainer.value) {
+    if (!el) return true;
+    return el.scrollHeight - el.scrollTop - el.clientHeight <= BOTTOM_SCROLL_THRESHOLD;
+}
+
+function handleMessagesScroll() {
+    // 使用者離開底部閱讀舊訊息時，暫停串流自動追底。
+    isFollowingBottom.value = isNearBottom();
+}
+
+function handleMessagesWheel(event) {
+    // wheel 往上時先停掉追底，避免串流 rAF 在 scroll 事件前把位置拉回底部。
+    if (event.deltaY < 0) {
+        isFollowingBottom.value = false;
+    } else if (event.deltaY > 0 && isNearBottom()) {
+        isFollowingBottom.value = true;
+    }
+}
+
+function handleMessagesTouchStart(event) {
+    lastTouchY.value = event.touches?.[0]?.clientY || 0;
+}
+
+function handleMessagesTouchMove(event) {
+    const currentY = event.touches?.[0]?.clientY || 0;
+    if (!currentY || !lastTouchY.value) return;
+
+    // 手指往下滑會把內容往上捲，代表使用者在讀舊訊息。
+    if (currentY > lastTouchY.value) {
+        isFollowingBottom.value = false;
+    }
+    lastTouchY.value = currentY;
+}
+
+function scrollBottom({ force = false } = {}) {
+    // 貼底時跟隨新內容；使用者主動往上看時不搶滾動位置。
+    if (!force && !isFollowingBottom.value) return;
+
+    nextTick(() => {
+        const el = msgContainer.value;
+        if (!el || (!force && !isFollowingBottom.value)) return;
+
+        el.scrollTo({ top: el.scrollHeight, behavior: 'auto' });
+        isFollowingBottom.value = true;
+    });
 }
 
 watch(() => authStore.user.value?.id || '', async () => {
@@ -228,11 +275,12 @@ async function send() {
     convo.messages.push(createMessage('user', text));
     userInput.value = '';
     resetTextareaHeight();
+    isFollowingBottom.value = true;
 
     const startTime = Date.now();
 
     callChatBotAPI(text, modelSelected.value, convo, startTime);
-    scrollBottom();
+    scrollBottom({ force: true });
 }
 
 async function callChatBotAPI(prompt, model, convo, startTime) {
@@ -251,6 +299,7 @@ async function callChatBotAPI(prompt, model, convo, startTime) {
             const message = createMessage('bot', '', { html: '', streaming: true, duration: '', model });
             convo.messages.push(message);
             botMessage = convo.messages[convo.messages.length - 1];
+            scrollBottom();
         }
         return botMessage;
     };
@@ -435,13 +484,18 @@ function resetGuestConversation() {
     const guest = createConversation();
     conversations.value = [guest];
     activeId.value = guest.id;
+    isFollowingBottom.value = true;
+    scrollBottom({ force: true });
 }
 
 async function selectConversation(id) {
     // 切換聊天室；登入版第一次點開時才向後端載入歷史訊息。
     activeId.value = id;
+    isFollowingBottom.value = true;
     if (isLoggedIn.value) {
         await loadMessages(id);
+    } else {
+        scrollBottom({ force: true });
     }
     if (isMobile.value) {
         sideOpen.value = false;
@@ -462,6 +516,8 @@ async function newConversation() {
     }
 
     activeId.value = conversations.value[0].id;
+    isFollowingBottom.value = true;
+    scrollBottom({ force: true });
 }
 
 async function deleteCurrentConversation() {
@@ -505,10 +561,13 @@ async function removeConversationFromState(conversationId) {
         const draft = createConversation();
         conversations.value = [draft];
         activeId.value = draft.id;
+        isFollowingBottom.value = true;
+        scrollBottom({ force: true });
         return;
     }
 
     activeId.value = conversations.value[0].id;
+    isFollowingBottom.value = true;
     await loadMessages(activeId.value);
 }
 
@@ -532,10 +591,11 @@ async function loadMessages(id) {
             }))
             : [createMessage('bot', GREETING)];
         convo.messagesLoaded = true;
-        scrollBottom();
+        scrollBottom({ force: true });
     } catch (error) {
         convo.messages = [createMessage('bot', '抱歉，聊天記錄暫時無法載入。')];
         convo.messagesLoaded = true;
+        scrollBottom({ force: true });
     }
 }
 
@@ -952,7 +1012,7 @@ onBeforeUnmount(() => {
     display: flex;
     flex-direction: column;
     gap: 16px;
-    scroll-behavior: smooth;
+    scroll-behavior: auto;
 }
 
 .history-loading {
